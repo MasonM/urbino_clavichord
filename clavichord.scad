@@ -57,13 +57,13 @@ module keyboard() {
     for(i=[0:num_naturals-1]) {
         
         // Natural key
-        translate([i * nat_width + 0.5, -kb_protrusion, wall_th + 1])
+        translate([i * nat_width + 0.5 + kb_start_x, -kb_protrusion, wall_th + 1])
             color(col_natural)
             cube([nat_width - 1, key_len, 10]);
             
         // Tangent (brass blade at the back of the key to strike strings)
         tangent_y = 60 + (i % 12) * 8; // Spread out diagonally to strike different strings
-        translate([i * nat_width + nat_width/2, tangent_y, wall_th + 11])
+        translate([i * nat_width + nat_width/2 + kb_start_x, tangent_y, wall_th + 11])
             color(col_brass)
             cube([1.5, 4, 25]);
             
@@ -74,7 +74,7 @@ module keyboard() {
         has_sharp = (note_in_octave == 0 || note_in_octave == 1 || note_in_octave == 2 || note_in_octave == 4 || note_in_octave == 5);
         
         if (has_sharp && i < num_naturals - 1) {
-            translate([i * nat_width + nat_width - sharp_width/2, -40, wall_th + 11])
+            translate([i * nat_width + nat_width - sharp_width/2 + kb_start_x, -35, wall_th + 11])
                 color(col_sharp)
                 cube([sharp_width, sharp_length, 6]);
         }
