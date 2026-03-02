@@ -20,6 +20,7 @@ kb_length = 734;       // derived from 1005 - 122 - 149
 kb_protrusion = 81.5;  // Projection length of naturals outside the case
 num_naturals = 29;     // Keyboard extends from F to f3
 nat_width = 25.3;
+nat_height = 10;
 sharp_width = 14.0;
 sharp_length = 45;
 
@@ -45,24 +46,38 @@ module clavichord_case() {
             cube([c_length - 2*wall_th, c_width - 2*wall_th, c_height]);
             
         // Keyboard cutout in the front wall
-        translate([kb_start_x, -1, wall_th])
-            cube([kb_length, wall_th + 2, c_height]);
+        translate([kb_start_x, -1, -wall_th - 15])
+            cube([kb_length, wall_th + 2, c_height-15]);
     }
 }
 
 module keyboard() {
     // Total key length extending into the case back to the rack
     key_len = kb_protrusion + c_width - wall_th - 10; 
-    
-    for(i=[0:num_naturals-1]) {
+    translate([0.5 + kb_start_x, -kb_protrusion, wall_th + 1])
+       color(col_natural)
+       linear_extrude(height = nat_height) {
+        polygon([
+           [0,0],
+           [0,120],
+           [-50,200],
+           [-50,key_len],
+           [-40,key_len],
+           [-40,200],
+           [nat_width,130],
+           [nat_width,0],
+        ]);
+       }
+       
+    for(i=[1:num_naturals-1]) {
         
         // Natural key
         translate([i * nat_width + 0.5 + kb_start_x, -kb_protrusion, wall_th + 1])
             color(col_natural)
-            cube([nat_width - 1, key_len, 10]);
+            cube([nat_width - 1, key_len, nat_height]);
             
         // Tangent (brass blade at the back of the key to strike strings)
-        tangent_y = 60 + (i % 12) * 8; // Spread out diagonally to strike different strings
+        tangent_y = 150 + (i % 12) * 2; // Spread out diagonally to strike different strings
         translate([i * nat_width + nat_width/2 + kb_start_x, tangent_y, wall_th + 11])
             color(col_brass)
             cube([1.5, 4, 25]);
@@ -116,10 +131,10 @@ module internal_components() {
                 cylinder(h=15, r=1.5, $fn=12);
         }
     }
-    
+   
     // Strings (Double-strung representation)
-    for(i=[0:6:140]) {
-        translate([wall_th + 15, wall_th + 20 + i, 49])
+    for(i=[0:34]) {
+        translate([wall_th + 15, c_width - wall_th - 20 - (i*2), 49])
             rotate([0, 90, 0])
             color(col_string)
             cylinder(h=c_length - 2*wall_th - 50, r=0.4, $fn=6);
