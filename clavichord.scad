@@ -23,15 +23,16 @@ nat_width = 25.3;
 nat_height = 10;
 sharp_width = 14.0;
 sharp_length = 45;
+sharp_height = nat_height + 5;
 
 // --- Colors ---
 col_wood_dark = [0.35, 0.20, 0.10];
 col_wood_light = [0.80, 0.65, 0.40];
 col_wood_med = [0.55, 0.35, 0.15];
 col_natural = [0.90, 0.88, 0.80]; // Bone/boxwood finish
-col_sharp =[0.15, 0.15, 0.15];   // Dark tortoise shell / ebony
-col_brass =[0.85, 0.75, 0.30];
-col_string =[0.90, 0.90, 0.90];
+col_sharp = [0.15, 0.15, 0.15];   // Dark tortoise shell / ebony
+col_brass = [0.85, 0.75, 0.30];
+col_string = [0.90, 0.90, 0.90];
 
 // --- Modules ---
 
@@ -47,29 +48,68 @@ module clavichord_case() {
             
         // Keyboard cutout in the front wall
         translate([kb_start_x, -1, -wall_th - 15])
-            cube([kb_length, wall_th + 2, c_height-15]);
+            cube([kb_length, wall_th + 2, c_height-45]);
     }
 }
 
-module keyboard() {
-    // Total key length extending into the case back to the rack
-    key_len = kb_protrusion + c_width - wall_th - 10; 
-    translate([0.5 + kb_start_x, -kb_protrusion, wall_th + 1])
-       color(col_natural)
-       linear_extrude(height = nat_height) {
+module nat_key(i) {
+    translate([i * (nat_width + 0.5) + kb_start_x, -kb_protrusion, wall_th + 1])
+        color(col_natural)
+        union() {
+            cube([nat_width - 1, kb_protrusion, nat_height]);
+            translate([0, kb_protrusion, 0])
+                key_lever(i, nat_width - 1);
+        }    
+}
+
+module key_lever(i, width) {
+    key_top_offset_x = i * 14;
+    color(col_natural)
+    linear_extrude(height = nat_height) {
         polygon([
            [0,0],
-           [0,120],
-           [-50,200],
-           [-50,key_len],
-           [-40,key_len],
-           [-40,200],
-           [nat_width,130],
-           [nat_width,0],
+           [0,38 + i * 7],
+           [-50 - key_top_offset_x,118],
+           [-50 - key_top_offset_x, c_width - wall_th - 10],
+           [-40 - key_top_offset_x, c_width - wall_th - 10],
+           [-40 - key_top_offset_x,118],
+           [width,43 + i * 7],
+           [width,0],
         ]);
-       }
-       
-    for(i=[1:num_naturals-1]) {
+    }
+}
+
+module sharp_key(i) {
+    // Sharp key (Accidentals)
+    // Note pattern for F major scale start: F(0), G(1), A(2), B(3), C(4), D(5), E(6)
+    // Standard keyboard sharps are between: F-G, G-A, A-B, C-D, D-E
+
+    note_in_octave = (i-3) % 7;
+    has_sharp = i > 2 && (note_in_octave == 0 || note_in_octave == 1 || note_in_octave == 2 || note_in_octave == 4 || note_in_octave == 5);
+   if (has_sharp && i < num_naturals - 1) {
+        translate([i * nat_width + nat_width - sharp_width/2 + kb_start_x, -45, wall_th + 5])
+            union() {
+                color(col_sharp)
+                cube([sharp_width, sharp_length, sharp_height]);
+                translate([0, 45, -6])
+                    key_lever(i, sharp_width);
+            }
+
+    }    
+}
+
+module keyboard() {
+
+    for(i=[0:5]) {
+           difference() {
+               nat_key(i);
+               sharp_key(i);
+           }
+           sharp_key(i);
+        
+   }
+   /*
+    for(i=[3:num_naturals-1]) {
         
         // Natural key
         translate([i * nat_width + 0.5 + kb_start_x, -kb_protrusion, wall_th + 1])
@@ -88,12 +128,8 @@ module keyboard() {
         note_in_octave = i % 7;
         has_sharp = (note_in_octave == 0 || note_in_octave == 1 || note_in_octave == 2 || note_in_octave == 4 || note_in_octave == 5);
         
-        if (has_sharp && i < num_naturals - 1) {
-            translate([i * nat_width + nat_width - sharp_width/2 + kb_start_x, -35, wall_th + 11])
-                color(col_sharp)
-                cube([sharp_width, sharp_length, 6]);
-        }
-    }
+
+    }*/
 }
 
 module internal_components() {
@@ -143,9 +179,7 @@ module internal_components() {
 
 // --- Assembly ---
 
-// Positioned near center 0,0,0 for easier viewing
-translate([-c_length/2, -c_width/2, 0]) {
-    clavichord_case();
-    keyboard();
-    internal_components();
-}
+
+//clavichord_case();
+keyboard();
+internal_components();
