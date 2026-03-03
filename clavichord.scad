@@ -57,8 +57,8 @@ module nat_key(i) {
         color(col_natural)
         union() {
             cube([nat_width - 1, kb_protrusion, nat_height]);
-            translate([0, kb_protrusion, 0])
-                key_lever(i, nat_width - 1);
+            translate([has_sharp(i - 1)  ? 10 : 0, kb_protrusion, 0])
+                key_lever(i, has_sharp(i) || has_sharp(i - 1) ? sharp_width : nat_width - 1);
         }    
 }
 
@@ -79,19 +79,20 @@ module key_lever(i, width) {
     }
 }
 
+octaves_sharps = [true, true, false, true, true, true, false];
+function has_sharp(i) = i > 1 && i < num_naturals -1 && octaves_sharps[(i+3) % 7];
+
 module sharp_key(i) {
     // Sharp key (Accidentals)
     // Note pattern for F major scale start: F(0), G(1), A(2), B(3), C(4), D(5), E(6)
     // Standard keyboard sharps are between: F-G, G-A, A-B, C-D, D-E
 
-    note_in_octave = (i-3) % 7;
-    has_sharp = i > 2 && (note_in_octave == 0 || note_in_octave == 1 || note_in_octave == 2 || note_in_octave == 4 || note_in_octave == 5);
-   if (has_sharp && i < num_naturals - 1) {
+   if (has_sharp(i)) {
         translate([i * nat_width + nat_width - sharp_width/2 + kb_start_x, -45, wall_th + 5])
             union() {
                 color(col_sharp)
                 cube([sharp_width, sharp_length, sharp_height]);
-                translate([0, 45, -6])
+                translate([0, 45, 0])
                     key_lever(i, sharp_width);
             }
 
@@ -100,13 +101,9 @@ module sharp_key(i) {
 
 module keyboard() {
 
-    for(i=[0:5]) {
-           difference() {
-               nat_key(i);
-               sharp_key(i);
-           }
-           sharp_key(i);
-        
+    for(i=[0:6]) {
+         nat_key(i);
+         sharp_key(i);        
    }
    /*
     for(i=[3:num_naturals-1]) {
