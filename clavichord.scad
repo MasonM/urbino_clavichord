@@ -43,67 +43,88 @@ module clavichord_case() {
         cube([c_length, c_width, c_height]);
         
         // Hollow interior
-        translate([wall_th, wall_th, wall_th])
+        translate([wall_th, wall_th, wall_th]) {
             cube([c_length - 2*wall_th, c_width - 2*wall_th, c_height]);
+        }
             
         // Keyboard cutout in the front wall
-        translate([kb_start_x, -1, -wall_th - 15])
-            cube([kb_length, wall_th + 2, c_height-45]);
+        translate([kb_start_x, -1, -wall_th - 15]) {
+            cube([kb_length, wall_th + 2, c_height-30]);
+        }
     }
+}
+
+module nat_key_top_3d(i) {
+    color(col_natural) linear_extrude(nat_height)
+        difference() {
+            translate([i * (nat_width + 0.5), -kb_protrusion, 1]) {
+                square([nat_width - 1, kb_protrusion]);
+            }
+            offset(delta=1) sharp_key_top_2d(i);
+            offset(delta=1) sharp_key_top_2d(i-1);
+        }
 }
 
 module nat_key(i) {
-    translate([i * (nat_width + 0.5) + kb_start_x, -kb_protrusion, wall_th + 1])
-        color(col_natural)
-        union() {
-            cube([nat_width - 1, kb_protrusion, nat_height]);
-            translate([has_sharp(i - 1)  ? 10 : 0, kb_protrusion, 0])
-                key_lever(i, has_sharp(i) || has_sharp(i - 1) ? sharp_width : nat_width - 1);
-        }    
+     union() {       
+        nat_key_top_3d(i);
+        translate([i * (nat_width + 0.5), 0, 0]) {
+            key_lever_3d(i, nat_width - 1);
+        }
+    }
 }
 
-module key_lever(i, width) {
+module key_lever_2d(i, width) {
     key_top_offset_x = i * 14;
-    color(col_natural)
-    linear_extrude(height = nat_height) {
-        polygon([
-           [0,0],
-           [0,38 + i * 7],
-           [-50 - key_top_offset_x,118],
-           [-50 - key_top_offset_x, c_width - wall_th - 10],
-           [-40 - key_top_offset_x, c_width - wall_th - 10],
-           [-40 - key_top_offset_x,118],
-           [width,43 + i * 7],
-           [width,0],
-        ]);
-    }
+    polygon([
+       [0,0],
+       [0,38 + i * 7],
+       [-50 - key_top_offset_x,118],
+       [-50 - key_top_offset_x, c_width - wall_th - 10],
+       [-40 - key_top_offset_x, c_width - wall_th - 10],
+       [-40 - key_top_offset_x,118],
+       [width,43 + i * 7],
+       [width,0],
+    ]);
+    
+}
+
+module key_lever_3d(i, width) {
+    color(col_natural) linear_extrude(nat_height) key_lever_2d(i, nat_width - 1);
 }
 
 octaves_sharps = [true, true, false, true, true, true, false];
 function has_sharp(i) = i > 1 && i < num_naturals -1 && octaves_sharps[(i+3) % 7];
 
+module sharp_key_top_2d(i) {
+   if (has_sharp(i)) {
+        translate([i * nat_width + nat_width - sharp_width/2, -45, 5])
+            square([sharp_width, sharp_length]);
+   }
+}
+
+module sharp_key_top_3d(i) {
+    color(col_sharp) linear_extrude(sharp_height) sharp_key_top_2d(i);
+}
+
 module sharp_key(i) {
     // Sharp key (Accidentals)
     // Note pattern for F major scale start: F(0), G(1), A(2), B(3), C(4), D(5), E(6)
     // Standard keyboard sharps are between: F-G, G-A, A-B, C-D, D-E
-
-   if (has_sharp(i)) {
-        translate([i * nat_width + nat_width - sharp_width/2 + kb_start_x, -45, wall_th + 5])
-            union() {
-                color(col_sharp)
-                cube([sharp_width, sharp_length, sharp_height]);
-                translate([0, 45, 0])
-                    key_lever(i, sharp_width);
-            }
-
-    }    
+    union() {
+        sharp_key_top_3d(i);
+        translate([i * nat_width + nat_width - sharp_width/2, 0, 5])
+            key_lever_3d(i, sharp_width);
+    } 
 }
 
 module keyboard() {
 
     for(i=[0:6]) {
-         nat_key(i);
-         sharp_key(i);        
+        translate([kb_start_x, 0, wall_th]) {
+            nat_key(i);
+            *sharp_key(i);
+        }
    }
    /*
     for(i=[3:num_naturals-1]) {
@@ -177,6 +198,6 @@ module internal_components() {
 // --- Assembly ---
 
 
-//clavichord_case();
+*clavichord_case();
 keyboard();
 internal_components();
