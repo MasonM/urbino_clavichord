@@ -57,11 +57,11 @@ module clavichord_case() {
 module nat_key_top_3d(i) {
     color(col_natural) linear_extrude(nat_height)
         difference() {
-            translate([i * (nat_width + 0.5), -kb_protrusion, 1]) {
+            translate([i * (nat_width + 0.5), -kb_protrusion, 0]) {
                 square([nat_width - 1, kb_protrusion]);
             }
-            offset(delta=1) sharp_key_top_2d(i);
-            offset(delta=1) sharp_key_top_2d(i-1);
+            offset(delta=1) sharp_key_2d(i);
+            offset(delta=1) sharp_key_2d(i-1);
         }
 }
 
@@ -80,8 +80,8 @@ module key_lever_2d(i, width) {
        [0,0],
        [0,38 + i * 7],
        [-50 - key_top_offset_x,118],
-       [-50 - key_top_offset_x, c_width - wall_th - 10],
-       [-40 - key_top_offset_x, c_width - wall_th - 10],
+       [-50 - key_top_offset_x, c_width - wall_th - 30],
+       [-40 - key_top_offset_x, c_width - wall_th - 30],
        [-40 - key_top_offset_x,118],
        [width,43 + i * 7],
        [width,0],
@@ -90,7 +90,7 @@ module key_lever_2d(i, width) {
 }
 
 module key_lever_3d(i, width) {
-    color(col_natural) linear_extrude(nat_height) key_lever_2d(i, nat_width - 1);
+    color(col_natural) linear_extrude(nat_height) key_lever_2d(i, width - 1);
 }
 
 octaves_sharps = [true, true, false, true, true, true, false];
@@ -113,9 +113,19 @@ module sharp_key(i) {
     // Standard keyboard sharps are between: F-G, G-A, A-B, C-D, D-E
     union() {
         sharp_key_top_3d(i);
-        translate([i * nat_width + nat_width - sharp_width/2, 0, 5])
+        translate([i * nat_width + nat_width - sharp_width/2, 0, 0])
             key_lever_3d(i, sharp_width);
     } 
+}
+
+module sharp_key_2d(i) {
+    if (has_sharp(i)) {   
+        union() {
+            sharp_key_top_2d(i);
+            translate([i * nat_width + nat_width - sharp_width/2, 0, 5])
+                key_lever_2d(i, sharp_width);
+        } 
+    }
 }
 
 module keyboard() {
