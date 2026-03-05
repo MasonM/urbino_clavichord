@@ -57,7 +57,7 @@ module clavichord_case() {
 module nat_key_top_3d(i) {
     color(col_natural) linear_extrude(nat_height)
         difference() {
-            translate([i * (nat_width + 0.5), -kb_protrusion, 0]) {
+            translate([i * nat_width, -kb_protrusion, 0]) {
                 square([nat_width - 1, kb_protrusion]);
             }
             offset(delta=1) sharp_key_2d(i);
@@ -68,8 +68,8 @@ module nat_key_top_3d(i) {
 module nat_key(i) {
      union() {       
         nat_key_top_3d(i);
-        translate([i * (nat_width + 0.5), 0, 0]) {
-            key_lever_3d(i, nat_width - 1);
+        translate([i * nat_width + (has_sharp(i-1) ? sharp_width/2 : 0), 0, 0]) {
+            key_lever_3d(i, nat_width - (has_sharp(i) ? sharp_width/2: 0) - (has_sharp(i-1) ? sharp_width/2 : 0));
         }
     }
 }
@@ -114,7 +114,7 @@ module sharp_key(i) {
     union() {
         sharp_key_top_3d(i);
         translate([i * nat_width + nat_width - sharp_width/2, 0, 0])
-            key_lever_3d(i, sharp_width);
+            if (has_sharp(i)) key_lever_3d(i, sharp_width);
     } 
 }
 
@@ -133,7 +133,7 @@ module keyboard() {
     for(i=[0:6]) {
         translate([kb_start_x, 0, wall_th]) {
             nat_key(i);
-            *sharp_key(i);
+            #sharp_key(i);
         }
    }
    /*
