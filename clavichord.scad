@@ -29,11 +29,18 @@ sharp_height = nat_height + 5;
 col_wood_dark = [0.35, 0.20, 0.10];
 col_wood_light = [0.80, 0.65, 0.40];
 col_wood_med = [0.55, 0.35, 0.15];
+col_key_lever = [0.9, 0.9, 0.9];
 col_natural = [0.90, 0.88, 0.80]; // Bone/boxwood finish
 col_sharp = [0.15, 0.15, 0.15];   // Dark tortoise shell / ebony
 col_brass = [0.85, 0.75, 0.30];
 col_string = [0.90, 0.90, 0.90];
 
+nat_index = [0, 1, 2, 2, 3, 4, 4, 5, 5, 6, 7, 8, 8, 9];
+key_lever_top_offset_x = [-50, -38, -26, -14, -2, 10, 40, 70, 80, 110, 140, 160];
+function is_sharp(i) = i > 0 && nat_index[i] == nat_index[i-1];
+function nat_offset_x(i) = nat_index[i] * nat_width;
+function cumulative_sum(vec) = [for (sum=vec[0], i=1; i<=len(vec); newsum=sum+vec[i], nexti=i+1, sum=newsum, i=nexti) sum];
+    
 // --- Modules ---
 
 module clavichord_case() {
@@ -54,57 +61,55 @@ module clavichord_case() {
     }
 }
 
-module nat_key_top_3d(i) {
-    color(col_natural) linear_extrude(nat_height)
-        difference() {
-            translate([i * nat_width, -kb_protrusion, 0]) {
-                square([nat_width - 1, kb_protrusion]);
-            }
-            offset(delta=1) sharp_key_2d(i);
-            offset(delta=1) sharp_key_2d(i-1);
-        }
+module nat_key_top(i) {
+    color(col_natural) 
+        translate([nat_index[i] * nat_width -1, -kb_protrusion, nat_height])
+            linear_extrude(2)
+                offset(delta=0)
+                    square([nat_width - 1, kb_protrusion]);
 }
 
 module nat_key(i) {
-     union() {       
-        nat_key_top_3d(i);
-        translate([i * nat_width + (has_sharp(i-1) ? sharp_width/2 : 0), 0, 0]) {
-            key_lever_3d(i, nat_width - (has_sharp(i) ? sharp_width/2: 0) - (has_sharp(i-1) ? sharp_width/2 : 0));
-        }
+     union() {
+        key_lever_3d(i);
+        nat_key_top(i);
     }
 }
 
-module key_lever_2d(i, width) {
-    key_top_offset_x = i * 14;
-    polygon([
-       [0,0],
-       [0,38 + i * 7],
-       [-50 - key_top_offset_x,118],
-       [-50 - key_top_offset_x, c_width - wall_th - 30],
-       [-40 - key_top_offset_x, c_width - wall_th - 30],
-       [-40 - key_top_offset_x,118],
-       [width,43 + i * 7],
-       [width,0],
-    ]);
-    
+module key_lever_2d(i) {
+    top = [
+        key_lever_top_offset_x[i],
+        c_width - wall_th - 30
+    ];
+    bottom = [
+        (nat_index[i] * nat_width) + (is_sharp(i) ? nat_width - sharp_width/2 : 0), 
+        -kb_protrusion + (is_sharp(i) ? 45 : 0)
+    ]; 
+    width = (is_sharp(i) ? sharp_width : nat_width) - 4;
+    difference() {
+        polygon([
+           bottom,
+           [bottom.x, 38 + i * 7],
+           [top.x, 118],
+           top,
+           [top.x + 10, top.y],
+           [top.x + 10, 118],
+           [bottom.x + width, 43 + i * 7],
+           [bottom.x + width, bottom.y],
+        ]);
+        if(is_sharp(i+1)) offset(delta=1) key_lever_2d(i+1);
+        if(is_sharp(i-1)) offset(delta=1) key_lever_2d(i-1);
+    }    
 }
 
-module key_lever_3d(i, width) {
-    color(col_natural) linear_extrude(nat_height) key_lever_2d(i, width - 1);
+module key_lever_3d(i) {
+    color(col_key_lever) linear_extrude(nat_height) key_lever_2d(i);
 }
 
-octaves_sharps = [true, true, false, true, true, true, false];
-function has_sharp(i) = i > 1 && i < num_naturals -1 && octaves_sharps[(i+3) % 7];
-
-module sharp_key_top_2d(i) {
-   if (has_sharp(i)) {
-        translate([i * nat_width + nat_width - sharp_width/2, -45, 5])
-            square([sharp_width, sharp_length]);
-   }
-}
-
-module sharp_key_top_3d(i) {
-    color(col_sharp) linear_extrude(sharp_height) sharp_key_top_2d(i);
+module sharp_key_top(i) {
+    color(col_sharp)
+        translate([nat_offset_x(i) + nat_width - sharp_width/2, -45, 5])
+            cube([sharp_width, sharp_length, sharp_height]);
 }
 
 module sharp_key(i) {
@@ -112,30 +117,17 @@ module sharp_key(i) {
     // Note pattern for F major scale start: F(0), G(1), A(2), B(3), C(4), D(5), E(6)
     // Standard keyboard sharps are between: F-G, G-A, A-B, C-D, D-E
     union() {
-        sharp_key_top_3d(i);
-        translate([i * nat_width + nat_width - sharp_width/2, 0, 0])
-            if (has_sharp(i)) key_lever_3d(i, sharp_width);
+        key_lever_3d(i);
+        sharp_key_top(i);
     } 
 }
 
-module sharp_key_2d(i) {
-    if (has_sharp(i)) {   
-        union() {
-            sharp_key_top_2d(i);
-            translate([i * nat_width + nat_width - sharp_width/2, 0, 5])
-                key_lever_2d(i, sharp_width);
-        } 
-    }
-}
-
 module keyboard() {
-
-    for(i=[0:6]) {
-        translate([kb_start_x, 0, wall_th]) {
-            nat_key(i);
-            #sharp_key(i);
-        }
-   }
+    translate([kb_start_x, 0, wall_th]) {
+       for(i=[0:len(nat_index)-1]) {        
+            if (is_sharp(i)) sharp_key(i); else nat_key(i);        
+       }
+    }
    /*
     for(i=[3:num_naturals-1]) {
         
@@ -208,6 +200,6 @@ module internal_components() {
 // --- Assembly ---
 
 
-*clavichord_case();
+#clavichord_case();
 keyboard();
 internal_components();
