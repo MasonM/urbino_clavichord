@@ -38,21 +38,103 @@ col_brass = [0.85, 0.75, 0.30];
 col_string = [0.90, 0.90, 0.90];
 
 key_lever_top_y = c_width - wall_th - 30;
-nat_index = [0, 1, 2, 2, 3, 4, 4, 5, 5, 6, 7, 8, 8, 9];
-tangents = [
-    [76, 50],
-    [88, 48],
-    [100, 46],
-    [112, 44],
-    [124, 42],
-    [136, 40],
-    [186, 40],
-    [226, 40],
-    [238, 40],
-    [278, 38],
-    [296, 38],
-    [316, 38],
-    [328, 36],
+right_edge = c_length - wall_th;
+nat_index = [
+    0, 1, 2, 2, 3,
+    4, 4, 5, 5, 6, 7, 8, 8, 9, 9, 10, 10, 11, 
+    12, 12, 13, 13, 14, 15, 15, 16, 16, 17, 17, 18,
+    19, 19, 20, 20, 21, 22, 22, 23, 23, 24, 24, 25,
+    26, 26, 27, 27, 28, 29,
+ ];
+slot_positions_right = [
+    938,    // F
+    927,    // G
+    916.5,  // A
+    902.5,  // Bb
+    888.5,  // B
+    875.5,  // c
+    836,    // c#
+    788,    // d
+    774,    // eb
+    731,    // e
+    699,    // f
+    665.5,  // f#
+    655,    // g
+    627,    // ab
+    593,    // a
+    582,    // bb
+    549,    // b
+    528.5,  // c1
+    506,    // c#1
+    595.5,  // d1
+    474,    // eb1
+    449.5,  // e1
+    437.5,  // f1
+    420.5,  // f#1
+    398,    // g1
+    383,    // abs
+    371,    // a
+    357.5,  // bb
+    342.5,  // b
+    328.5,  // c1
+    317.5,  // c#1
+    302.5,  // d1
+    291,    // eb1
+    280,    // e1
+    270.5,  // f1
+    262,    // f#2
+    251,    // g2
+    241.5,  // ab2
+    232,    // a2
+    226.5,  // bb2
+    217,    // b2
+    210.5,  // c3
+    203,    // c#3
+    199,    // d3
+    192.5,  // eb3
+    185,    // e3
+    180.5,  // f3
+];
+function slot_position(i) = right_edge - slot_positions_right[i];
+tangent_offset_y = [
+    50,
+    48,
+    46,
+    44,
+    42,
+    40,
+    40,
+    40,
+    40,
+    38,
+    38,
+    38,
+    36,
+    
+    36,
+    36,
+    36,
+    36,
+    36,
+    36,
+    36,
+    36,
+    36,
+    36,
+    36,
+    36,
+    36,
+    36,
+    36,
+    36,
+    36,
+    36,
+    36,
+    36,
+    36,
+    36,
+    36,
+    36,
 ];
 function is_sharp(i) = i > 0 && nat_index[i] == nat_index[i-1];
 function nat_offset_x(i) = kb_start_x + nat_index[i] * nat_width;
@@ -94,11 +176,10 @@ module nat_key(i) {
 }
 
 module key_lever_2d(i) {
-    if (tangents[i]) {
     top_width = 10;
     bottom_width = (is_sharp(i) ? sharp_width : nat_width) - 4;
     top = [
-        tangents[i].x - top_width/2,
+        slot_position(i) - top_width/2,
         key_lever_top_y
     ];
     bottom = [
@@ -109,16 +190,15 @@ module key_lever_2d(i) {
         polygon([
            bottom,
            [bottom.x, 38 + i * 7],
-           [top.x, key_lever_top_y - tangents[i].y - 10],
+           [top.x, key_lever_top_y - tangent_offset_y[i] - 10],
            top,
            [top.x + top_width, top.y],
-           [top.x + top_width, key_lever_top_y - tangents[i].y - 10],
+           [top.x + top_width, key_lever_top_y - tangent_offset_y[i] - 10],
            [bottom.x + bottom_width, 43 + i * 7],
            [bottom.x + bottom_width, bottom.y],
         ]);
         if(is_sharp(i+1)) offset(delta=1) key_lever_2d(i+1);
         if(is_sharp(i-1)) offset(delta=1) key_lever_2d(i-1);
-    }
     }
 }
 
@@ -143,8 +223,7 @@ module sharp_key(i) {
 }
 
 module tangent(i) {
-    if (tangents[i])
-    translate([tangents[i].x, key_lever_top_y - tangents[i].y, nat_height])
+    translate([slot_position(i), key_lever_top_y - tangent_offset_y[i], nat_height])
         color(col_brass)
         cube([1.5, 4, 25]);
 }
@@ -180,8 +259,32 @@ module keyboard() {
     }*/
 }
 
+module hitchpin_block() {
+    translate([wall_th, wall_th, 12])
+        color(col_wood_dark)
+        cube([hitchpin_th, c_width - 2*wall_th, 35]);
+}
+
+module wrestplank() {
+    translate([c_length - wall_th - 60, wall_th, 12])
+        color(col_wood_dark)
+        cube([60, c_width - 2*wall_th, 35]);
+}
+
+module rack() {
+    translate([wall_th + hitchpin_th, c_width - wall_th - rack_th, wall_th])
+        color(col_wood_dark)
+        cube([kb_length + 20, rack_th, 30]);
+}
+
+module soundboard() {
+    translate([kb_start_x + kb_length, wall_th, 40])
+        color(col_wood_light)
+        cube([c_length - wall_th - (kb_start_x + kb_length), c_width - 2*wall_th, 3]);
+}
+
 module bridge() {
-    translate([c_length - 100, wall_th + 80, 43])
+    translate([c_length - wall_th - 81, wall_th + 80, 43])
         rotate([90, 0, 90])
         color(col_wood_dark) 
         linear_extrude(6) {
@@ -197,30 +300,16 @@ module bridge() {
         }
 }
 
-module internal_components() {
-    // Soundboard (Right side spanning the gap)
-    translate([kb_start_x + kb_length, wall_th, 40])
-        color(col_wood_light)
-        cube([c_length - wall_th - (kb_start_x + kb_length), c_width - 2*wall_th, 3]);
-        
-    // Hitchpin cover block (Left side wall)
-    translate([wall_th, wall_th, 12])
-        color(col_wood_dark)
-        cube([hitchpin_th, c_width - 2*wall_th, 35]);
-        
-    // Wrestplank (Right side under tuning pins)
-    translate([c_length - wall_th - 60, wall_th, 12])
-        color(col_wood_dark)
-        cube([60, c_width - 2*wall_th, 35]);
-        
-    // Rack (Back wall guiding the keys)
-    translate([wall_th + hitchpin_th, c_width - wall_th - rack_th, wall_th])
-        color(col_wood_dark)
-        cube([kb_length + 20, rack_th, 30]);
+module strings() {
+    for(i=[0:34]) {
+        translate([wall_th + 15, c_width - wall_th - 20 - (i*2), 49])
+            rotate([0, 90, 0])
+            color(col_string)
+            cylinder(h=c_length - 2*wall_th - 50, r=0.4, $fn=6);
+    }    
+}
 
-    bridge();
-        
-    // Tuning Pins (36 pins mapped on the right as noted in text)
+module tuning_pins() {
     for(x=[10:15:50]) {
         for(y=[15:15:160]) {
             translate([c_length - wall_th - 60 + x, wall_th + y, 47])
@@ -228,14 +317,16 @@ module internal_components() {
                 cylinder(h=15, r=1.5, $fn=12);
         }
     }
-   
-    // Strings (Double-strung representation)
-    for(i=[0:34]) {
-        translate([wall_th + 15, c_width - wall_th - 20 - (i*2), 49])
-            rotate([0, 90, 0])
-            color(col_string)
-            *cylinder(h=c_length - 2*wall_th - 50, r=0.4, $fn=6);
-    }
+}
+
+module internal_components() {
+    soundboard();
+    hitchpin_block();
+    wrestplank();
+    rack();
+    bridge();
+    tuning_pins();
+    strings();
 }
 
 // --- Assembly ---
