@@ -37,15 +37,15 @@ col_sharp = [0.15, 0.15, 0.15];   // Dark tortoise shell / ebony
 col_brass = [0.85, 0.75, 0.30];
 col_string = [0.90, 0.90, 0.90];
 
-key_lever_top_y = c_width - wall_th - 30;
+key_lever_top_y = c_width - wall_th - hitchpin_th - 5;
 right_edge = c_length - wall_th;
 nat_index = [
     0, 1, 2, 2, 3,
-    4, 4, 5, 5, 6, 7, 8, 8, 9, 9, 10, 10, 11, 
-    12, 12, 13, 13, 14, 15, 15, 16, 16, 17, 17, 18,
-    19, 19, 20, 20, 21, 22, 22, 23, 23, 24, 24, 25,
-    26, 26, 27, 27, 28, 29,
- ];
+    4, 4, 5, 5, 6, 7, 7, 8, 8, 9, 9, 10, 
+    11, 11, 12, 12, 13, 14, 14, 15, 15, 16, 16, 17,
+    18, 18, 19, 19, 20, 21, 21, 22, 22, 23, 23, 24,
+    25, 25, 26, 26, 27, 28,
+];
 slot_positions_right = [
     938,    // F
     927,    // G
@@ -66,7 +66,7 @@ slot_positions_right = [
     549,    // b
     528.5,  // c1
     506,    // c#1
-    595.5,  // d1
+    495.5,  // d1
     474,    // eb1
     449.5,  // e1
     437.5,  // f1
@@ -92,9 +92,11 @@ slot_positions_right = [
     203,    // c#3
     199,    // d3
     192.5,  // eb3
-    185,    // e3
+    186,    // e3
     180.5,  // f3
 ];
+echo("slot=", len(slot_positions_right));
+echo("nat=", len(nat_index));
 function slot_position(i) = right_edge - slot_positions_right[i];
 tangent_offset_y = [
     50,
@@ -186,14 +188,15 @@ module key_lever_2d(i) {
         nat_offset_x(i) + (is_sharp(i) ? nat_width - sharp_width/2 : 0), 
         -kb_protrusion + (is_sharp(i) ? 45 : 0)
     ];
+    offset_y = key_lever_top_y - (tangent_offset_y[i] ? tangent_offset_y[i] : 36) - 10;
     difference() {
         polygon([
            bottom,
-           [bottom.x, 38 + i * 7],
-           [top.x, key_lever_top_y - tangent_offset_y[i] - 10],
+           [bottom.x, 38 + ((i % 12) * 7)],
+           [top.x, offset_y],
            top,
            [top.x + top_width, top.y],
-           [top.x + top_width, key_lever_top_y - tangent_offset_y[i] - 10],
+           [top.x + top_width, offset_y],
            [bottom.x + bottom_width, 43 + i * 7],
            [bottom.x + bottom_width, bottom.y],
         ]);
@@ -223,7 +226,7 @@ module sharp_key(i) {
 }
 
 module tangent(i) {
-    translate([slot_position(i), key_lever_top_y - tangent_offset_y[i], nat_height])
+    translate([slot_position(i), key_lever_top_y - (tangent_offset_y[i] ? tangent_offset_y[i] : 36), nat_height])
         color(col_brass)
         cube([1.5, 4, 25]);
 }
@@ -235,28 +238,6 @@ module keyboard() {
             tangent(i);
        }
     }
-   /*
-    for(i=[3:num_naturals-1]) {
-        
-        // Natural key
-        translate([i * nat_width + 0.5 + kb_start_x, -kb_protrusion, wall_th + 1])
-            color(col_natural)
-            cube([nat_width - 1, key_len, nat_height]);
-            
-        // Tangent (brass blade at the back of the key to strike strings)
-        tangent_y = 150 + (i % 12) * 2; // Spread out diagonally to strike different strings
-        translate([i * nat_width + nat_width/2 + kb_start_x, tangent_y, wall_th + 11])
-            color(col_brass)
-            cube([1.5, 4, 25]);
-            
-        // Sharp key (Accidentals)
-        // Note pattern for F major scale start: F(0), G(1), A(2), B(3), C(4), D(5), E(6)
-        // Standard keyboard sharps are between: F-G, G-A, A-B, C-D, D-E
-        note_in_octave = i % 7;
-        has_sharp = (note_in_octave == 0 || note_in_octave == 1 || note_in_octave == 2 || note_in_octave == 4 || note_in_octave == 5);
-        
-
-    }*/
 }
 
 module hitchpin_block() {
@@ -326,11 +307,10 @@ module internal_components() {
     rack();
     bridge();
     tuning_pins();
-    strings();
+    *strings();
 }
 
 // --- Assembly ---
-
 
 clavichord_case();
 keyboard();
