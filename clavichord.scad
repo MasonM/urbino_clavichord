@@ -39,13 +39,10 @@ col_string = [0.90, 0.90, 0.90];
 
 key_lever_top_y = c_width - wall_th - hitchpin_th - 5;
 right_edge = c_length - wall_th;
-nat_index = [
-    0, 1, 2, 2, 3,
-    4, 4, 5, 5, 6, 7, 7, 8, 8, 9, 9, 10, 
-    11, 11, 12, 12, 13, 14, 14, 15, 15, 16, 16, 17,
-    18, 18, 19, 19, 20, 21, 21, 22, 22, 23, 23, 24,
-    25, 25, 26, 26, 27, 28,
-];
+num_keys = 47;
+// https://oeis.org/A366701
+function nat_index(i) = i > 1 ? (round((i + 8) * log(3/2)/log(2)) - 4) : i;
+
 slot_positions_right = [
     938,    // F
     927,    // G
@@ -95,8 +92,7 @@ slot_positions_right = [
     186,    // e3
     180.5,  // f3
 ];
-echo("slot=", len(slot_positions_right));
-echo("nat=", len(nat_index));
+
 function slot_position(i) = right_edge - slot_positions_right[i];
 tangent_offset_y = [
     50,
@@ -138,9 +134,8 @@ tangent_offset_y = [
     36,
     36,
 ];
-function is_sharp(i) = i > 0 && nat_index[i] == nat_index[i-1];
-function nat_offset_x(i) = kb_start_x + nat_index[i] * nat_width;
-function cumulative_sum(vec) = [for (sum=vec[0], i=1; i<=len(vec); newsum=sum+vec[i], nexti=i+1, sum=newsum, i=nexti) sum];
+function is_sharp(i) = i > 0 && i < num_keys -1 && nat_index(i) == nat_index(i-1);
+function nat_offset_x(i) = kb_start_x + nat_index(i) * nat_width;
     
 // --- Modules ---
 
@@ -233,7 +228,7 @@ module tangent(i) {
 
 module keyboard() {    
     translate([0, 0, wall_th]) {
-       for(i=[0:len(nat_index) - 1]) {   
+       for(i=[0:num_keys - 1]) {   
             if (is_sharp(i)) sharp_key(i); else nat_key(i);
             tangent(i);
        }
