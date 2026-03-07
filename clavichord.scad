@@ -14,6 +14,7 @@ c_width = 216;
 c_height = 82;
 wall_th = 12;
 rack_th = 12;
+rack_height = 30;
 hitchpin_th = 12;
 
 // Keyboard Dimensions
@@ -37,9 +38,11 @@ col_sharp = [0.15, 0.15, 0.15];   // Dark tortoise shell / ebony
 col_brass = [0.85, 0.75, 0.30];
 col_string = [0.90, 0.90, 0.90];
 
+bridge_width = 98;
 key_lever_top_y = c_width - wall_th - hitchpin_th - 5;
 right_edge = c_length - wall_th;
 num_keys = 47;
+num_strings = 34;
 // https://oeis.org/A366701
 function nat_index(i) = i > 1 ? (round((i + 8) * log(3/2)/log(2)) - 4) : i;
 
@@ -95,19 +98,19 @@ slot_positions_right = [
 
 function slot_position(i) = right_edge - slot_positions_right[i];
 tangent_offset_y = [
+    60,
+    58,
+    56,
+    54,
+    52,
+    50,
+    50,
+    50,
     50,
     48,
+    48,
+    48,
     46,
-    44,
-    42,
-    40,
-    40,
-    40,
-    40,
-    38,
-    38,
-    38,
-    36,
     
     36,
     36,
@@ -151,8 +154,8 @@ module clavichord_case() {
         }
             
         // Keyboard cutout in the front wall
-        translate([kb_start_x, -1, -wall_th - 15]) {
-            cube([kb_length, wall_th + 2, c_height-30]);
+        translate([kb_start_x, -1, c_height-nat_height-16]) {
+            cube([kb_length, wall_th + 2, 12]);
         }
     }
 }
@@ -223,11 +226,11 @@ module sharp_key(i) {
 module tangent(i) {
     translate([slot_position(i), key_lever_top_y - (tangent_offset_y[i] ? tangent_offset_y[i] : 36), nat_height])
         color(col_brass)
-        cube([1.5, 4, 25]);
+        cube([1.5, 4, 15]);
 }
 
 module keyboard() {    
-    translate([0, 0, wall_th]) {
+    translate([0, 0, c_height-nat_height-16]) {
        for(i=[0:num_keys - 1]) {   
             if (is_sharp(i)) sharp_key(i); else nat_key(i);
             tangent(i);
@@ -248,24 +251,24 @@ module wrestplank() {
 }
 
 module rack() {
-    translate([wall_th + hitchpin_th, c_width - wall_th - rack_th, wall_th])
+    translate([wall_th + hitchpin_th, c_width - wall_th - rack_th, c_height - rack_height - 12])
         color(col_wood_dark)
-        cube([kb_length + 20, rack_th, 30]);
+        cube([kb_length + 20, rack_th, rack_height]);
 }
 
 module soundboard() {
-    translate([kb_start_x + kb_length, wall_th, 40])
+    translate([kb_start_x + kb_length, wall_th, 55])
         color(col_wood_light)
         cube([c_length - wall_th - (kb_start_x + kb_length), c_width - 2*wall_th, 3]);
 }
 
 module bridge() {
-    translate([c_length - wall_th - 81, wall_th + 80, 43])
+    translate([c_length - wall_th - 81, c_width - wall_th - 95, 58])
         rotate([90, 0, 90])
         color(col_wood_dark) 
         linear_extrude(6) {
             difference() {
-                square([98, 22]);
+                square([bridge_width, 22]);
                 translate([-12, 5, 0]) circle(22);
                 translate([30, 0, 0]) circle(9);
                 translate([45, 7, 0]) circle(10);
@@ -277,8 +280,8 @@ module bridge() {
 }
 
 module strings() {
-    for(i=[0:34]) {
-        translate([wall_th + 15, c_width - wall_th - 20 - (i*2), 49])
+    for(i=[0:num_strings]) {
+        translate([wall_th + 15, c_width - wall_th - rack_th - (i*2), 80])
             rotate([0, 90, 0])
             color(col_string)
             cylinder(h=c_length - 2*wall_th - 50, r=0.4, $fn=6);
@@ -302,7 +305,7 @@ module internal_components() {
     rack();
     bridge();
     tuning_pins();
-    *strings();
+    strings();
 }
 
 // --- Assembly ---
