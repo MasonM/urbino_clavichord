@@ -105,16 +105,28 @@ col_string = [0.90, 0.90, 0.90];
 
 // -- Helper functions ---
 
-function string_offset_y(string_idx) = key_lever_top_y - 2 - (string_idx*1.3) - floor(string_idx/4) * 3 - (string_idx > 1 ? 3 : 0);
-function tuning_pin_offset_x(string_idx) = c_length - wall_th - 20 -(string_idx%4)*2;
+// Return y position for given string
+function string_y(string_idx) = key_lever_top_y - 2 - (string_idx*1.3) - floor(string_idx/4) * 3 - (string_idx > 1 ? 3 : 0);
 
+// Return x position for the tuning pin connected to the given string
+function tuning_pin_x(string_idx) = c_length - wall_th - 20 -(string_idx%4)*2;
+
+// Return string_idx of the first string that the tangent for the given key should strike.
 // https://oeis.org/A057356
 function key_string_index(key_idx) = num_strings - 1 - 2*(key_idx < 5 ? key_idx : floor(2*(key_idx-1)/7) + 4);
+
+// Return index of the closest (to the left) natural key for the given key
 // https://oeis.org/A366701
 function nat_index(key_idx) = key_idx > 1 ? (round((key_idx + 8) * log(3/2)/log(2)) - 4) : key_idx;
-function slot_position(key_idx) = right_edge - slot_positions_right[key_idx];
+
+// Return x position of slot for given key
+function slot_x(key_idx) = right_edge - slot_positions_right[key_idx];
+
+// Return true if given key is a sharp, false if not
 function is_sharp(key_idx) = key_idx > 0 && key_idx < num_keys-1 && nat_index(key_idx) == nat_index(key_idx-1);
-function nat_offset_x(key_idx) = kb_start.x + nat_index(key_idx) * nat_width;
+
+// Return x position for closest natural key for the given key
+function nat_x(key_idx) = kb_start.x + nat_index(key_idx) * nat_width;
 
 // Debugging: dump out values of each function for every key/string
 module debug() {
@@ -122,16 +134,16 @@ module debug() {
         echo(key_idx=key_idx,
             nat_index=nat_index(key_idx),
             is_sharp=is_sharp(key_idx),
-            slot_position=slot_position(key_idx),
+            slot_x=slot_x(key_idx),
             key_string_index=key_string_index(key_idx),
-            key_string_offset=string_offset_y(key_string_index(key_idx))
+            key_string_y=string_y(key_string_index(key_idx))
         );
     }
 
     for (string_idx=[0:num_strings-1]) {
         echo(string_idx=string_idx,
-            string_offset_y=string_offset_y(string_idx),
-            tuning_pin_offset_x=tuning_pin_offset_x(string_idx)
+            string_y=string_y(string_idx),
+            tuning_pin_x=tuning_pin_x(string_idx)
         );
     }
 }
@@ -158,7 +170,7 @@ module clavichord_case() {
 
 module hitchpins() {
     for(string_idx=[0:num_strings-1])
-        translate([wall_th+5, string_offset_y(string_idx), c_height - 10])
+        translate([wall_th+5, string_y(string_idx), c_height - 10])
             color(col_brass)
             cylinder(h=5, r=1, $fn=12);
 }
@@ -227,10 +239,10 @@ module bridge_taper() {
 
 module strings() {
     for(string_idx=[0:num_strings-1])
-        translate([wall_th + 5, string_offset_y(string_idx), 76])
+        translate([wall_th + 5, string_y(string_idx), 76])
             rotate([0, 90, 0])
             color(col_string)
-            cylinder(h=tuning_pin_offset_x(string_idx) - wall_th - 5, r=0.4, $fn=10);
+            cylinder(h=tuning_pin_x(string_idx) - wall_th - 5, r=0.4, $fn=10);
 }
 
 
@@ -242,7 +254,7 @@ module wrestplank() {
 
 module tuning_pins() {
     for(string_idx=[0:num_tuning_pins-1])
-        translate([tuning_pin_offset_x(string_idx), string_offset_y(string_idx), 27 + wrestplank_height])
+        translate([tuning_pin_x(string_idx), string_y(string_idx), 27 + wrestplank_height])
             color(col_brass)
             cylinder(h=15, r=1, $fn=12);
 }
@@ -251,28 +263,28 @@ module key_lever_2d(key_idx) {
     top_width = 10;
     bottom_width = (is_sharp(key_idx) ? sharp_width : nat_width) - 4;
     top = [
-        slot_position(key_idx) - top_width/2,
+        slot_x(key_idx) - top_width/2,
         key_lever_top_y
     ];
     bottom = [
-        nat_offset_x(key_idx) + (is_sharp(key_idx) ? nat_width - sharp_width/2 : 0),
+        nat_x(key_idx) + (is_sharp(key_idx) ? nat_width - sharp_width/2 : 0),
         kb_start.y + (is_sharp(key_idx) ? 45 : 0)
     ];
-    offset_y = string_offset_y(key_string_index(key_idx));
-    first_bend_offset_y = 38 + key_idx * 7;
+    string_y = string_y(key_string_index(key_idx));
+    first_bend_y = 38 + key_idx * 7;
     difference() {
         polygon([
            // Bottom to first bend
            bottom,
-           [bottom.x, first_bend_offset_y],
+           [bottom.x, first_bend_y],
            // Second bend to top
-           [top.x, offset_y],
+           [top.x, string_y],
            top,
            // Top to second bend
            [top.x + top_width, top.y],
-           [top.x + top_width, offset_y],
+           [top.x + top_width, string_y],
            // Second bend to first bend
-           [bottom.x + bottom_width, first_bend_offset_y + 6],
+           [bottom.x + bottom_width, first_bend_y + 6],
            [bottom.x + bottom_width, bottom.y],
         ]);
         if(is_sharp(key_idx+1)) offset(delta=1) key_lever_2d(key_idx+1);
@@ -284,13 +296,13 @@ module key_lever_3d(key_idx) {
     color(col_key_lever) {
         linear_extrude(nat_height) key_lever_2d(key_idx);
         // Small extrusion to fit in slot (is this right?)
-        translate([slot_position(key_idx), key_lever_top_y, 2]) cube([1, 7, 5]);
+        translate([slot_x(key_idx), key_lever_top_y, 2]) cube([1, 7, 5]);
     }
     tangent(key_idx);
 }
 
 module natural_key_top(key_idx) {
-    translate([nat_offset_x(key_idx) - 1, kb_start.y - 1, nat_height])
+    translate([nat_x(key_idx) - 1, kb_start.y - 1, nat_height])
         color(col_natural)
         linear_extrude(2)
             square([nat_width - 1, -kb_start.y + 1]);
@@ -302,7 +314,7 @@ module natural_key(key_idx) {
 }
 
 module sharp_key_top(key_idx) {
-    translate([nat_offset_x(key_idx) + nat_width - sharp_width/2, -45, 5])
+    translate([nat_x(key_idx) + nat_width - sharp_width/2, -45, 5])
         color(col_sharp)
         cube([sharp_width, sharp_length, sharp_height]);
 }
@@ -316,7 +328,7 @@ module sharp_key(key_idx) {
 }
 
 module tangent(key_idx) {
-    translate([slot_position(key_idx), string_offset_y(key_string_index(key_idx)) - 1, nat_height])
+    translate([slot_x(key_idx), string_y(key_string_index(key_idx)) - 1, nat_height])
         color(col_brass)
         cube([1.5, 3, tangent_height]);
 }
