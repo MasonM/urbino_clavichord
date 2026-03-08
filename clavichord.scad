@@ -32,12 +32,22 @@ right_edge = c_length - wall_th;
 rack_th = 13;
 // Rack height
 rack_height = 30;
+// Rack tongue width
+rack_tongue_width = 1;
+// Rack tongue depth
+rack_tongue_depth = 7;
+//Rack tongue height
+rack_tongue_height = 5;
 // Wrestplank height
-wrestplank_height = 35;
+wrestplank_height = 40;
 // Hitchpin block thickness
 hitchpin_block_th = 12;
 // Hitchpin block height
 hitchpin_block_height = 35;
+// Hitchpin height
+hitchpin_height = 5;
+// Hitchpin radius
+hitchpin_radius = 1;
 // Bridge width
 bridge_width = 98;
 // Bridge height
@@ -98,6 +108,10 @@ slot_positions_right = [
 ];
 // Slot width
 slot_width = 1.5;
+// Tuning pin height
+tuning_pin_height = 12;
+// Tuning pin radius
+tuning_pin_radius = 1;
 
 /* [Keyboard Dimensions (mm-R)] */
 // Natural key width
@@ -114,6 +128,10 @@ sharp_depth = 41.2;
 sharp_height = 15;
 kb_start = [122, -nat_depth, c_height - nat_height - 16];
 kb_length = c_length - kb_start.x - 149;
+// Tangent width
+tangent_width = 1.5;
+// Tangent depth
+tangent_depth = 3;
 // Tangent height
 tangent_height = 8;
 key_lever_top_y = c_width - wall_th - hitchpin_block_th - 2;
@@ -204,7 +222,7 @@ module hitchpins() {
     for(string_idx=[0:num_strings-1])
         translate([wall_th+5, string_y(string_idx), c_height - 10])
             color(col_brass)
-            cylinder(h=5, r=1, $fn=12);
+            cylinder(h=hitchpin_height, r=hitchpin_radius);
 }
 
 module hitchpin_block() {
@@ -288,7 +306,7 @@ module tuning_pins() {
     for(string_idx=[0:num_tuning_pins-1])
         translate([tuning_pin_x(string_idx), string_y(string_idx), 27 + wrestplank_height])
             color(col_brass)
-            cylinder(h=15, r=1, $fn=12);
+            cylinder(h=tuning_pin_height, r=tuning_pin_radius);
 }
 
 module key_lever_2d(key_idx) {
@@ -302,7 +320,7 @@ module key_lever_2d(key_idx) {
         nat_x(key_idx) + (is_sharp(key_idx) ? nat_width - sharp_width/2 : 0),
         kb_start.y + (is_sharp(key_idx) ? 45 : 0)
     ];
-    second_bend_y = string_y(key_string_idx(key_idx)) - 5;
+    second_bend_y = string_y(key_string_idx(key_idx)) - 10;
     first_bend_y = wall_th + 10 + (key_idx < 9 ? key_idx * 10 : max(70 - ((key_idx-10)*5), 0));
 
     difference() {
@@ -328,10 +346,14 @@ module key_lever_2d(key_idx) {
 module key_lever_3d(key_idx) {
     color(col_key_lever) {
         linear_extrude(nat_height) key_lever_2d(key_idx);
-        // Small extrusion to fit in slot (is this right?)
-        translate([slot_x(key_idx), key_lever_top_y, 2]) cube([1, 7, 5]);
+        rack_tongue(key_idx);
     }
     tangent(key_idx);
+}
+
+module rack_tongue(key_idx) {
+    translate([slot_x(key_idx), key_lever_top_y, 2])
+        cube([rack_tongue_width, rack_tongue_depth, rack_tongue_height]);
 }
 
 module natural_key_top(key_idx) {
@@ -360,7 +382,7 @@ module sharp_key(key_idx) {
 module tangent(key_idx) {
     translate([slot_x(key_idx), string_y(key_string_idx(key_idx)) - 1, nat_height])
         color(col_brass)
-        cube([1.5, 3, tangent_height]);
+        cube([tangent_width, tangent_depth, tangent_height]);
 }
 
 module keyboard() {
