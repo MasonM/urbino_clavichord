@@ -150,12 +150,16 @@ module key_lever_2d(i) {
     mid_offset_y = i * 7;
     difference() {
         polygon([
+           // Bottom to first bend
            bottom,
            [bottom.x, 38 + mid_offset_y],
+           // Second bend to top
            [top.x, offset_y],
            top,
+           // Top to second bend
            [top.x + top_width, top.y],
            [top.x + top_width, offset_y],
+           // Second bend to first bend
            [bottom.x + bottom_width, 43 + mid_offset_y],
            [bottom.x + bottom_width, bottom.y],
         ]);
@@ -165,7 +169,11 @@ module key_lever_2d(i) {
 }
 
 module key_lever_3d(i) {
-    color(col_key_lever) linear_extrude(nat_height) key_lever_2d(i);
+    color(col_key_lever) {
+        linear_extrude(nat_height) key_lever_2d(i);
+        // Small extrusion to fit in slot (is this right?)
+        translate([slot_position(i), key_lever_top_y, 2]) cube([1, 7, 5]);
+    }
     tangent(i);
 }
 
