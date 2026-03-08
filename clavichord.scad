@@ -2,13 +2,15 @@
  * 3D model of the clavichord depicted in the 1479 intarsia from the Studiolo of Ducal Palace at Urbino.
  * Based on dimensions from "The Urbino Clavichord Revisited" (Pierre Verbeek).
  *
+ * © 2026 by Mason Malone. Licensed under CC BY 4.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/4.0/ 
+ *
  * All dimensions are in millimeters (mm).
  * Render with OpenSCAD (F5 for preview, F6 to render).
  */
 
 // --- Variables & Dimensions ---
 
-/* [Number of keys/strings/etc] */
+/* [Number of keys/strings/pins] */
 // Number of keys
 num_keys = 47;
 // Number of strings
@@ -32,12 +34,6 @@ right_edge = c_length - wall_th;
 rack_th = 13;
 // Rack height
 rack_height = 30;
-// Rack tongue width
-rack_tongue_width = 1;
-// Rack tongue depth
-rack_tongue_depth = 7;
-//Rack tongue height
-rack_tongue_height = 5;
 // Wrestplank width
 wrestplank_width = 30;
 // Wrestplank height
@@ -146,7 +142,13 @@ tangent_width = 1.5;
 tangent_depth = 3;
 // Tangent height
 tangent_height = 8;
-key_lever_top_y = c_width - wall_th - hitchpin_block_th - 2;
+// Rack tongue width
+rack_tongue_width = 1;
+// Rack tongue depth
+rack_tongue_depth = 7;
+// Rack tongue height
+rack_tongue_height = 5;
+key_lever_top_y = c_width - wall_th - rack_th - 1;
 
 /* [Colors (RGB)] */
 // Dark wood
@@ -165,6 +167,10 @@ col_sharp = [0.15, 0.15, 0.15];
 col_brass = [0.85, 0.75, 0.30];
 // String
 col_string = [0.90, 0.90, 0.90];
+
+/* [Advanced] */
+$fn = 16;
+debug_mode = false;
 
 // -- Helper functions ---
 
@@ -192,7 +198,7 @@ function is_sharp(key_idx) = key_idx > 0 && key_idx < num_keys-1 && nat_idx(key_
 function nat_x(key_idx) = kb_start.x + nat_idx(key_idx) * nat_width;
 
 // Debugging: dump out values of each function for every key/string
-module debug() {
+if (debug_mode) {
     for (key_idx=[0:num_keys-1]) {
         echo(key_idx=key_idx,
             nat_idx=nat_idx(key_idx),
@@ -210,7 +216,6 @@ module debug() {
         );
     }
 }
-//debug();
 
 // --- Modules ---
 
@@ -304,7 +309,7 @@ module strings() {
         translate([wall_th + 5, string_y(string_idx), 76])
             rotate([0, 90, 0])
             color(col_string)
-            cylinder(h=tuning_pin_x(string_idx) - wall_th - 5, r=string_radius, $fn=10);
+            cylinder(h=tuning_pin_x(string_idx) - wall_th - 5, r=string_radius);
 }
 
 
@@ -325,6 +330,11 @@ module tangent(key_idx) {
     translate([slot_x(key_idx), string_y(key_string_idx(key_idx)) - 1, nat_height])
         color(col_brass)
         cube([tangent_width, tangent_depth, tangent_height]);
+}
+
+module rack_tongue(key_idx) {
+    translate([slot_x(key_idx), key_lever_top_y, 2])
+        cube([rack_tongue_width, rack_tongue_depth, rack_tongue_height]);
 }
 
 // 2d polygon for the key lever, which will be extruded.
@@ -371,11 +381,6 @@ module key_lever_3d(key_idx) {
         rack_tongue(key_idx);
     }
     tangent(key_idx);
-}
-
-module rack_tongue(key_idx) {
-    translate([slot_x(key_idx), key_lever_top_y, 2])
-        cube([rack_tongue_width, rack_tongue_depth, rack_tongue_height]);
 }
 
 module natural_key_top(key_idx) {
