@@ -8,27 +8,45 @@
 
 // --- Variables & Dimensions ---
 
+/* [Number of keys/strings/etc] */
+// Number of keys
 num_keys = 47;
+// Number of strings
 num_strings = 34;
+// Number of tuning pins
 num_tuning_pins = 36;
 
-// Case Dimensions (mm-R)
+/* [Case Dimensions (mm-R)] */
+// Case length
 c_length = 1005;
+// Case width
 c_width = 216;
+// Case height
 c_height = 82;
+// Wall thickness
 wall_th = 12;
 right_edge = c_length - wall_th;
 
-// Internal Component Dimensions
+/* [Internal Component Dimensions (mm-R)] */
+// Rack thickness
 rack_th = 13;
+// Rack height
 rack_height = 30;
+// Wrestplank height
 wrestplank_height = 35;
+// Hitchpin block thickness
 hitchpin_block_th = 12;
+// Hitchpin block height
 hitchpin_block_height = 35;
-bridge_length = 98;
+// Bridge width
+bridge_width = 98;
+// Bridge height
 bridge_height = 22;
-bridge_top_width = 1;
-bridge_bottom_width = 15;
+// Bridge top depth
+bridge_top_depth = 1;
+// Bridge bottom depth
+bridge_bottom_depth = 15;
+// Slot positions from right edge of case
 slot_positions_right = [
     938,    // F
     927,    // G
@@ -78,29 +96,44 @@ slot_positions_right = [
     186,    // e3
     180.5,  // f3
 ];
+// Slot width
 slot_width = 1.5;
 
-// Keyboard Dimensions
+/* [Keyboard Dimensions (mm-R)] */
+// Natural key width
 nat_width = 25.3;
+// Natural key depth
+nat_depth = 81.5;
+// Natural key height
 nat_height = 10;
-sharp_width = 14.0;
-sharp_length = 45;
-sharp_height = nat_height + 5;
-kb_protrusion = 81.5;  // Projection length of naturals outside the case
-kb_start = [122, -kb_protrusion, c_height - nat_height - 16];
+// Sharp key width
+sharp_width = 14.3;
+// Sharp key depth
+sharp_depth = 41.2;
+// Sharp key height
+sharp_height = 15;
+kb_start = [122, -nat_depth, c_height - nat_height - 16];
 kb_length = c_length - kb_start.x - 149;
+// Tangent height
 tangent_height = 8;
 key_lever_top_y = c_width - wall_th - hitchpin_block_th - 2;
 
-// --- Colors ---
-
+/* [Colors] */
+// Dark wood
 col_wood_dark = [0.35, 0.20, 0.10];
+// Light wood
 col_wood_light = [0.80, 0.65, 0.40];
+// Medium wood
 col_wood_med = [0.55, 0.35, 0.15];
+// Key lever
 col_key_lever = [0.9, 0.9, 0.9];
+// Natural key top
 col_natural = [0.90, 0.88, 0.80]; // Bone/boxwood finish
+// Sharp key top
 col_sharp = [0.15, 0.15, 0.15];   // Dark tortoise shell / ebony
+// Brass
 col_brass = [0.85, 0.75, 0.30];
+// String
 col_string = [0.90, 0.90, 0.90];
 
 // -- Helper functions ---
@@ -215,7 +248,7 @@ module bridge() {
 
 module bridge_2d() {
     difference() {
-        square([bridge_length, bridge_height]);
+        square([bridge_width, bridge_height]);
         translate([-12, 5, 0]) circle(bridge_height);
         translate([30, 0, 0]) circle(9);
         translate([45, 7, 0]) circle(10);
@@ -226,14 +259,14 @@ module bridge_2d() {
 
 // Long trapezoid to intersect with the bridge so it tapers to top
 module bridge_taper() {
-    translate([c_length/2, bridge_height, bridge_bottom_width/2])
+    translate([c_length/2, bridge_height, bridge_bottom_depth/2])
     rotate([180, 90, 0])
     linear_extrude(c_length)
         polygon([
-            [-bridge_top_width/2, 0],
-            [-bridge_bottom_width/2, bridge_height+1],
-            [bridge_bottom_width/2, bridge_height+1],
-            [bridge_top_width/2, 0],
+            [-bridge_top_depth/2, 0],
+            [-bridge_bottom_depth/2, bridge_height+1],
+            [bridge_bottom_depth/2, bridge_height+1],
+            [bridge_top_depth/2, 0],
         ]);
 }
 
@@ -272,6 +305,9 @@ module key_lever_2d(key_idx) {
     ];
     string_y = string_y(key_string_idx(key_idx));
     first_bend_y = 38 + key_idx * 7;
+    if (key_idx > 11 && key_idx < 26) {
+        //first_bend_y = 38
+    }
     difference() {
         polygon([
            // Bottom to first bend
@@ -314,15 +350,12 @@ module natural_key(key_idx) {
 }
 
 module sharp_key_top(key_idx) {
-    translate([nat_x(key_idx) + nat_width - sharp_width/2, -45, 5])
+    translate([nat_x(key_idx) + nat_width - ceil(sharp_width/2), -sharp_depth, 5])
         color(col_sharp)
-        cube([sharp_width, sharp_length, sharp_height]);
+        cube([sharp_width, sharp_depth, sharp_height]);
 }
 
 module sharp_key(key_idx) {
-    // Sharp key (Accidentals)
-    // Note pattern for F major scale start: F(0), G(1), A(2), B(3), C(4), D(5), E(6)
-    // Standard keyboard sharps are between: F-G, G-A, A-B, C-D, D-E
     key_lever_3d(key_idx);
     sharp_key_top(key_idx);
 }
@@ -347,8 +380,8 @@ module internal_components() {
     hitchpins();
     rack();
 
-    soundboard();
     bridge();
+    soundboard();
     strings();
 
     wrestplank();
