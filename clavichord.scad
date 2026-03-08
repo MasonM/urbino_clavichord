@@ -46,10 +46,6 @@ wrestplank_height = 40;
 hitchpin_block_th = 12;
 // Hitchpin block height
 hitchpin_block_height = 35;
-// Hitchpin height
-hitchpin_height = 5;
-// Hitchpin radius
-hitchpin_radius = 1;
 // Bridge width
 bridge_width = 98;
 // Bridge height
@@ -58,6 +54,12 @@ bridge_height = 22;
 bridge_top_depth = 1;
 // Bridge bottom depth
 bridge_bottom_depth = 15;
+// Soundboard width
+soundboard_width = 163;
+// Soundboard depth
+soundboard_depth = 192;
+// Soundboard height
+soundboard_height = 3;
 // Slot positions from right edge of case
 slot_positions_right = [
     938,    // F
@@ -110,10 +112,18 @@ slot_positions_right = [
 ];
 // Slot width
 slot_width = 1.5;
+
+/* [String/Pin Dimensions (mm-R)] */
+// Hitchpin height
+hitchpin_height = 5;
+// Hitchpin radius
+hitchpin_radius = 1;
 // Tuning pin height
 tuning_pin_height = 12;
 // Tuning pin radius
 tuning_pin_radius = 1;
+// String radius
+string_radius = 0.4;
 
 /* [Keyboard Dimensions (mm-R)] */
 // Natural key width
@@ -138,7 +148,7 @@ tangent_depth = 3;
 tangent_height = 8;
 key_lever_top_y = c_width - wall_th - hitchpin_block_th - 2;
 
-/* [Colors] */
+/* [Colors (RGB)] */
 // Dark wood
 col_wood_dark = [0.35, 0.20, 0.10];
 // Light wood
@@ -252,7 +262,7 @@ module rack() {
 module soundboard() {
     translate([800, wall_th, 50])
         color(col_wood_light)
-        cube([c_length - wall_th - (kb_start.x + kb_length) + 26, c_width - 2* wall_th, 3]);
+        cube([soundboard_width, soundboard_depth, soundboard_height]);
 }
 
 module bridge() {
@@ -294,7 +304,7 @@ module strings() {
         translate([wall_th + 5, string_y(string_idx), 76])
             rotate([0, 90, 0])
             color(col_string)
-            cylinder(h=tuning_pin_x(string_idx) - wall_th - 5, r=0.4, $fn=10);
+            cylinder(h=tuning_pin_x(string_idx) - wall_th - 5, r=string_radius, $fn=10);
 }
 
 
@@ -317,6 +327,8 @@ module tangent(key_idx) {
         cube([tangent_width, tangent_depth, tangent_height]);
 }
 
+// 2d polygon for the key lever, which will be extruded.
+// This is a mess because I couldn't figue out an underlying pattern in how the keys are cranked.
 module key_lever_2d(key_idx) {
     top_width = key_idx > 38 ? 5 : 10;
     bottom_width = (is_sharp(key_idx) ? sharp_width : nat_width) - 4;
@@ -329,7 +341,7 @@ module key_lever_2d(key_idx) {
         kb_start.y + (is_sharp(key_idx) ? 45 : 0)
     ];
     second_bend_y = string_y(key_string_idx(key_idx)) - 10;
-    first_bend_y = wall_th + 10 + (key_idx < 9 ? key_idx * 10 : max(70 - ((key_idx-10)*5), 0));
+    first_bend_y = wall_th + 10 + (key_idx < 9 ? key_idx * 10 : max(80 - ((key_idx-10)*5), 0));
 
     difference() {
         polygon([
@@ -343,9 +355,11 @@ module key_lever_2d(key_idx) {
            [top.x + top_width, top.y],
            [top.x + top_width, second_bend_y],
            // Second bend to first bend
-           [bottom.x + bottom_width, first_bend_y + 6],
+           [bottom.x + bottom_width, first_bend_y + (key_idx < 9 ? 6 : -6)],
            [bottom.x + bottom_width, bottom.y],
         ]);
+        
+        // Subtract neighboring sharps so they don't overlap
         if(is_sharp(key_idx+1)) offset(delta=1) key_lever_2d(key_idx+1);
         if(is_sharp(key_idx-1)) offset(delta=1) key_lever_2d(key_idx-1);
     }
