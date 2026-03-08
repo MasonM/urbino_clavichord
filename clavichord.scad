@@ -230,24 +230,27 @@ module rack() {
 module soundboard() {
     translate([800, wall_th, 50])
         color(col_wood_light)
-        cube([c_length - wall_th - (kb_start_x + kb_length), c_width - 2*wall_th, 3]);
+        cube([c_length - wall_th - (kb_start_x + kb_length), c_width - 2* wall_th, 3]);
 }
+
 
 module bridge() {
     translate([c_length - wall_th - 81, c_width - wall_th - 95, 53])
         rotate([90, 0, 90])
         color(col_wood_dark) 
-        linear_extrude(6) {
-            difference() {
-                square([bridge_width, 22]);
-                translate([-12, 5, 0]) circle(22);
-                translate([30, 0, 0]) circle(9);
-                translate([45, 7, 0]) circle(10);
-                translate([60, 0, 0]) circle(9);
-                translate([98+5, 5, 0]) circle(22);
-                
-            };
-        }
+        linear_extrude(3) bridge_2d();
+}
+
+module bridge_2d() {
+    difference() {
+        square([bridge_width, 22]);
+        translate([-12, 5, 0]) circle(22);
+        translate([30, 0, 0]) circle(9);
+        translate([45, 7, 0]) circle(10);
+        translate([60, 0, 0]) circle(9);
+        translate([98+5, 5, 0]) circle(22);
+        
+    };
 }
 
 module strings() {
@@ -267,11 +270,12 @@ module wrestplank() {
 }
 
 module tuning_pins() {
-    for(x=[10:15:50]) {
-        for(y=[15:15:160]) {
-            translate([c_length - wall_th - 60 + x, wall_th + y, 27 + wrestplank_height])
-                color(col_brass)
-                cylinder(h=15, r=1.5, $fn=12);
+    translate([c_length - wall_th - 60, string_offset_y(0), 27 + wrestplank_height])
+        for(row=[0:8]) {
+            for(col=[0:4]) {
+                translate([col*4, -row*9, 0])
+                    color(col_brass)
+                    cylinder(h=15, r=1, $fn=12);
         }
     }
 }
@@ -286,8 +290,10 @@ module internal_components() {
     strings();
 }
 
-// --- Assembly ---
+module assembly() {
+    clavichord_case();
+    keyboard();
+    internal_components();
+}
 
-clavichord_case();
-keyboard();
-internal_components();
+assembly();
