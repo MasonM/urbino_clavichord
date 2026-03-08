@@ -113,30 +113,30 @@ function tuning_pin_x(string_idx) = c_length - wall_th - 20 -(string_idx%4)*2;
 
 // Return string_idx of the first string that the tangent for the given key should strike.
 // https://oeis.org/A057356
-function key_string_index(key_idx) = num_strings - 1 - 2*(key_idx < 5 ? key_idx : floor(2*(key_idx-1)/7) + 4);
+function key_string_idx(key_idx) = num_strings - 1 - 2*(key_idx < 5 ? key_idx : floor(2*(key_idx-1)/7) + 4);
 
 // Return index of the closest (to the left) natural key for the given key
 // https://oeis.org/A366701
-function nat_index(key_idx) = key_idx > 1 ? (round((key_idx + 8) * log(3/2)/log(2)) - 4) : key_idx;
+function nat_idx(key_idx) = key_idx > 1 ? (round((key_idx + 8) * log(3/2)/log(2)) - 4) : key_idx;
 
 // Return x position of slot for given key
 function slot_x(key_idx) = right_edge - slot_positions_right[key_idx];
 
 // Return true if given key is a sharp, false if not
-function is_sharp(key_idx) = key_idx > 0 && key_idx < num_keys-1 && nat_index(key_idx) == nat_index(key_idx-1);
+function is_sharp(key_idx) = key_idx > 0 && key_idx < num_keys-1 && nat_idx(key_idx) == nat_idx(key_idx-1);
 
 // Return x position for closest natural key for the given key
-function nat_x(key_idx) = kb_start.x + nat_index(key_idx) * nat_width;
+function nat_x(key_idx) = kb_start.x + nat_idx(key_idx) * nat_width;
 
 // Debugging: dump out values of each function for every key/string
 module debug() {
     for (key_idx=[0:num_keys-1]) {
         echo(key_idx=key_idx,
-            nat_index=nat_index(key_idx),
+            nat_idx=nat_idx(key_idx),
             is_sharp=is_sharp(key_idx),
             slot_x=slot_x(key_idx),
-            key_string_index=key_string_index(key_idx),
-            key_string_y=string_y(key_string_index(key_idx))
+            key_string_idx=key_string_idx(key_idx),
+            key_string_y=string_y(key_string_idx(key_idx))
         );
     }
 
@@ -270,7 +270,7 @@ module key_lever_2d(key_idx) {
         nat_x(key_idx) + (is_sharp(key_idx) ? nat_width - sharp_width/2 : 0),
         kb_start.y + (is_sharp(key_idx) ? 45 : 0)
     ];
-    string_y = string_y(key_string_index(key_idx));
+    string_y = string_y(key_string_idx(key_idx));
     first_bend_y = 38 + key_idx * 7;
     difference() {
         polygon([
@@ -328,7 +328,7 @@ module sharp_key(key_idx) {
 }
 
 module tangent(key_idx) {
-    translate([slot_x(key_idx), string_y(key_string_index(key_idx)) - 1, nat_height])
+    translate([slot_x(key_idx), string_y(key_string_idx(key_idx)) - 1, nat_height])
         color(col_brass)
         cube([1.5, 3, tangent_height]);
 }
