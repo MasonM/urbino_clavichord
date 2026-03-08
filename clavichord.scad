@@ -23,7 +23,7 @@ right_edge = c_length - wall_th;
 rack_th = 13;
 rack_height = 30;
 wrestplank_height = 35;
-hitchpin_block_th = 12; 
+hitchpin_block_th = 12;
 hitchpin_block_height = 35;
 bridge_width = 98;
 slot_positions_right = [
@@ -110,7 +110,7 @@ function nat_index(i) = i > 1 ? (round((i + 8) * log(3/2)/log(2)) - 4) : i;
 function slot_position(i) = right_edge - slot_positions_right[i];
 function is_sharp(i) = i > 0 && i < num_keys-1 && nat_index(i) == nat_index(i-1);
 function nat_offset_x(i) = kb_start_x + nat_index(i) * nat_width;
-    
+
 for (i=[0:num_keys-1]) {
     *echo("i=", i, "string_index=",key_string_index(i),"key_string_offset=",string_offset_y(key_string_index(i)),"string_offset=",string_offset_y(i));
 }
@@ -122,12 +122,12 @@ module clavichord_case() {
     difference() {
         // Main outer block
         cube([c_length, c_width, c_height]);
-        
+
         // Hollow interior
         translate([wall_th, wall_th, wall_th]) {
             cube([c_length - 2*wall_th, c_width - 2*wall_th, c_height]);
         }
-            
+
         // Keyboard cutout in the front wall
         translate([kb_start_x, -1, c_height-nat_height-16]) {
             cube([kb_length, wall_th + 2, 12]);
@@ -143,7 +143,7 @@ module key_lever_2d(i) {
         key_lever_top_y
     ];
     bottom = [
-        nat_offset_x(i) + (is_sharp(i) ? nat_width - sharp_width/2 : 0), 
+        nat_offset_x(i) + (is_sharp(i) ? nat_width - sharp_width/2 : 0),
         -kb_protrusion + (is_sharp(i) ? 45 : 0)
     ];
     offset_y = string_offset_y(key_string_index(i));
@@ -166,22 +166,20 @@ module key_lever_2d(i) {
 
 module key_lever_3d(i) {
     color(col_key_lever) linear_extrude(nat_height) key_lever_2d(i);
+    tangent(i);
 }
 
 module natural_key_top(i) {
-    color(col_natural) 
+    color(col_natural)
         translate([nat_offset_x(i) - 1, -kb_protrusion - 1, nat_height])
             linear_extrude(2)
                 square([nat_width - 1, kb_protrusion + 1]);
 }
 
 module natural_key(i) {
-     union() {
-        key_lever_3d(i);
-        natural_key_top(i);
-    }
+    key_lever_3d(i);
+    natural_key_top(i);
 }
-
 
 module sharp_key_top(i) {
     color(col_sharp)
@@ -193,10 +191,8 @@ module sharp_key(i) {
     // Sharp key (Accidentals)
     // Note pattern for F major scale start: F(0), G(1), A(2), B(3), C(4), D(5), E(6)
     // Standard keyboard sharps are between: F-G, G-A, A-B, C-D, D-E
-    union() {
-        key_lever_3d(i);
-        sharp_key_top(i);
-    } 
+    key_lever_3d(i);
+    sharp_key_top(i);
 }
 
 module tangent(i) {
@@ -205,11 +201,13 @@ module tangent(i) {
         cube([1.5, 3, tangent_height]);
 }
 
-module keyboard() {    
+module keyboard() {
     translate([0, 0, c_height-nat_height-16]) {
-       for(i=[0:num_keys - 1]) {   
-            if (is_sharp(i)) sharp_key(i); else natural_key(i);
-            tangent(i);
+       for(i=[0:num_keys - 1]) {
+            if (is_sharp(i))
+                sharp_key(i);
+            else
+                natural_key(i);
        }
     }
 }
@@ -218,7 +216,7 @@ module hitchpins() {
     for(i=[0:num_strings-1]) {
         translate([wall_th+5, string_offset_y(i), c_height - 10])
             color(col_brass)
-            cylinder(h=5, r=1, $fn=12); 
+            cylinder(h=5, r=1, $fn=12);
     }
 }
 
@@ -230,7 +228,7 @@ module hitchpin_block() {
 
 module rack_slot_cutouts() {
     for(x=slot_positions_right) {
-        translate([right_edge-x, -1, 0]) 
+        translate([right_edge-x, -1, 0])
             cube([1, rack_th - 2, rack_height+1]);
     }
 }
@@ -238,7 +236,7 @@ module rack_slot_cutouts() {
 module rack() {
     translate([0, c_width - wall_th - rack_th, c_height - rack_height - 12]) {
         color(col_wood_dark) difference() {
-            translate([wall_th + hitchpin_block_th, 0, 0])            
+            translate([wall_th + hitchpin_block_th, 0, 0])
                 cube([kb_length + kb_start_x, rack_th, rack_height]);
             rack_slot_cutouts();
         }
@@ -251,11 +249,10 @@ module soundboard() {
         cube([c_length - wall_th - (kb_start_x + kb_length) + 26, c_width - 2* wall_th, 3]);
 }
 
-
 module bridge() {
     translate([c_length - wall_th - 81, c_width - wall_th - 95, 53])
         rotate([90, 0, 90])
-        color(col_wood_dark) 
+        color(col_wood_dark)
         linear_extrude(3) bridge_2d();
 }
 
@@ -267,7 +264,6 @@ module bridge_2d() {
         translate([45, 7, 0]) circle(10);
         translate([60, 0, 0]) circle(9);
         translate([98+5, 5, 0]) circle(22);
-        
     };
 }
 
@@ -277,7 +273,7 @@ module strings() {
             rotate([0, 90, 0])
             color(col_string)
             cylinder(h=tuning_pin_offset_x(i) - wall_th - 5, r=0.4, $fn=10);
-    }    
+    }
 }
 
 
@@ -289,22 +285,24 @@ module wrestplank() {
 
 module tuning_pins() {
     translate([0, 0, 27 + wrestplank_height])
-        for(i=[0:num_tuning_pins-1]) {            
+        for(i=[0:num_tuning_pins-1]) {
             translate([tuning_pin_offset_x(i), string_offset_y(i), 0])
                 color(col_brass)
-                cylinder(h=15, r=1, $fn=12);        
+                cylinder(h=15, r=1, $fn=12);
     }
 }
 
 module internal_components() {
-    soundboard();
     hitchpin_block();
     hitchpins();
     rack();
+
+    soundboard();
     bridge();
+    strings();
+
     wrestplank();
     tuning_pins();
-    strings();
 }
 
 module assembly() {
