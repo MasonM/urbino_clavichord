@@ -302,17 +302,9 @@ module key_lever_2d(key_idx) {
         nat_x(key_idx) + (is_sharp(key_idx) ? nat_width - sharp_width/2 : 0),
         kb_start.y + (is_sharp(key_idx) ? 45 : 0)
     ];
- 
     second_bend_y = string_y(key_string_idx(key_idx)) - 5;
-    
-    bend_idxes = [
-        0, 10, 20, 30, 40, 50, 60, 70,
-        65, 60, 55, 50, 45, 40, 35, 30,
-        25, 20, 15, 10, 5, 0, 
+    first_bend_y = wall_th + 10 + (key_idx < 9 ? key_idx * 10 : max(70 - ((key_idx-10)*5), 0));
 
-    ];
-    first_bend_y = wall_th + 10 + (bend_idxes[key_idx] ? bend_idxes[key_idx] : 0);
-        
     difference() {
         polygon([
            // Bottom to first bend
