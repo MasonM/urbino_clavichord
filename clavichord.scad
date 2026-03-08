@@ -44,6 +44,7 @@ bridge_width = 98;
 key_lever_top_y = c_width - wall_th - hitchpin_th - 2;
 num_keys = 47;
 num_strings = 34;
+num_tuning_pins = 36;
 
 function string_offset_y(i) = key_lever_top_y - 2 - (i*1.3) - floor(i/4) * 3 - (i > 1 ? 3 : 0);
 // https://oeis.org/A057356
@@ -230,7 +231,7 @@ module rack() {
 module soundboard() {
     translate([800, wall_th, 50])
         color(col_wood_light)
-        cube([c_length - wall_th - (kb_start_x + kb_length), c_width - 2* wall_th, 3]);
+        cube([c_length - wall_th - (kb_start_x + kb_length) + 26, c_width - 2* wall_th, 3]);
 }
 
 
@@ -258,25 +259,23 @@ module strings() {
         translate([wall_th + 15, string_offset_y(i), 76])
             rotate([0, 90, 0])
             color(col_string)
-            cylinder(h=c_length - 2*wall_th - 50, r=0.4, $fn=10);
+            cylinder(h=c_length - 2*wall_th - 20, r=0.4, $fn=10);
     }    
 }
 
 
 module wrestplank() {
-    translate([c_length - wall_th - 60, wall_th, 27])
+    translate([c_length - wall_th - 30, wall_th, 27])
         color(col_wood_dark)
-        cube([60, c_width - 2*wall_th, wrestplank_height]);
+        cube([30, c_width - 2*wall_th, wrestplank_height]);
 }
 
 module tuning_pins() {
-    translate([c_length - wall_th - 60, string_offset_y(0), 27 + wrestplank_height])
-        for(row=[0:8]) {
-            for(col=[0:4]) {
-                translate([col*4, -row*9, 0])
-                    color(col_brass)
-                    cylinder(h=15, r=1, $fn=12);
-        }
+    translate([c_length - wall_th - 20, string_offset_y(0), 27 + wrestplank_height])
+        for(i=[0:num_tuning_pins-1]) {            
+            translate([-(i%4)*2, -(i/4)*9, 0])
+                color(col_brass)
+                cylinder(h=15, r=1, $fn=12);        
     }
 }
 
