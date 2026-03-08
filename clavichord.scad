@@ -48,7 +48,7 @@ num_tuning_pins = 36;
 
 function string_offset_y(i) = key_lever_top_y - 2 - (i*1.3) - floor(i/4) * 3 - (i > 1 ? 3 : 0);
 // https://oeis.org/A057356
-function key_string_index(i) = (i < 5 ? i : floor(2*(i-1)/7) + 4);
+function key_string_index(i) = num_strings - 1 - 2*(i < 5 ? i : floor(2*(i-1)/7) + 4);
 
 // https://oeis.org/A366701
 function nat_index(i) = i > 1 ? (round((i + 8) * log(3/2)/log(2)) - 4) : i;
@@ -141,6 +141,10 @@ module nat_key(i) {
     }
 }
 
+for (i=[0:num_keys-1]) {
+    *echo("i=", i, "string_index=",key_string_index(i),"key_string_offset=",string_offset_y(key_string_index(i)),"string_offset=",string_offset_y(i));
+}
+
 module key_lever_2d(i) {
     top_width = 10;
     bottom_width = (is_sharp(i) ? sharp_width : nat_width) - 4;
@@ -152,7 +156,6 @@ module key_lever_2d(i) {
         nat_offset_x(i) + (is_sharp(i) ? nat_width - sharp_width/2 : 0), 
         -kb_protrusion + (is_sharp(i) ? 45 : 0)
     ];
-    echo("i=", i, "string_index=",key_string_index(i),"offset=",string_offset_y(key_string_index(i))*2);
     offset_y = string_offset_y(key_string_index(i));
     difference() {
         polygon([
@@ -191,9 +194,9 @@ module sharp_key(i) {
 }
 
 module tangent(i) {
-    translate([slot_position(i), string_offset_y(key_string_index(i)), nat_height])
+    translate([slot_position(i), string_offset_y(key_string_index(i)) - 1, nat_height])
         color(col_brass)
-        cube([1.5, 4, tangent_height]);
+        cube([1.5, 3, tangent_height]);
 }
 
 module keyboard() {    
