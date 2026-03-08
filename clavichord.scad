@@ -1,6 +1,6 @@
 /*
- * 15th-Century Clavichord 3D Model
- * Based on dimensions from "The Urbino Clavichord Revisited" (Pierre Verbeek)
+ * 3D model of the clavichord depicted in the 1479 intarsia from the Studiolo of Ducal Palace at Urbino.
+ * Based on dimensions from "The Urbino Clavichord Revisited" (Pierre Verbeek).
  *
  * All dimensions are in millimeters (mm).
  * Render with OpenSCAD (F5 for preview, F6 to render).
@@ -38,6 +38,8 @@ rack_tongue_width = 1;
 rack_tongue_depth = 7;
 //Rack tongue height
 rack_tongue_height = 5;
+// Wrestplank width
+wrestplank_width = 30;
 // Wrestplank height
 wrestplank_height = 40;
 // Hitchpin block thickness
@@ -146,9 +148,9 @@ col_wood_med = [0.55, 0.35, 0.15];
 // Key lever
 col_key_lever = [0.9, 0.9, 0.9];
 // Natural key top
-col_natural = [0.90, 0.88, 0.80]; // Bone/boxwood finish
+col_natural = [0.90, 0.88, 0.80];
 // Sharp key top
-col_sharp = [0.15, 0.15, 0.15];   // Dark tortoise shell / ebony
+col_sharp = [0.15, 0.15, 0.15];
 // Brass
 col_brass = [0.85, 0.75, 0.30];
 // String
@@ -299,7 +301,7 @@ module strings() {
 module wrestplank() {
     translate([c_length - wall_th - 30, wall_th, 27])
         color(col_wood_dark)
-        cube([30, c_width - 2*wall_th, wrestplank_height]);
+        cube([wrestplank_width, c_width - 2*wall_th, wrestplank_height]);
 }
 
 module tuning_pins() {
@@ -307,6 +309,12 @@ module tuning_pins() {
         translate([tuning_pin_x(string_idx), string_y(string_idx), 27 + wrestplank_height])
             color(col_brass)
             cylinder(h=tuning_pin_height, r=tuning_pin_radius);
+}
+
+module tangent(key_idx) {
+    translate([slot_x(key_idx), string_y(key_string_idx(key_idx)) - 1, nat_height])
+        color(col_brass)
+        cube([tangent_width, tangent_depth, tangent_height]);
 }
 
 module key_lever_2d(key_idx) {
@@ -363,35 +371,24 @@ module natural_key_top(key_idx) {
             square([nat_width - 1, -kb_start.y + 1]);
 }
 
-module natural_key(key_idx) {
-    key_lever_3d(key_idx);
-    natural_key_top(key_idx);
-}
-
 module sharp_key_top(key_idx) {
     translate([nat_x(key_idx) + nat_width - ceil(sharp_width/2), -sharp_depth, 5])
         color(col_sharp)
         cube([sharp_width, sharp_depth, sharp_height]);
 }
 
-module sharp_key(key_idx) {
+module key(key_idx) {
     key_lever_3d(key_idx);
-    sharp_key_top(key_idx);
-}
-
-module tangent(key_idx) {
-    translate([slot_x(key_idx), string_y(key_string_idx(key_idx)) - 1, nat_height])
-        color(col_brass)
-        cube([tangent_width, tangent_depth, tangent_height]);
+    if (is_sharp(key_idx))
+        sharp_key_top(key_idx);
+    else
+        natural_key_top(key_idx);    
 }
 
 module keyboard() {
     translate([0, 0, kb_start.z])
        for(key_idx=[0:num_keys - 1])
-            if (is_sharp(key_idx))
-                sharp_key(key_idx);
-            else
-                natural_key(key_idx);
+           key(key_idx);
 }
 
 module internal_components() {
