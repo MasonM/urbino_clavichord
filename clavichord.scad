@@ -180,8 +180,7 @@ module debug() {
         );
     }
 }
-
-debug();
+//debug();
 
 // --- Modules ---
 
@@ -293,7 +292,7 @@ module tuning_pins() {
 }
 
 module key_lever_2d(key_idx) {
-    top_width = 10;
+    top_width = key_idx > 38 ? 5 : 10;
     bottom_width = (is_sharp(key_idx) ? sharp_width : nat_width) - 4;
     top = [
         slot_x(key_idx) - top_width/2,
@@ -303,22 +302,28 @@ module key_lever_2d(key_idx) {
         nat_x(key_idx) + (is_sharp(key_idx) ? nat_width - sharp_width/2 : 0),
         kb_start.y + (is_sharp(key_idx) ? 45 : 0)
     ];
-    string_y = string_y(key_string_idx(key_idx));
-    first_bend_y = 38 + key_idx * 7;
-    if (key_idx > 11 && key_idx < 26) {
-        //first_bend_y = 38
-    }
+ 
+    second_bend_y = string_y(key_string_idx(key_idx)) - 5;
+    
+    bend_idxes = [
+        0, 10, 20, 30, 40, 50, 60, 70,
+        65, 60, 55, 50, 45, 40, 35, 30,
+        25, 20, 15, 10, 5, 0, 
+
+    ];
+    first_bend_y = wall_th + 10 + (bend_idxes[key_idx] ? bend_idxes[key_idx] : 0);
+        
     difference() {
         polygon([
            // Bottom to first bend
            bottom,
            [bottom.x, first_bend_y],
            // Second bend to top
-           [top.x, string_y],
+           [top.x, second_bend_y],
            top,
            // Top to second bend
            [top.x + top_width, top.y],
-           [top.x + top_width, string_y],
+           [top.x + top_width, second_bend_y],
            // Second bend to first bend
            [bottom.x + bottom_width, first_bend_y + 6],
            [bottom.x + bottom_width, bottom.y],
