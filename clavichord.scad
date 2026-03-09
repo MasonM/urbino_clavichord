@@ -10,6 +10,7 @@
  */
 
 // --- Variables & Dimensions ---
+// A "(?)" indicates the value was guesstimated and should not be treated as exact
 
 /* [Number of keys/strings/pins] */
 // Number of keys
@@ -33,19 +34,19 @@ right_edge = c_length - wall_th;
 /* [Internal Component Dimensions (mm-R)] */
 // Rack thickness
 rack_th = 13;
-// Rack width
+// Rack width (?)
 rack_width = 836;
-// Rack height
+// Rack height (?)
 rack_height = 30;
-// Rack starting position (XYZ)
+// Rack starting position (XYZ) (?)
 rack_pos = [0, c_width - wall_th - rack_th, c_height - rack_height - 12];
-// Backrail thickness
+// Backrail thickness (?)
 backrail_th = 30;
-// Backrail height
-backrail_height = 18;
-// Wrestplank width
+// Backrail height (?)
+backrail_height = 42;
+// Wrestplank width (?)
 wrestplank_width = 30;
-// Wrestplank height
+// Wrestplank height (?)
 wrestplank_height = 40;
 // Hitchpin block thickness
 hitchpin_block_th = 12;
@@ -53,7 +54,7 @@ hitchpin_block_th = 12;
 hitchpin_block_height = 60;
 // Bridge width
 bridge_width = 98;
-// Bridge height
+// Bridge height (?)
 bridge_height = 22;
 // Bridge top depth
 bridge_top_depth = 1;
@@ -67,6 +68,10 @@ soundboard_depth = 192;
 soundboard_height = 3;
 // Soundboard position
 soundboard_pos = [right_edge - wrestplank_width - soundboard_width, wall_th, 50];
+// Mousehole height (?)
+mousehole_height = 100;
+// Mousehole radius (?)
+mousehole_radius = 30;
 // Slot positions from right edge of case
 slot_positions_right = [
     938,    // F
@@ -117,19 +122,19 @@ slot_positions_right = [
     186,    // e3
     180.5,  // f3
 ];
-// Slot width
+// Slot width (?)
 slot_width = 1.5;
 
 /* [String/Pin Dimensions (mm-R)] */
-// Hitchpin height
+// Hitchpin height (?)
 hitchpin_height = 5;
-// Hitchpin radius
+// Hitchpin radius (?)
 hitchpin_radius = 1;
-// Tuning pin height
+// Tuning pin height (?)
 tuning_pin_height = 12;
-// Tuning pin radius
+// Tuning pin radius (?)
 tuning_pin_radius = 1.5;
-// String radius
+// String radius (?)
 string_radius = 0.4;
 
 /* [Keyboard Dimensions (mm-R)] */
@@ -145,20 +150,21 @@ sharp_width = 14.3;
 sharp_depth = 41.2;
 // Sharp key height
 sharp_height = 15;
+// Tangent width (?)
+tangent_width = 1.5;
+// Tangent depth (?)
+tangent_depth = 3;
+// Tangent height (?)
+tangent_height = 8;
+// Rack tongue width (?)
+rack_tongue_width = 1;
+// Rack tongue depth (?)
+rack_tongue_depth = 7;
+// Rack tongue height (?0
+rack_tongue_height = 5;
+
 kb_start = [122, -nat_depth, c_height - nat_height - 16];
 kb_length = c_length - kb_start.x - 149;
-// Tangent width
-tangent_width = 1.5;
-// Tangent depth
-tangent_depth = 3;
-// Tangent height
-tangent_height = 8;
-// Rack tongue width
-rack_tongue_width = 1;
-// Rack tongue depth
-rack_tongue_depth = 7;
-// Rack tongue height
-rack_tongue_height = 5;
 key_lever_top_y = c_width - wall_th - rack_th - 1;
 
 /* [Colors (RGB)] */
@@ -185,7 +191,8 @@ debug_mode = false;
 
 // -- Helper functions ---
 
-// Return y position for given string
+// Return y position for given string.
+// Group strings in groups of 4, except bottom 2 and top 4.
 function string_y(string_idx) = key_lever_top_y - 2 - (string_idx*1.3) - floor(string_idx/4) * 3 - (string_idx > 1 ? 3 : 0);
 
 // Return x position for the tuning pin connected to the given string
@@ -290,8 +297,8 @@ module soundboard() {
     color(col_wood_light)
     difference() {
         translate(soundboard_pos) cube([soundboard_width, soundboard_depth, soundboard_height]);
-        // Cylinder to cut out a mousehole. Dimensions guesstimated.
-        translate([right_edge - 150, 120, 0]) cylinder(h=100, r=30);
+        // Cylinder to cut out a mousehole
+        translate([right_edge - 150, 120, 0]) cylinder(h=mousehole_height, r=mousehole_radius);
         rack_block();
     };
 }
