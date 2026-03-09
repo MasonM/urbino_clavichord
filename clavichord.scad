@@ -39,6 +39,10 @@ rack_width = 836;
 rack_height = 30;
 // Rack starting position (XYZ)
 rack_pos = [0, c_width - wall_th - rack_th, c_height - rack_height - 12];
+// Backrail thickness
+backrail_th = 30;
+// Backrail height
+backrail_height = 18;
 // Wrestplank width
 wrestplank_width = 30;
 // Wrestplank height
@@ -46,7 +50,7 @@ wrestplank_height = 40;
 // Hitchpin block thickness
 hitchpin_block_th = 12;
 // Hitchpin block height
-hitchpin_block_height = 35;
+hitchpin_block_height = 60;
 // Bridge width
 bridge_width = 98;
 // Bridge height
@@ -176,7 +180,7 @@ col_brass = [0.85, 0.75, 0.30];
 col_string = [0.90, 0.90, 0.90];
 
 /* [Advanced] */
-$fn = 16;
+$fn = 32;
 debug_mode = false;
 
 // -- Helper functions ---
@@ -274,6 +278,12 @@ module rack() {
         rack_block();
         rack_slot_cutouts();
     }
+}
+
+module backrail() {
+    translate([wall_th + hitchpin_block_th, c_width - wall_th - backrail_th, wall_th])
+        color(col_wood_dark)
+        cube([rack_width, backrail_th, backrail_height]);
 }
 
 module soundboard() {
@@ -429,6 +439,7 @@ module internal_components() {
     hitchpin_block();
     hitchpins();
     rack();
+    backrail();
 
     bridge();
     soundboard();
