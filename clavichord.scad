@@ -1,8 +1,9 @@
 /*
  * 3D model of the clavichord depicted in the 1479 intarsia from the Studiolo of Ducal Palace at Urbino.
- * Based on dimensions from "The Urbino Clavichord Revisited" (Pierre Verbeek).
+ * Based on dimensions from "The Urbino Clavichord Revisited" by Pierre Verbeek.
  *
- * © 2026 by Mason Malone. Licensed under CC BY 4.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/4.0/ 
+ * © 2026 by Mason Malone. Repository: https://github.com/MasonM/urbino_clavichord/
+ * Licensed under CC BY 4.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/4.0/
  *
  * All dimensions are in millimeters (mm).
  * Render with OpenSCAD (F5 for preview, F6 to render).
@@ -117,7 +118,7 @@ hitchpin_radius = 1;
 // Tuning pin height
 tuning_pin_height = 12;
 // Tuning pin radius
-tuning_pin_radius = 1;
+tuning_pin_radius = 1.5;
 // String radius
 string_radius = 0.4;
 
@@ -178,7 +179,7 @@ debug_mode = false;
 function string_y(string_idx) = key_lever_top_y - 2 - (string_idx*1.3) - floor(string_idx/4) * 3 - (string_idx > 1 ? 3 : 0);
 
 // Return x position for the tuning pin connected to the given string
-function tuning_pin_x(string_idx) = c_length - wall_th - 20 -(string_idx%4)*2;
+function tuning_pin_x(string_idx) = c_length - wall_th - 7 -(string_idx%4)*5;
 
 // Return string_idx of the first string that the tangent for the given key should strike.
 // https://oeis.org/A057356
@@ -219,7 +220,7 @@ if (debug_mode) {
 
 // --- Modules ---
 
-module clavichord_case() {
+module case() {
     color(col_wood_med)
     difference() {
         // Main outer block
@@ -265,9 +266,13 @@ module rack() {
 }
 
 module soundboard() {
-    translate([800, wall_th, 50])
+    translate([right_edge - wrestplank_width - soundboard_width, wall_th, 50])
         color(col_wood_light)
-        cube([soundboard_width, soundboard_depth, soundboard_height]);
+        difference() {
+            cube([soundboard_width, soundboard_depth, soundboard_height]);
+            // Cylinder to cut out a hole. Dimensions guesstimated.
+            translate([70, 120, -5]) cylinder(h=10, r=25);
+        };
 }
 
 module bridge() {
@@ -287,7 +292,7 @@ module bridge_2d() {
         translate([30, 0, 0]) circle(9);
         translate([45, 7, 0]) circle(10);
         translate([60, 0, 0]) circle(9);
-        translate([98+5, 5, 0]) circle(bridge_height);
+        translate([bridge_width+5, 5, 0]) circle(bridge_height);
     };
 }
 
@@ -424,7 +429,7 @@ module internal_components() {
 }
 
 module assembly() {
-    clavichord_case();
+    case();
     keyboard();
     internal_components();
 }
