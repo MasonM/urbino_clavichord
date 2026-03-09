@@ -34,7 +34,7 @@ right_edge = c_length - wall_th;
 // Rack thickness
 rack_th = 13;
 // Rack width
-rack_width = 856;
+rack_width = 836;
 // Rack height
 rack_height = 30;
 // Rack starting position (XYZ)
@@ -55,9 +55,9 @@ bridge_height = 22;
 bridge_top_depth = 1;
 // Bridge bottom depth
 bridge_bottom_depth = 15;
-// Soundboard width
+// Soundboard width (?)
 soundboard_width = 163;
-// Soundboard depth
+// Soundboard depth (?)
 soundboard_depth = 192;
 // Soundboard height
 soundboard_height = 3;
@@ -185,7 +185,7 @@ debug_mode = false;
 function string_y(string_idx) = key_lever_top_y - 2 - (string_idx*1.3) - floor(string_idx/4) * 3 - (string_idx > 1 ? 3 : 0);
 
 // Return x position for the tuning pin connected to the given string
-function tuning_pin_x(string_idx) = c_length - wall_th - 7 -(string_idx%4)*5;
+function tuning_pin_x(string_idx) = right_edge - 7 -(string_idx%4)*5;
 
 // Return string_idx of the first string that the tangent for the given key should strike.
 // https://oeis.org/A057356
@@ -280,14 +280,14 @@ module soundboard() {
     color(col_wood_light)
     difference() {
         translate(soundboard_pos) cube([soundboard_width, soundboard_depth, soundboard_height]);
-        // Cylinder to cut out a hole. Dimensions guesstimated.
+        // Cylinder to cut out a mousehole. Dimensions guesstimated.
         translate([right_edge - 150, 120, 0]) cylinder(h=100, r=30);
         rack_block();
     };
 }
 
 module bridge() {
-    translate([c_length - wall_th - 81, c_width - wall_th - 95, 53])
+    translate([right_edge - 101, c_width - wall_th - 95, 53])
         rotate([90, 0, 90])
         color(col_wood_dark)
         intersection() {
@@ -328,9 +328,8 @@ module strings() {
             cylinder(h=tuning_pin_x(string_idx) - wall_th - 5, r=string_radius);
 }
 
-
 module wrestplank() {
-    translate([c_length - wall_th - 30, wall_th, 27])
+    translate([right_edge - 30, wall_th, 27])
         color(col_wood_dark)
         cube([wrestplank_width, c_width - 2*wall_th, wrestplank_height]);
 }
