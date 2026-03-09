@@ -48,23 +48,23 @@ backrail_height = 42;
 wrestplank_width = 30;
 // Wrestplank height (?)
 wrestplank_height = 40;
-// Hitchpin block thickness
-hitchpin_block_th = 12;
-// Hitchpin block height
+// Hitchpin block thickness (?)
+hitchpin_block_th = 13;
+// Hitchpin block height (?)
 hitchpin_block_height = 60;
 // Bridge width
 bridge_width = 98;
-// Bridge height (?)
+// Bridge height
 bridge_height = 22;
-// Bridge top depth
+// Bridge top depth (?)
 bridge_top_depth = 1;
-// Bridge bottom depth
+// Bridge bottom depth (?)
 bridge_bottom_depth = 15;
 // Soundboard width (?)
 soundboard_width = 163;
 // Soundboard depth (?)
 soundboard_depth = 192;
-// Soundboard height
+// Soundboard height (?)
 soundboard_height = 3;
 // Soundboard position
 soundboard_pos = [right_edge - wrestplank_width - soundboard_width, wall_th, 50];
@@ -160,7 +160,7 @@ tangent_height = 8;
 rack_tongue_width = 1;
 // Rack tongue depth (?)
 rack_tongue_depth = 7;
-// Rack tongue height (?0
+// Rack tongue height (?)
 rack_tongue_height = 5;
 
 kb_start = [122, -nat_depth, c_height - nat_height - 16];
