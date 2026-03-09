@@ -33,8 +33,12 @@ right_edge = c_length - wall_th;
 /* [Internal Component Dimensions (mm-R)] */
 // Rack thickness
 rack_th = 13;
+// Rack width
+rack_width = 856;
 // Rack height
 rack_height = 30;
+// Rack starting position (XYZ)
+rack_pos = [0, c_width - wall_th - rack_th, c_height - rack_height - 12];
 // Wrestplank width
 wrestplank_width = 30;
 // Wrestplank height
@@ -57,6 +61,8 @@ soundboard_width = 163;
 soundboard_depth = 192;
 // Soundboard height
 soundboard_height = 3;
+// Soundboard position
+soundboard_pos = [right_edge - wrestplank_width - soundboard_width, wall_th, 50];
 // Slot positions from right edge of case
 slot_positions_right = [
     938,    // F
@@ -251,28 +257,33 @@ module hitchpin_block() {
 
 module rack_slot_cutouts() {
     for(x=slot_positions_right)
-        translate([right_edge - x - 0.25, -1, 0])
-            cube([slot_width, rack_th - 2, rack_height+1]);
+        translate(rack_pos)
+            translate([right_edge - x - 0.25, -1, 0])
+                cube([slot_width, rack_th - 2, rack_height+1]);
+}
+
+module rack_block() {
+    translate(rack_pos)
+        translate([wall_th + hitchpin_block_th, 0, 0])
+            cube([rack_width, rack_th, rack_height]);
 }
 
 module rack() {
-    translate([0, c_width - wall_th - rack_th, c_height - rack_height - 12])
-        color(col_wood_dark)
-        difference() {
-            translate([wall_th + hitchpin_block_th, 0, 0])
-                cube([kb_length + kb_start.x, rack_th, rack_height]);
-            rack_slot_cutouts();
-        }
+    color(col_wood_dark)
+    difference() {
+        rack_block();
+        rack_slot_cutouts();
+    }
 }
 
 module soundboard() {
-    translate([right_edge - wrestplank_width - soundboard_width, wall_th, 50])
-        color(col_wood_light)
-        difference() {
-            cube([soundboard_width, soundboard_depth, soundboard_height]);
-            // Cylinder to cut out a hole. Dimensions guesstimated.
-            translate([70, 120, -5]) cylinder(h=10, r=25);
-        };
+    color(col_wood_light)
+    difference() {
+        translate(soundboard_pos) cube([soundboard_width, soundboard_depth, soundboard_height]);
+        // Cylinder to cut out a hole. Dimensions guesstimated.
+        translate([right_edge - 150, 120, 0]) cylinder(h=100, r=30);
+        rack_block();
+    };
 }
 
 module bridge() {
@@ -373,7 +384,7 @@ module key_lever_2d(key_idx) {
            [bottom.x + bottom_width, first_bend_y + (key_idx < 9 ? 6 : -6)],
            [bottom.x + bottom_width, bottom.y],
         ]);
-        
+
         // Subtract neighboring sharps so they don't overlap
         if(is_sharp(key_idx+1)) offset(delta=1) key_lever_2d(key_idx+1);
         if(is_sharp(key_idx-1)) offset(delta=1) key_lever_2d(key_idx-1);
@@ -406,7 +417,7 @@ module key(key_idx) {
     if (is_sharp(key_idx))
         sharp_key_top(key_idx);
     else
-        natural_key_top(key_idx);    
+        natural_key_top(key_idx);
 }
 
 module keyboard() {
