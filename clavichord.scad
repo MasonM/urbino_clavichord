@@ -5,12 +5,19 @@
  * © 2026 by Mason Malone. Repository: https://github.com/MasonM/urbino_clavichord/
  * Licensed under CC BY 4.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/4.0/
  *
- * All dimensions are in millimeters (mm).
  * Render with OpenSCAD (F5 for preview, F6 to render).
  */
 
 // --- Variables & Dimensions ---
+
+// All dimensions are in millimeters (mm).
 // A "(?)" indicates the value was guesstimated and should not be treated as exact
+
+/* [Toggle Visibility] */
+show_case = true;
+show_keyboard = true;
+show_strings = true;
+show_internals = true;
 
 /* [Number of keys/strings/pins] */
 // Number of keys
@@ -52,26 +59,6 @@ wrestplank_height = 40;
 hitchpin_block_th = 13;
 // Hitchpin block height (?)
 hitchpin_block_height = 60;
-// Bridge width
-bridge_width = 98;
-// Bridge height
-bridge_height = 22;
-// Bridge top depth (?)
-bridge_top_depth = 1;
-// Bridge bottom depth (?)
-bridge_bottom_depth = 15;
-// Soundboard width (?)
-soundboard_width = 163;
-// Soundboard depth (?)
-soundboard_depth = 192;
-// Soundboard height (?)
-soundboard_height = 3;
-// Soundboard position
-soundboard_pos = [right_edge - wrestplank_width - soundboard_width, wall_th, 50];
-// Mousehole height (?)
-mousehole_height = 100;
-// Mousehole radius (?)
-mousehole_radius = 30;
 // Slot positions from right edge of case
 slot_positions_right = [
     938,    // F
@@ -124,6 +111,28 @@ slot_positions_right = [
 ];
 // Slot width (?)
 slot_width = 1.5;
+
+/* [Bridge/Soundboard Dimensions (mm-R)] */
+// Bridge width
+bridge_width = 98;
+// Bridge height
+bridge_height = 22;
+// Bridge top depth (?)
+bridge_top_depth = 1;
+// Bridge bottom depth (?)
+bridge_bottom_depth = 15;
+// Soundboard width (?)
+soundboard_width = 190;
+// Soundboard depth (?)
+soundboard_depth = 192;
+// Soundboard height (?)
+soundboard_height = 3;
+// Soundboard position
+soundboard_pos = [right_edge - wrestplank_width - soundboard_width, wall_th, 50];
+// Mousehole height (?)
+mousehole_height = 100;
+// Mousehole radius (?)
+mousehole_radius = 30;
 
 /* [String/Pin Dimensions (mm-R)] */
 // Hitchpin height (?)
@@ -450,16 +459,16 @@ module internal_components() {
 
     bridge();
     soundboard();
-    strings();
 
     wrestplank();
     tuning_pins();
 }
 
 module assembly() {
-    case();
-    keyboard();
-    internal_components();
+    if (show_case) case();
+    if (show_keyboard) keyboard();
+    if (show_internals) internal_components();
+    if (show_strings) strings();
 }
 
 assembly();
