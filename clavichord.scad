@@ -15,9 +15,10 @@
 
 /* [Toggle Visibility] */
 show_case = true;
+show_internals = true;
+show_soundbox = true;
 show_keyboard = true;
 show_strings = true;
-show_internals = true;
 
 /* [Number of keys/strings/pins] */
 // Number of keys
@@ -112,7 +113,7 @@ slot_positions_right = [
 // Slot width (?)
 slot_width = 1.5;
 
-/* [Bridge/Soundboard Dimensions (mm-R)] */
+/* [Soundbox Dimensions (mm-R)] */
 // Bridge width
 bridge_width = 98;
 // Bridge height
@@ -456,18 +457,20 @@ module internal_components() {
     hitchpins();
     rack();
     backrail();
-
-    bridge();
-    soundboard();
-
     wrestplank();
     tuning_pins();
+}
+
+module soundbox() {
+    bridge();
+    soundboard();
 }
 
 module assembly() {
     if (show_case) case();
     if (show_keyboard) keyboard();
     if (show_internals) internal_components();
+    if (show_soundbox) soundbox();
     if (show_strings) strings();
 }
 
