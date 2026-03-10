@@ -146,7 +146,7 @@ mousehole_radius = 30;
 // Belly rail width (?)
 belly_rail_width = 10;
 // Belly rail depth (?)
-belly_rail_depth = 142;
+belly_rail_depth = 162;
 // Belly rail height (?)
 belly_rail_height = 43;
 
@@ -331,13 +331,13 @@ module balance_rail() {
 }
 
 module belly_rail() {
-    translate([soundboard_pos.x - belly_rail_width, soundboard_pos.y + balance_rail_depth, wall_th])
+    translate([soundboard_pos.x - belly_rail_width, soundboard_pos.y, wall_th])
         color(col_wood_dark)
         difference() {
             cube([belly_rail_width, belly_rail_depth, belly_rail_height]);
             // Oblong cylinder to create a hole
             rotate([0, 90, 0])
-                translate([-20, 50, -15])
+                translate([-20, 70, -15])
                     scale([1,2,1])
                         cylinder(h=100, r=15);
         }
