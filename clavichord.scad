@@ -143,6 +143,12 @@ soundboard_pos = [right_edge - wrestplank_width - soundboard_width, wall_th, 50]
 mousehole_height = 100;
 // Mousehole radius (?)
 mousehole_radius = 30;
+// Belly rail width (?)
+belly_rail_width = 10;
+// Belly rail depth (?)
+belly_rail_depth = 142;
+// Belly rail height (?)
+belly_rail_height = 43;
 
 /* [String/Pin Dimensions (mm-R)] */
 // Hitchpin height (?)
@@ -150,7 +156,7 @@ hitchpin_height = 5;
 // Hitchpin radius (?)
 hitchpin_radius = 1;
 // Balance pin height (?)
-balance_pin_height = 5;
+balance_pin_height = 15;
 // Balance pin radius (?)
 balance_pin_radius = 1;
 // Tuning pin height (?)
@@ -209,7 +215,7 @@ col_brass = [0.85, 0.75, 0.30];
 col_string = [0.90, 0.90, 0.90];
 
 /* [Advanced] */
-$fn = 32;
+$fn = 16;
 debug_mode = false;
 
 // -- Helper functions ---
@@ -235,7 +241,7 @@ function slot_x(key_idx) = right_edge - slot_positions_right[key_idx];
 // Return true if given key is a sharp, false if not
 function is_sharp(key_idx) = key_idx > 0 && key_idx < num_keys-1 && nat_idx(key_idx) == nat_idx(key_idx-1);
 
-// Return x position for for the given key
+// Return x position for the given key
 function key_x(key_idx) = kb_start.x + nat_idx(key_idx) * nat_width + (is_sharp(key_idx) ? nat_width - floor(sharp_width/2) : 0);
 
 // Debugging: dump out values of each function for every key/string
@@ -324,6 +330,19 @@ module balance_rail() {
         balance_pin(key_idx);
 }
 
+module belly_rail() {
+    translate([soundboard_pos.x - belly_rail_width, soundboard_pos.y + balance_rail_depth, wall_th])
+        color(col_wood_dark)
+        difference() {
+            cube([belly_rail_width, belly_rail_depth, belly_rail_height]);
+            // Oblong cylinder to create a hole
+            rotate([0, 90, 0])
+                translate([-20, 50, -15])
+                    scale([1,2,1])
+                        cylinder(h=100, r=15);
+        }
+}
+
 module soundboard() {
     color(col_wood_light)
     difference() {
@@ -392,7 +411,8 @@ module tuning_pins() {
 }
 
 module balance_pin(key_idx) {
-   translate([key_x(key_idx) + (is_sharp(key_idx) ? sharp_width : nat_width)/2, wall_th + balance_rail_depth / 2, kb_start.z - 1])
+   translate([key_x(key_idx) + floor((is_sharp(key_idx) ? sharp_width : nat_width)/2) - 1, wall_th + balance_rail_depth / 2, kb_start.z - 1])
+       color(col_brass)
        cylinder(h=balance_pin_height, r=balance_pin_radius);
 }
 
@@ -440,8 +460,8 @@ module key_lever_2d(key_idx) {
         ]);
 
         // Subtract neighboring sharps so they don't overlap
-        if(is_sharp(key_idx+1)) offset(delta=1) key_lever_2d(key_idx+1);
-        if(is_sharp(key_idx-1)) offset(delta=1) key_lever_2d(key_idx-1);
+        if (is_sharp(key_idx+1)) offset(delta=1) key_lever_2d(key_idx+1);
+        if (is_sharp(key_idx-1)) offset(delta=1) key_lever_2d(key_idx-1);
     }
 }
 
@@ -497,6 +517,7 @@ module internal_components() {
 module soundbox() {
     bridge();
     soundboard();
+    belly_rail();
 }
 
 module assembly() {
