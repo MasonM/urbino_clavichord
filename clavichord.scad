@@ -149,6 +149,10 @@ mousehole_radius = 30;
 hitchpin_height = 5;
 // Hitchpin radius (?)
 hitchpin_radius = 1;
+// Balance pin height (?)
+balance_pin_height = 5;
+// Balance pin radius (?)
+balance_pin_radius = 1;
 // Tuning pin height (?)
 tuning_pin_height = 23;
 // Tuning pin radius (?)
@@ -231,8 +235,8 @@ function slot_x(key_idx) = right_edge - slot_positions_right[key_idx];
 // Return true if given key is a sharp, false if not
 function is_sharp(key_idx) = key_idx > 0 && key_idx < num_keys-1 && nat_idx(key_idx) == nat_idx(key_idx-1);
 
-// Return x position for closest natural key for the given key
-function nat_x(key_idx) = kb_start.x + nat_idx(key_idx) * nat_width;
+// Return x position for for the given key
+function key_x(key_idx) = kb_start.x + nat_idx(key_idx) * nat_width + (is_sharp(key_idx) ? nat_width - floor(sharp_width/2) : 0);
 
 // Debugging: dump out values of each function for every key/string
 if (debug_mode) {
@@ -316,6 +320,8 @@ module balance_rail() {
     translate([kb_start.x, wall_th, kb_start.z - balance_rail_height - 1])
         color(col_wood_dark)
         cube([kb_length, balance_rail_depth, balance_rail_height]);
+    for(key_idx=[0:num_keys - 1])
+        balance_pin(key_idx);
 }
 
 module soundboard() {
@@ -385,14 +391,19 @@ module tuning_pins() {
             cylinder(h=tuning_pin_height, r=tuning_pin_radius);
 }
 
+module balance_pin(key_idx) {
+   translate([key_x(key_idx) + (is_sharp(key_idx) ? sharp_width : nat_width)/2, wall_th + balance_rail_depth / 2, kb_start.z - 1])
+       cylinder(h=balance_pin_height, r=balance_pin_radius);
+}
+
 module tangent(key_idx) {
-    translate([slot_x(key_idx), string_y(key_string_idx(key_idx)) - 1, nat_height])
+    translate([slot_x(key_idx), string_y(key_string_idx(key_idx)) - 1, kb_start.z + nat_height])
         color(col_brass)
         cube([tangent_width, tangent_depth, tangent_height]);
 }
 
 module rack_tongue(key_idx) {
-    translate([slot_x(key_idx), key_lever_top_y, 2])
+    translate([slot_x(key_idx), key_lever_top_y, kb_start.z + 2])
         cube([rack_tongue_width, rack_tongue_depth, rack_tongue_height]);
 }
 
@@ -406,7 +417,7 @@ module key_lever_2d(key_idx) {
         key_lever_top_y
     ];
     bottom = [
-        nat_x(key_idx) + (is_sharp(key_idx) ? nat_width - sharp_width/2 : 0),
+        key_x(key_idx),
         kb_start.y + (is_sharp(key_idx) ? 45 : 0)
     ];
     second_bend_y = string_y(key_string_idx(key_idx)) - 10;
@@ -436,27 +447,32 @@ module key_lever_2d(key_idx) {
 
 module key_lever_3d(key_idx) {
     color(col_key_lever) {
-        linear_extrude(nat_height) key_lever_2d(key_idx);
+        translate([0, 0, kb_start.z])
+            linear_extrude(nat_height)
+                key_lever_2d(key_idx);
         rack_tongue(key_idx);
     }
     tangent(key_idx);
 }
 
 module natural_key_top(key_idx) {
-    translate([nat_x(key_idx) - 1, kb_start.y - 1, nat_height])
+    translate([key_x(key_idx) - 1, kb_start.y - 1, kb_start.z + nat_height])
         color(col_natural)
         linear_extrude(2)
             square([nat_width - 1, -kb_start.y + 1]);
 }
 
 module sharp_key_top(key_idx) {
-    translate([nat_x(key_idx) + nat_width - ceil(sharp_width/2), -sharp_depth, 5])
+    translate([key_x(key_idx), -sharp_depth, kb_start.z + 5])
         color(col_sharp)
         cube([sharp_width, sharp_depth, sharp_height]);
 }
 
 module key(key_idx) {
-    key_lever_3d(key_idx);
+    difference() {
+        key_lever_3d(key_idx);
+        balance_pin(key_idx);
+    }
     if (is_sharp(key_idx))
         sharp_key_top(key_idx);
     else
@@ -464,9 +480,8 @@ module key(key_idx) {
 }
 
 module keyboard() {
-    translate([0, 0, kb_start.z])
-       for(key_idx=[0:num_keys - 1])
-           key(key_idx);
+   for(key_idx=[0:num_keys - 1])
+       key(key_idx);
 }
 
 module internal_components() {
