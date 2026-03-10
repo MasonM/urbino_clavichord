@@ -14,10 +14,15 @@
 // A "(?)" indicates the value was guesstimated and should not be treated as exact
 
 /* [Toggle Visibility] */
+// Show case
 show_case = true;
+// Show internal components
 show_internals = true;
+// Show soundboard/bridge
 show_soundbox = true;
+// Show keyboard
 show_keyboard = true;
+// Show strings
 show_strings = true;
 
 /* [Number of keys/strings/pins] */
@@ -52,10 +57,14 @@ rack_pos = [0, c_width - wall_th - rack_th, c_height - rack_height - 12];
 backrail_th = 30;
 // Backrail height (?)
 backrail_height = 42;
+// Balance rail height (?)
+balance_rail_height = 10;
+// Balance rail depth (?)
+balance_rail_depth = 20;
 // Wrestplank width (?)
 wrestplank_width = 30;
 // Wrestplank height (?)
-wrestplank_height = 40;
+wrestplank_height = 30;
 // Hitchpin block thickness (?)
 hitchpin_block_th = 13;
 // Hitchpin block height (?)
@@ -141,7 +150,7 @@ hitchpin_height = 5;
 // Hitchpin radius (?)
 hitchpin_radius = 1;
 // Tuning pin height (?)
-tuning_pin_height = 12;
+tuning_pin_height = 23;
 // Tuning pin radius (?)
 tuning_pin_radius = 1.5;
 // String radius (?)
@@ -303,13 +312,21 @@ module backrail() {
         cube([rack_width, backrail_th, backrail_height]);
 }
 
+module balance_rail() {
+    translate([kb_start.x, wall_th, kb_start.z - balance_rail_height - 1])
+        color(col_wood_dark)
+        cube([kb_length, balance_rail_depth, balance_rail_height]);
+}
+
 module soundboard() {
     color(col_wood_light)
     difference() {
         translate(soundboard_pos) cube([soundboard_width, soundboard_depth, soundboard_height]);
         // Cylinder to cut out a mousehole
         translate([right_edge - 150, 120, 0]) cylinder(h=mousehole_height, r=mousehole_radius);
+        backrail();
         rack_block();
+        balance_rail();
     };
 }
 
@@ -455,6 +472,7 @@ module keyboard() {
 module internal_components() {
     hitchpin_block();
     hitchpins();
+    balance_rail();
     rack();
     backrail();
     wrestplank();
