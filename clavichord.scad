@@ -179,7 +179,7 @@ sharp_width = 14.3;
 sharp_depth = 41.2;
 // Sharp key height
 sharp_height = 15;
-// Tangent width (?)
+// Tangent striking top width (?)
 tangent_top_width = 2.5;
 // Tangent depth (?)
 tangent_depth = 1;
@@ -454,34 +454,35 @@ module key_lever_2d(key_idx) {
     second_bend_y = string_y(key_string_idx(key_idx)) - 10;
     first_bend_y = wall_th + 10 + (key_idx < 9 ? key_idx * 10 : max(80 - ((key_idx-10)*5), 0));
 
-    difference() {
-        polygon([
-           // Bottom to first bend
-           bottom,
-           [bottom.x, first_bend_y],
-           // Second bend to top
-           [top.x, second_bend_y],
-           top,
-           // Top to second bend
-           [top.x + top_width, top.y],
-           [top.x + top_width, second_bend_y],
-           // Second bend to first bend
-           [bottom.x + bottom_width, first_bend_y + (key_idx < 9 ? 6 : -6)],
-           [bottom.x + bottom_width, bottom.y],
-        ]);
-
-        // Subtract neighboring sharps so they don't overlap
-        if (is_sharp(key_idx+1)) offset(delta=1) key_lever_2d(key_idx+1);
-        if (is_sharp(key_idx-1)) offset(delta=1) key_lever_2d(key_idx-1);
-    }
+    polygon([
+       // Bottom to first bend
+       bottom,
+       [bottom.x, first_bend_y],
+       // Second bend to top
+       [top.x, second_bend_y],
+       top,
+       // Top to second bend
+       [top.x + top_width, top.y],
+       [top.x + top_width, second_bend_y],
+       // Second bend to first bend
+       [bottom.x + bottom_width, first_bend_y + (key_idx < 9 ? 6 : -6)],
+       [bottom.x + bottom_width, bottom.y],
+    ]);
 }
 
 module key_lever_3d(key_idx) {
     color(col_key_lever) {
+        rack_tongue(key_idx);
         translate([0, 0, kb_start.z])
             linear_extrude(nat_height)
-                key_lever_2d(key_idx);
-        rack_tongue(key_idx);
+                difference() {
+                    key_lever_2d(key_idx);
+                    // Subtract neighboring keys so they don't overlap
+                    if (!is_sharp(key_idx)) {
+                        if(key_idx > 0) offset(delta=1) key_lever_2d(key_idx-1);
+                        if (key_idx < num_keys - 1) offset(delta=1) key_lever_2d(key_idx+1);
+                    }
+                };
     }
     tangent(key_idx);
 }
