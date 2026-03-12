@@ -179,12 +179,12 @@ sharp_width = 14.3;
 sharp_depth = 41.2;
 // Sharp key height
 sharp_height = 15;
-// Tangent striking top width (?)
-tangent_top_width = 2.5;
+// Tangent striking width (?)
+tangent_width = 3;
 // Tangent depth (?)
 tangent_depth = 1;
 // Tangent height (?)
-tangent_height = 8;
+tangent_height = 5;
 // Rack tongue width (?)
 rack_tongue_width = 1;
 // Rack tongue depth (?)
@@ -418,19 +418,17 @@ module balance_pin(key_idx, radius) {
 
 module tangent(key_idx) {
     translate([
-        slot_x(key_idx),
-        string_y(key_string_idx(key_idx)) + tangent_top_width / 4,
+        slot_x(key_idx) + tangent_depth,
+        string_y(key_string_idx(key_idx)) - tangent_width / 4,
         kb_start.z + nat_height
     ])
         color(col_brass)
-        rotate([90, 0, 90])
-        linear_extrude(tangent_depth)
-            polygon([
-                [-tangent_top_width/4, 0],
-                [-tangent_top_width/2, tangent_height],
-                [tangent_top_width/2, tangent_height],
-                [tangent_top_width/4,0],
-            ]);
+        rotate([0, 0, 90])
+        difference() {
+            cube([tangent_width, tangent_depth, tangent_height]);
+            translate([0.5,0,0]) cube([tangent_width - 1, tangent_depth + 5, tangent_height - 0.5]);
+        }
+
 }
 
 module rack_tongue(key_idx) {
