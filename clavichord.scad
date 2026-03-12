@@ -284,13 +284,21 @@ module case() {
 
 module hitchpins() {
     for (string_idx=[0:num_strings-1])
-        translate([wall_th+5, string_y(string_idx), c_height - 10])
+        translate([
+            wall_th+5,
+            string_y(string_idx),
+            c_height - 10
+        ])
             color(col_brass)
             cylinder(h=hitchpin_height, r=hitchpin_radius);
 }
 
 module hitchpin_block() {
-    translate([wall_th, wall_th, c_height - hitchpin_block_height - 10])
+    translate([
+        wall_th,
+        wall_th,
+        c_height - hitchpin_block_height - 10
+    ])
         color(col_wood_dark)
         cube([hitchpin_block_th, c_width - 2*wall_th, hitchpin_block_height]);
 }
@@ -317,21 +325,34 @@ module rack() {
 }
 
 module backrail() {
-    translate([wall_th + hitchpin_block_th, c_width - wall_th - backrail_th, wall_th])
+    translate([
+        wall_th + hitchpin_block_th,
+        c_width - wall_th - backrail_th,
+        wall_th
+    ])
         color(col_wood_dark)
         cube([rack_width, backrail_th, backrail_height]);
 }
 
 module balance_rail() {
-    translate([kb_start.x, wall_th, kb_start.z - balance_rail_height - 1])
+    translate([
+        kb_start.x,
+        wall_th,
+        kb_start.z - balance_rail_height - 1
+    ])
         color(col_wood_dark)
         cube([kb_length, balance_rail_depth, balance_rail_height]);
+
     for(key_idx=[0:num_keys - 1])
         balance_pin(key_idx, balance_pin_radius);
 }
 
 module belly_rail() {
-    translate([soundboard_pos.x - belly_rail_width, soundboard_pos.y, wall_th])
+    translate([
+        soundboard_pos.x - belly_rail_width,
+        soundboard_pos.y,
+        wall_th
+    ])
         color(col_wood_dark)
         difference() {
             cube([belly_rail_width, belly_rail_depth, belly_rail_height]);
@@ -346,9 +367,11 @@ module belly_rail() {
 module soundboard() {
     color(col_wood_light)
     difference() {
-        translate(soundboard_pos) cube([soundboard_width, soundboard_depth, soundboard_height]);
+        translate(soundboard_pos)
+            cube([soundboard_width, soundboard_depth, soundboard_height]);
         // Cylinder to cut out a mousehole
-        translate([right_edge - 150, 120, 0]) cylinder(h=mousehole_height, r=mousehole_radius);
+        translate([right_edge - 150, 120, 0])
+            cylinder(h=mousehole_height, r=mousehole_radius);
         backrail();
         rack_block();
         balance_rail();
@@ -356,11 +379,16 @@ module soundboard() {
 }
 
 module bridge() {
-    translate([right_edge - 101, c_width - wall_th - 95, 53])
+    translate([
+        right_edge - 101,
+        c_width - wall_th - 95,
+        53
+    ])
         rotate([90, 0, 90])
         color(col_wood_dark)
         intersection() {
-            linear_extrude(100) bridge_2d();
+            linear_extrude(100)
+                bridge_2d();
             bridge_taper();
         }
 }
@@ -368,30 +396,43 @@ module bridge() {
 module bridge_2d() {
     difference() {
         square([bridge_width, bridge_height]);
-        translate([-12, 5, 0]) circle(bridge_height);
-        translate([30, 0, 0]) circle(9);
-        translate([45, 7, 0]) circle(10);
-        translate([60, 0, 0]) circle(9);
-        translate([bridge_width+5, 5, 0]) circle(bridge_height);
+        translate([-12, 5, 0])
+            circle(bridge_height);
+        translate([30, 0, 0])
+            circle(9);
+        translate([45, 7, 0])
+            circle(10);
+        translate([60, 0, 0])
+            circle(9);
+        translate([bridge_width+5, 5, 0])
+            circle(bridge_height);
     };
 }
 
 // Long trapezoid to intersect with the bridge so it tapers to top
 module bridge_taper() {
-    translate([c_length/2, bridge_height, bridge_bottom_depth/2])
-    rotate([180, 90, 0])
-    linear_extrude(c_length)
-        polygon([
-            [-bridge_top_depth/2, 0],
-            [-bridge_bottom_depth/2, bridge_height+1],
-            [bridge_bottom_depth/2, bridge_height+1],
-            [bridge_top_depth/2, 0],
-        ]);
-}
+    translate([
+        c_length/2,
+        bridge_height,
+        bridge_bottom_depth/2
+    ])
+        rotate([180, 90, 0])
+        linear_extrude(c_length)
+            polygon([
+                [-bridge_top_depth/2, 0],
+                [-bridge_bottom_depth/2, bridge_height+1],
+                [bridge_bottom_depth/2, bridge_height+1],
+                [bridge_top_depth/2, 0],
+            ]);
+    }
 
 module strings() {
     for (string_idx=[0:num_strings-1])
-        translate([wall_th + 5, string_y(string_idx), 75.4])
+        translate([
+            wall_th + 5,
+            string_y(string_idx),
+            75.4
+        ])
             rotate([0, 90, 0])
             color(col_string)
             cylinder(h=tuning_pin_x(string_idx) - wall_th - 5, r=string_radius);
@@ -405,15 +446,23 @@ module wrestplank() {
 
 module tuning_pins() {
     for(string_idx=[0:num_tuning_pins-1])
-        translate([tuning_pin_x(string_idx), string_y(string_idx), 27 + wrestplank_height])
+        translate([
+            tuning_pin_x(string_idx),
+            string_y(string_idx),
+            27 + wrestplank_height
+        ])
             color(col_brass)
             cylinder(h=tuning_pin_height, r=tuning_pin_radius);
 }
 
 module balance_pin(key_idx, radius) {
-   translate([key_x(key_idx) + floor((is_sharp(key_idx) ? sharp_width : nat_width)/2) - 1, wall_th + balance_rail_depth / 2, kb_start.z - 1])
-       color(col_brass)
-       cylinder(h=balance_pin_height, r=radius);
+    translate([
+        key_x(key_idx) + floor((is_sharp(key_idx) ? sharp_width : nat_width)/2) - 1,
+        wall_th + balance_rail_depth / 2,
+        kb_start.z - 1
+    ])
+        color(col_brass)
+        cylinder(h=balance_pin_height, r=radius);
 }
 
 module tangent(key_idx) {
@@ -424,15 +473,21 @@ module tangent(key_idx) {
     ])
         color(col_brass)
         rotate([0, 0, 90])
+        // This clavichord uses staple-like tangents
         difference() {
             cube([tangent_width, tangent_depth, tangent_height]);
-            translate([0.5,0,0]) cube([tangent_width - 1, tangent_depth + 5, tangent_height - 0.5]);
+            translate([0.5, 0, 0])
+                cube([tangent_width - 1, tangent_depth + 5, tangent_height - 0.5]);
         }
 
 }
 
 module rack_tongue(key_idx) {
-    translate([slot_x(key_idx), key_lever_top_y, kb_start.z + 2])
+    translate([
+        slot_x(key_idx),
+        key_lever_top_y,
+        kb_start.z + 2
+    ])
         cube([rack_tongue_width, rack_tongue_depth, rack_tongue_height]);
 }
 
@@ -486,14 +541,22 @@ module key_lever_3d(key_idx) {
 }
 
 module natural_key_top(key_idx) {
-    translate([key_x(key_idx) - 1, kb_start.y - 1, kb_start.z + nat_height])
+    translate([
+        key_x(key_idx) - 1,
+        kb_start.y - 1,
+        kb_start.z + nat_height
+    ])
         color(col_natural)
         linear_extrude(2)
             square([nat_width - 1, -kb_start.y + 1]);
 }
 
 module sharp_key_top(key_idx) {
-    translate([key_x(key_idx), -sharp_depth, kb_start.z + 5])
+    translate([
+        key_x(key_idx),
+        -sharp_depth,
+        kb_start.z + 5
+    ])
         color(col_sharp)
         cube([sharp_width, sharp_depth, sharp_height]);
 }
