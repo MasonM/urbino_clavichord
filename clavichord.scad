@@ -58,7 +58,7 @@ backrail_th = 30;
 // Backrail height (?)
 backrail_height = 42;
 // Balance rail height (?)
-balance_rail_height = 10;
+balance_rail_height = 30;
 // Balance rail depth (?)
 balance_rail_depth = 20;
 // Wrestplank width (?)
@@ -180,9 +180,9 @@ sharp_depth = 41.2;
 // Sharp key height
 sharp_height = 15;
 // Tangent width (?)
-tangent_width = 1.5;
+tangent_top_width = 2.5;
 // Tangent depth (?)
-tangent_depth = 3;
+tangent_depth = 1;
 // Tangent height (?)
 tangent_height = 8;
 // Rack tongue width (?)
@@ -283,7 +283,7 @@ module case() {
 }
 
 module hitchpins() {
-    for(string_idx=[0:num_strings-1])
+    for (string_idx=[0:num_strings-1])
         translate([wall_th+5, string_y(string_idx), c_height - 10])
             color(col_brass)
             cylinder(h=hitchpin_height, r=hitchpin_radius);
@@ -296,7 +296,7 @@ module hitchpin_block() {
 }
 
 module rack_slot_cutouts() {
-    for(x=slot_positions_right)
+    for (x=slot_positions_right)
         translate(rack_pos)
             translate([right_edge - x - 0.25, -1, 0])
                 cube([slot_width, rack_th - 2, rack_height+1]);
@@ -327,7 +327,7 @@ module balance_rail() {
         color(col_wood_dark)
         cube([kb_length, balance_rail_depth, balance_rail_height]);
     for(key_idx=[0:num_keys - 1])
-        balance_pin(key_idx);
+        balance_pin(key_idx, balance_pin_radius);
 }
 
 module belly_rail() {
@@ -339,7 +339,7 @@ module belly_rail() {
             rotate([0, 90, 0])
                 translate([-20, 70, -15])
                     scale([1,2,1])
-                        cylinder(h=100, r=15);
+                        cylinder(h=100, r=10);
         }
 }
 
@@ -390,8 +390,8 @@ module bridge_taper() {
 }
 
 module strings() {
-    for(string_idx=[0:num_strings-1])
-        translate([wall_th + 5, string_y(string_idx), 76])
+    for (string_idx=[0:num_strings-1])
+        translate([wall_th + 5, string_y(string_idx), 75.4])
             rotate([0, 90, 0])
             color(col_string)
             cylinder(h=tuning_pin_x(string_idx) - wall_th - 5, r=string_radius);
@@ -410,16 +410,27 @@ module tuning_pins() {
             cylinder(h=tuning_pin_height, r=tuning_pin_radius);
 }
 
-module balance_pin(key_idx) {
+module balance_pin(key_idx, radius) {
    translate([key_x(key_idx) + floor((is_sharp(key_idx) ? sharp_width : nat_width)/2) - 1, wall_th + balance_rail_depth / 2, kb_start.z - 1])
        color(col_brass)
-       cylinder(h=balance_pin_height, r=balance_pin_radius);
+       cylinder(h=balance_pin_height, r=radius);
 }
 
 module tangent(key_idx) {
-    translate([slot_x(key_idx), string_y(key_string_idx(key_idx)) - 1, kb_start.z + nat_height])
+    translate([
+        slot_x(key_idx),
+        string_y(key_string_idx(key_idx)) + tangent_top_width / 4,
+        kb_start.z + nat_height
+    ])
         color(col_brass)
-        cube([tangent_width, tangent_depth, tangent_height]);
+        rotate([90, 0, 90])
+        linear_extrude(tangent_depth)
+            polygon([
+                [-tangent_top_width/4, 0],
+                [-tangent_top_width/2, tangent_height],
+                [tangent_top_width/2, tangent_height],
+                [tangent_top_width/4,0],
+            ]);
 }
 
 module rack_tongue(key_idx) {
@@ -491,7 +502,7 @@ module sharp_key_top(key_idx) {
 module key(key_idx) {
     difference() {
         key_lever_3d(key_idx);
-        balance_pin(key_idx);
+        balance_pin(key_idx, balance_pin_radius + 0.5);
     }
     if (is_sharp(key_idx))
         sharp_key_top(key_idx);
@@ -500,7 +511,7 @@ module key(key_idx) {
 }
 
 module keyboard() {
-   for(key_idx=[0:num_keys - 1])
+   for (key_idx=[0:num_keys - 1])
        key(key_idx);
 }
 
