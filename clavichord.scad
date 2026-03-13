@@ -458,7 +458,7 @@ module tuning_pins() {
 module balance_pin(key_idx, radius) {
     translate([
         key_x(key_idx) + floor((is_sharp(key_idx) ? sharp_width : nat_width)/2) - 1,
-        wall_th + 2 + (is_sharp(key_idx) ? 10 : 0),
+        wall_th + 4 + (is_sharp(key_idx) ? 10 : 0),
         kb_start.z - 1
     ])
         color(col_brass)
