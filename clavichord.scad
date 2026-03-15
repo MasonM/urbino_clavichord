@@ -52,7 +52,11 @@ rack_width = 836;
 // Rack height (?)
 rack_height = 30;
 // Rack starting position (XYZ) (?)
-rack_pos = [0, c_width - wall_th - rack_th, c_height - rack_height - 12];
+rack_pos = [
+    0,
+    c_width - wall_th - rack_th,
+    c_height - rack_height - wall_th
+];
 // Backrail thickness (?)
 backrail_th = 30;
 // Backrail height (?)
@@ -304,9 +308,9 @@ module hitchpin_block() {
 }
 
 module rack_slot_cutouts() {
-    for (x=slot_positions_right)
+   for (key_idx=[0:num_keys - 1])
         translate(rack_pos)
-            translate([right_edge - x - 0.25, -1, 0])
+            translate([slot_x(key_idx) - slot_width/2, -1, 0])
                 cube([slot_width, rack_th - 2, rack_height+1]);
 }
 
@@ -382,7 +386,7 @@ module bridge() {
     translate([
         right_edge - 101,
         c_width - wall_th - 95,
-        53
+        soundboard_pos.z + soundboard_height
     ])
         rotate([90, 0, 90])
         color(col_wood_dark)
@@ -467,7 +471,7 @@ module balance_pin(key_idx, radius) {
 
 module tangent(key_idx) {
     translate([
-        slot_x(key_idx) + tangent_depth,
+        slot_x(key_idx) + tangent_depth/2,
         string_y(key_string_idx(key_idx)) - tangent_width / 4,
         kb_start.z + nat_height
     ])
@@ -484,7 +488,7 @@ module tangent(key_idx) {
 
 module rack_tongue(key_idx) {
     translate([
-        slot_x(key_idx),
+        slot_x(key_idx) - rack_tongue_width/2,
         key_lever_top_y,
         kb_start.z + 2
     ])
