@@ -142,7 +142,11 @@ soundboard_depth = 192;
 // Soundboard height (?)
 soundboard_height = 3;
 // Soundboard position
-soundboard_pos = [right_edge - wrestplank_width - soundboard_width, wall_th, 50];
+soundboard_pos = [
+    right_edge - wrestplank_width - soundboard_width,
+    wall_th,
+    50
+];
 // Mousehole height (?)
 mousehole_height = 100;
 // Mousehole radius (?)
@@ -362,8 +366,8 @@ module belly_rail() {
             cube([belly_rail_width, belly_rail_depth, belly_rail_height]);
             // Oblong cylinder to create a hole
             rotate([0, 90, 0])
-                translate([-20, 70, -15])
-                    scale([1,2,1])
+                translate([-20, (belly_rail_depth / 2), -15])
+                    scale([1,4,1])
                         cylinder(h=100, r=10);
         }
 }
