@@ -200,8 +200,13 @@ rack_tongue_depth = 7;
 // Rack tongue height (?)
 rack_tongue_height = 5;
 
-kb_start = [122, -nat_depth, c_height - nat_height - 16];
-kb_length = c_length - kb_start.x - 149;
+kb_start = [
+    122,
+    -nat_depth,
+    c_height - nat_height - 16
+];
+// Keyboard total length
+kb_length = 734;
 key_lever_top_y = c_width - wall_th - rack_th - 1;
 
 /* [Colors (RGB)] */
@@ -258,6 +263,7 @@ if (debug_mode) {
         echo(key_idx=key_idx,
             nat_idx=nat_idx(key_idx),
             is_sharp=is_sharp(key_idx),
+            key_x=key_x(key_idx),
             slot_x=slot_x(key_idx),
             key_string_idx=key_string_idx(key_idx),
             key_string_y=string_y(key_string_idx(key_idx))
@@ -308,7 +314,11 @@ module hitchpin_block() {
         c_height - hitchpin_block_height - 10
     ])
         color(col_wood_dark)
-        cube([hitchpin_block_th, c_width - 2*wall_th, hitchpin_block_height]);
+        cube([
+            hitchpin_block_th,
+            c_width - 2*wall_th,
+            hitchpin_block_height
+        ]);
 }
 
 module rack_slot_cutouts() {
@@ -439,7 +449,7 @@ module strings() {
         translate([
             wall_th + 5,
             string_y(string_idx),
-            75.4
+            soundboard_pos.z + soundboard_height + bridge_height + string_radius
         ])
             rotate([0, 90, 0])
             color(col_string)
@@ -485,7 +495,11 @@ module tangent(key_idx) {
         difference() {
             cube([tangent_width, tangent_depth, tangent_height]);
             translate([0.5, 0, 0])
-                cube([tangent_width - 1, tangent_depth + 5, tangent_height - 0.5]);
+                cube([
+                    tangent_width - 1,
+                    tangent_depth + 5,
+                    tangent_height - 0.5
+                ]);
         }
 
 }
@@ -503,7 +517,7 @@ module rack_tongue(key_idx) {
 // This is a mess because I couldn't figue out an underlying pattern in how the keys are cranked.
 module key_lever_2d(key_idx) {
     top_width = key_idx > 38 ? 5 : 10;
-    bottom_width = (is_sharp(key_idx) ? sharp_width : nat_width) - 4;
+    bottom_width = (is_sharp(key_idx) ? sharp_width : nat_width) - 3;
     top = [
         slot_x(key_idx) - top_width/2,
         key_lever_top_y
