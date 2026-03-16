@@ -138,7 +138,7 @@ bridge_bottom_depth = 15;
 // Soundboard width (?)
 soundboard_width = 190;
 // Soundboard depth (?)
-soundboard_depth = 192;
+soundboard_depth = c_width - wall_th*2;
 // Soundboard height (?)
 soundboard_height = 3;
 // Soundboard position
@@ -199,7 +199,7 @@ rack_tongue_width = 1;
 rack_tongue_depth = 7;
 // Rack tongue height (?)
 rack_tongue_height = 5;
-
+// Keyboard start position
 kb_start = [
     122,
     -nat_depth,
@@ -226,6 +226,8 @@ col_sharp = [0.15, 0.15, 0.15];
 col_brass = [0.85, 0.75, 0.30];
 // String
 col_string = [0.90, 0.90, 0.90];
+// Iron
+col_iron = [0.37, 0.4, 0.41];
 
 /* [Advanced] */
 $fn = 16;
@@ -303,7 +305,7 @@ module hitchpins() {
             string_y(string_idx),
             c_height - 10
         ])
-            color(col_brass)
+            color(col_iron)
             cylinder(h=hitchpin_height, r=hitchpin_radius);
 }
 
@@ -469,7 +471,7 @@ module tuning_pins() {
             string_y(string_idx),
             27 + wrestplank_height
         ])
-            color(col_brass)
+            color(col_iron)
             cylinder(h=tuning_pin_height, r=tuning_pin_radius);
 }
 
