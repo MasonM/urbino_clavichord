@@ -231,6 +231,7 @@ col_iron = [0.37, 0.4, 0.41];
 
 /* [Advanced] */
 $fn = 16;
+// Debugging: dump out values of each function for every key/string
 debug_mode = false;
 
 // -- Helper functions ---
@@ -259,7 +260,6 @@ function is_sharp(key_idx) = key_idx > 0 && key_idx < num_keys-1 && nat_idx(key_
 // Return x position for the given key
 function key_x(key_idx) = kb_start.x + nat_idx(key_idx) * nat_width + (is_sharp(key_idx) ? nat_width - floor(sharp_width/2) : 0);
 
-// Debugging: dump out values of each function for every key/string
 if (debug_mode) {
     for (key_idx=[0:num_keys-1]) {
         echo(key_idx=key_idx,
