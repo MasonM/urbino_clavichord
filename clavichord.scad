@@ -69,6 +69,12 @@ balance_rail_depth = 20;
 wrestplank_width = 30;
 // Wrestplank height (?)
 wrestplank_height = 30;
+// Wrestplank position (?)
+wrestplank_pos = [
+    right_edge - wrestplank_width,
+    wall_th,
+    27
+];
 // Hitchpin block thickness (?)
 hitchpin_block_th = 13;
 // Hitchpin block height (?)
@@ -147,6 +153,12 @@ soundboard_pos = [
     wall_th,
     50
 ];
+// Bridge position
+bridge_pos = [
+    right_edge - 101,
+    c_width - wall_th - 95,
+    soundboard_pos.z + soundboard_height
+];
 // Mousehole height (?)
 mousehole_height = 100;
 // Mousehole radius (?)
@@ -200,7 +212,7 @@ rack_tongue_depth = 7;
 // Rack tongue height (?)
 rack_tongue_height = 5;
 // Keyboard start position
-kb_start = [
+kb_pos = [
     122,
     -nat_depth,
     c_height - nat_height - 16
@@ -261,7 +273,7 @@ function slot_x(key_idx) = right_edge - slot_positions_right[key_idx];
 function is_sharp(key_idx) = key_idx > 0 && key_idx < num_keys-1 && nat_idx(key_idx) == nat_idx(key_idx-1);
 
 // Return x position for the given key
-function key_x(key_idx) = kb_start.x + nat_idx(key_idx) * nat_width + (is_sharp(key_idx) ? nat_width - floor(sharp_width/2) : 0);
+function key_x(key_idx) = kb_pos.x + nat_idx(key_idx) * nat_width + (is_sharp(key_idx) ? nat_width - floor(sharp_width/2) : 0);
 
 if (debug_mode) {
     for (key_idx=[0:num_keys-1]) {
@@ -297,7 +309,7 @@ module case() {
             cube([c_length - 2*wall_th, c_width - 2*wall_th, c_height]);
 
         // Keyboard cutout in the front wall
-        translate([kb_start.x, -1, kb_start.z])
+        translate([kb_pos.x, -1, kb_pos.z])
             cube([kb_length, wall_th + 2, 12]);
     }
 }
@@ -360,9 +372,9 @@ module backrail() {
 
 module balance_rail() {
     translate([
-        kb_start.x,
+        kb_pos.x,
         wall_th,
-        kb_start.z - balance_rail_height - 1
+        kb_pos.z - balance_rail_height - 1
     ])
         color(col_wood_dark)
         cube([kb_length, balance_rail_depth, balance_rail_height]);
@@ -403,11 +415,7 @@ module soundboard() {
 }
 
 module bridge() {
-    translate([
-        right_edge - 101,
-        c_width - wall_th - 95,
-        soundboard_pos.z + soundboard_height
-    ])
+    translate(bridge_pos)
         rotate([90, 0, 90])
         color(col_wood_dark)
         intersection() {
@@ -466,7 +474,7 @@ module strings() {
 }
 
 module wrestplank() {
-    translate([right_edge - 30, wall_th, 27])
+    translate(wrestplank_pos)
         color(col_wood_dark)
         cube([wrestplank_width, c_width - 2*wall_th, wrestplank_height]);
 }
@@ -476,7 +484,7 @@ module tuning_pins() {
         translate([
             tuning_pin_x(string_idx),
             string_y(string_idx),
-            27 + wrestplank_height
+            wrestplank_pos.z + wrestplank_height
         ])
             color(col_iron)
             cylinder(h=tuning_pin_height, r=tuning_pin_radius);
@@ -486,7 +494,7 @@ module balance_pin(key_idx, radius) {
     translate([
         key_x(key_idx) + floor((is_sharp(key_idx) ? sharp_width : nat_width)/2) - 1,
         wall_th + 4 + (is_sharp(key_idx) ? 10 : 0),
-        kb_start.z - 1
+        kb_pos.z - 1
     ])
         color(col_iron)
         cylinder(h=balance_pin_height, r=radius);
@@ -496,7 +504,7 @@ module tangent(key_idx) {
     translate([
         slot_x(key_idx) + tangent_depth/2,
         string_y(key_string_idx(key_idx)) - tangent_width / 4,
-        kb_start.z + nat_height
+        kb_pos.z + nat_height
     ])
         color(col_brass)
         rotate([0, 0, 90])
@@ -517,7 +525,7 @@ module rack_tongue(key_idx) {
     translate([
         slot_x(key_idx) - rack_tongue_width/2,
         key_lever_top_y,
-        kb_start.z + 2
+        kb_pos.z + 2
     ])
         cube([rack_tongue_width, rack_tongue_depth, rack_tongue_height]);
 }
@@ -533,7 +541,7 @@ module key_lever_2d(key_idx) {
     ];
     bottom = [
         key_x(key_idx),
-        kb_start.y + (is_sharp(key_idx) ? 45 : 0)
+        kb_pos.y + (is_sharp(key_idx) ? 45 : 0)
     ];
     second_bend_y = string_y(key_string_idx(key_idx)) - 10;
     first_bend_y = wall_th + 10 + (key_idx < 9 ? key_idx * 10 : max(80 - ((key_idx-10)*5), 0));
@@ -557,7 +565,7 @@ module key_lever_2d(key_idx) {
 module key_lever_3d(key_idx) {
     color(col_key_lever) {
         rack_tongue(key_idx);
-        translate([0, 0, kb_start.z])
+        translate([0, 0, kb_pos.z])
             linear_extrude(nat_height)
                 difference() {
                     key_lever_2d(key_idx);
@@ -574,19 +582,19 @@ module key_lever_3d(key_idx) {
 module natural_key_top(key_idx) {
     translate([
         key_x(key_idx) - 1,
-        kb_start.y - 1,
-        kb_start.z + nat_height
+        kb_pos.y - 1,
+        kb_pos.z + nat_height
     ])
         color(col_natural)
         linear_extrude(2)
-            square([nat_width - 1, -kb_start.y + 1]);
+            square([nat_width - 1, -kb_pos.y + 1]);
 }
 
 module sharp_key_top(key_idx) {
     translate([
         key_x(key_idx),
         -sharp_depth,
-        kb_start.z + 5
+        kb_pos.z + 5
     ])
         color(col_sharp)
         cube([sharp_width, sharp_depth, sharp_height]);
