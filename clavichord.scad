@@ -133,8 +133,8 @@ bridge_width = 98;
 bridge_height = 22;
 // Bridge top depth (?)
 bridge_top_depth = 1;
-// Bridge bottom depth (?)
-bridge_bottom_depth = 15;
+// Bridge bottom depth
+bridge_bottom_depth = 10;
 // Soundboard width (?)
 soundboard_width = 190;
 // Soundboard depth (?)
@@ -481,7 +481,7 @@ module balance_pin(key_idx, radius) {
         wall_th + 4 + (is_sharp(key_idx) ? 10 : 0),
         kb_start.z - 1
     ])
-        color(col_brass)
+        color(col_iron)
         cylinder(h=balance_pin_height, r=radius);
 }
 
