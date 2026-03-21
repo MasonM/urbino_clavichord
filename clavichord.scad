@@ -241,7 +241,10 @@ debug_mode = false;
 function string_y(string_idx) = key_lever_top_y - 2 - (string_idx*1.3) - floor(string_idx/4) * 3 - (string_idx > 1 ? 3 : 0);
 
 // Return x position for the tuning pin connected to the given string
-function tuning_pin_x(string_idx) = right_edge - 7 -(string_idx%4)*5;
+function tuning_pin_x(string_idx) = right_edge - 7 -(string_idx % 4)*5;
+
+// Return x position for the hitch pin connected to the given string
+function hitch_pin_x(string_idx) = wall_th + 3 + (string_idx % 2 ? 3 : 0);
 
 // Return string_idx of the first string that the tangent for the given key should strike.
 // https://oeis.org/A057356
@@ -275,7 +278,8 @@ if (debug_mode) {
     for (string_idx=[0:num_strings-1]) {
         echo(string_idx=string_idx,
             string_y=string_y(string_idx),
-            tuning_pin_x=tuning_pin_x(string_idx)
+            tuning_pin_x=tuning_pin_x(string_idx),
+            hitch_pin_x=hitch_pin_x(string_idx)
         );
     }
 }
@@ -301,7 +305,7 @@ module case() {
 module hitchpins() {
     for (string_idx=[0:num_strings-1])
         translate([
-            wall_th+5,
+            hitch_pin_x(string_idx),
             string_y(string_idx),
             c_height - 10
         ])
@@ -449,7 +453,7 @@ module bridge_taper() {
 module strings() {
     for (string_idx=[0:num_strings-1])
         translate([
-            wall_th + 5,
+            hitch_pin_x(string_idx),
             string_y(string_idx),
             soundboard_pos.z + soundboard_height + bridge_height + string_radius
         ])
