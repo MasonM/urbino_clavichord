@@ -42,7 +42,7 @@ c_width = 216;
 c_height = 82;
 // Wall thickness
 wall_th = 12;
-right_edge = c_length - wall_th;
+right_edge_x = c_length - wall_th;
 
 /* [Internal Component Dimensions (mm-R)] */
 // Rack thickness
@@ -71,7 +71,7 @@ wrestplank_width = 30;
 wrestplank_height = 30;
 // Wrestplank position (?)
 wrestplank_pos = [
-    right_edge - wrestplank_width,
+    right_edge_x - wrestplank_width,
     wall_th,
     27
 ];
@@ -149,13 +149,13 @@ soundboard_depth = c_width - wall_th*2;
 soundboard_height = 3;
 // Soundboard position
 soundboard_pos = [
-    right_edge - wrestplank_width - soundboard_width,
+    right_edge_x - wrestplank_width - soundboard_width,
     wall_th,
     50
 ];
 // Bridge position
 bridge_pos = [
-    right_edge - 101,
+    right_edge_x - 101,
     c_width - wall_th - 95,
     soundboard_pos.z + soundboard_height
 ];
@@ -253,7 +253,7 @@ debug_mode = false;
 function string_y(string_idx) = key_lever_top_y - 2 - (string_idx*1.5) - floor(string_idx/4) * 1.5 - (string_idx > 1 ? 3 : 0);
 
 // Return x position for the tuning pin connected to the given string
-function tuning_pin_x(string_idx) = right_edge - 7 -(string_idx % 4)*5;
+function tuning_pin_x(string_idx) = right_edge_x - 7 -(string_idx % 4)*5;
 
 // Return x position for the hitch pin connected to the given string
 function hitch_pin_x(string_idx) = wall_th + 3 + (string_idx % 2 ? 3 : 0);
@@ -267,7 +267,7 @@ function key_string_idx(key_idx) = num_strings - 1 - 2*(key_idx < 5 ? key_idx : 
 function nat_idx(key_idx) = key_idx > 1 ? (round((key_idx + 8) * log(3/2)/log(2)) - 4) : key_idx;
 
 // Return x position of slot for given key
-function slot_x(key_idx) = right_edge - slot_positions_right[key_idx];
+function slot_x(key_idx) = right_edge_x - slot_positions_right[key_idx];
 
 // Return true if given key is a sharp, false if not
 function is_sharp(key_idx) = key_idx > 0 && key_idx < num_keys-1 && nat_idx(key_idx) == nat_idx(key_idx-1);
@@ -406,7 +406,7 @@ module soundboard() {
         translate(soundboard_pos)
             cube([soundboard_width, soundboard_depth, soundboard_height]);
         // Cylinder to cut out a mousehole
-        translate([right_edge - 150, 120, 0])
+        translate([right_edge_x - 150, 120, 0])
             cylinder(h=mousehole_height, r=mousehole_radius);
         backrail();
         rack_block();
