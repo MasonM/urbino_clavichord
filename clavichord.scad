@@ -238,7 +238,7 @@ debug_mode = false;
 
 // Return y position for given string.
 // Group strings in groups of 4, except bottom 2 and top 4.
-function string_y(string_idx) = key_lever_top_y - 2 - (string_idx*1.3) - floor(string_idx/4) * 3 - (string_idx > 1 ? 3 : 0);
+function string_y(string_idx) = key_lever_top_y - 2 - (string_idx*1.5) - floor(string_idx/4) * 1.5 - (string_idx > 1 ? 3 : 0);
 
 // Return x position for the tuning pin connected to the given string
 function tuning_pin_x(string_idx) = right_edge - 7 -(string_idx % 4)*5;
@@ -459,7 +459,10 @@ module strings() {
         ])
             rotate([0, 90, 0])
             color(col_string)
-            cylinder(h=tuning_pin_x(string_idx) - wall_th - 5, r=string_radius);
+            cylinder(
+                h=tuning_pin_x(string_idx) - hitch_pin_x(string_idx),
+                r=string_radius
+            );
 }
 
 module wrestplank() {
