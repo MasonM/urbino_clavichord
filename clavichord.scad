@@ -45,6 +45,10 @@ wall_th = 12;
 right_edge_x = c_length - wall_th;
 
 /* [Internal Component Dimensions (mm-R)] */
+// Hitchpin block thickness (?)
+hitchpin_block_th = 13;
+// Hitchpin block height (?)
+hitchpin_block_height = 60;
 // Rack thickness
 rack_th = 13;
 // Rack width (?)
@@ -53,7 +57,7 @@ rack_width = 836;
 rack_height = 30;
 // Rack starting position (XYZ) (?)
 rack_pos = [
-    0,
+    wall_th + hitchpin_block_th,
     c_width - wall_th - rack_th,
     c_height - rack_height - wall_th
 ];
@@ -75,10 +79,6 @@ wrestplank_pos = [
     wall_th,
     27
 ];
-// Hitchpin block thickness (?)
-hitchpin_block_th = 13;
-// Hitchpin block height (?)
-hitchpin_block_height = 60;
 // Slot positions from right edge of case
 slot_positions_right = [
     938,    // F
@@ -156,7 +156,7 @@ soundboard_pos = [
 // Bridge position
 bridge_pos = [
     right_edge_x - 101,
-    c_width - wall_th - 95,
+    c_width - wall_th - rack_th - 82,
     soundboard_pos.z + soundboard_height
 ];
 // Mousehole height (?)
@@ -218,7 +218,8 @@ kb_pos = [
     c_height - nat_height - 16
 ];
 // Keyboard total length
-kb_length = 734;
+kb_length = key_x(num_keys + 1) - kb_pos.x;
+// y coordinate of top of each key lever (?)
 key_lever_top_y = c_width - wall_th - rack_th - 1;
 
 /* [Colors (RGB)] */
@@ -250,30 +251,52 @@ debug_mode = false;
 
 // Return y position for given string.
 // Group strings in groups of 4, except bottom 2 and top 4.
-function string_y(string_idx) = key_lever_top_y - 2 - (string_idx*1.5) - floor(string_idx/4) * 1.5 - (string_idx > 1 ? 3 : 0);
+function string_y(string_idx) =
+    key_lever_top_y
+    - 2
+    - (string_idx*1.5)
+    - floor(string_idx/4) * 1.5
+    - (string_idx > 1 ? 3 : 0);
 
 // Return x position for the tuning pin connected to the given string
-function tuning_pin_x(string_idx) = right_edge_x - 7 -(string_idx % 4)*5;
+function tuning_pin_x(string_idx) =
+    right_edge_x
+    - 7
+    - (string_idx % 4) * 5;
 
 // Return x position for the hitch pin connected to the given string
 function hitch_pin_x(string_idx) = wall_th + 3 + (string_idx % 2 ? 3 : 0);
 
 // Return string_idx of the first string that the tangent for the given key should strike.
 // https://oeis.org/A057356
-function key_string_idx(key_idx) = num_strings - 1 - 2*(key_idx < 5 ? key_idx : floor(2*(key_idx-1)/7) + 4);
+function key_string_idx(key_idx) =
+    num_strings - 1
+    - 2*(
+        key_idx < 5
+        ? key_idx
+        : floor(2*(key_idx-1)/7) + 4
+    );
 
 // Return index of the closest (to the left) natural key for the given key
 // https://oeis.org/A366701
-function nat_idx(key_idx) = key_idx > 1 ? (round((key_idx + 8) * log(3/2)/log(2)) - 4) : key_idx;
+function nat_idx(key_idx) = key_idx > 1
+    ? (round((key_idx + 8) * log(3/2)/log(2)) - 4)
+    : key_idx;
 
 // Return x position of slot for given key
 function slot_x(key_idx) = right_edge_x - slot_positions_right[key_idx];
 
 // Return true if given key is a sharp, false if not
-function is_sharp(key_idx) = key_idx > 0 && key_idx < num_keys-1 && nat_idx(key_idx) == nat_idx(key_idx-1);
+function is_sharp(key_idx) =
+    key_idx > 0
+    && key_idx < num_keys-1
+    && nat_idx(key_idx) == nat_idx(key_idx-1);
 
 // Return x position for the given key
-function key_x(key_idx) = kb_pos.x + nat_idx(key_idx) * nat_width + (is_sharp(key_idx) ? nat_width - floor(sharp_width/2) : 0);
+function key_x(key_idx) =
+    kb_pos.x
+    + nat_idx(key_idx) * nat_width
+    + (is_sharp(key_idx) ? nat_width - floor(sharp_width/2) : 0);
 
 if (debug_mode) {
     for (key_idx=[0:num_keys-1]) {
@@ -342,14 +365,13 @@ module hitchpin_block() {
 module rack_slot_cutouts() {
    for (key_idx=[0:num_keys - 1])
         translate(rack_pos)
-            translate([slot_x(key_idx) - slot_width/2, -1, 0])
+            translate([slot_x(key_idx) - rack_pos.x - slot_width/2, -1, 0])
                 cube([slot_width, rack_th - 2, rack_height+1]);
 }
 
 module rack_block() {
     translate(rack_pos)
-        translate([wall_th + hitchpin_block_th, 0, 0])
-            cube([rack_width, rack_th, rack_height]);
+        cube([rack_width, rack_th, rack_height]);
 }
 
 module rack() {
