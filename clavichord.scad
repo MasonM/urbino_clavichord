@@ -202,7 +202,7 @@ sharp_width = 14.3;
 // Sharp key depth
 sharp_depth = 41.2;
 // Sharp key height
-sharp_height = 15;
+sharp_height = 4.9;
 // Tangent striking width (?)
 tangent_width = 3;
 // Tangent depth (?)
@@ -432,12 +432,17 @@ module belly_rail() {
         color(col_wood_dark)
         difference() {
             cube([belly_rail_width, belly_rail_depth, belly_rail_height]);
-            // Oblong cylinder to create a hole
-            rotate([0, 90, 0])
-                translate([-20, (belly_rail_depth / 2), -15])
-                    scale([1,4,1])
-                        cylinder(h=100, r=10);
+            // Commented out because I'm not sure if this is needed/desirable if we have a mousehole
+            //belly_rail_hole();
         }
+}
+
+// Oblong cylinder to create a hole in the belly rail
+module belly_rail_hole() {
+    rotate([0, 90, 0])
+        translate([-20, (belly_rail_depth / 2), -15])
+            scale([1,4,1])
+                cylinder(h=100, r=10);
 }
 
 module soundboard() {
@@ -634,10 +639,10 @@ module sharp_key_top(key_idx) {
     translate([
         key_x(key_idx),
         -sharp_depth,
-        kb_pos.z + 5
+        kb_pos.z + nat_height
     ])
         color(col_sharp)
-        cube([sharp_width, sharp_depth, sharp_height]);
+        cube([sharp_width, sharp_depth, key_top_height + sharp_height]);
 }
 
 module key(key_idx) {
