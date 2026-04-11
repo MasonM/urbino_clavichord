@@ -193,6 +193,8 @@ nat_width = 25.3;
 nat_depth = 81.5;
 // Natural key height
 nat_height = 10;
+// Key top height (?)
+key_top_height = 2;
 // Sharp key width
 sharp_width = 14.3;
 // Sharp key depth
@@ -329,11 +331,19 @@ module case() {
 
         // Hollow interior
         translate([wall_th, wall_th, wall_th])
-            cube([c_length - 2*wall_th, c_width - 2*wall_th, c_height]);
+            cube([
+                c_length - 2*wall_th,
+                c_width - 2*wall_th,
+                c_height
+            ]);
 
         // Keyboard cutout in the front wall
         translate([kb_pos.x, -1, kb_pos.z])
-            cube([kb_length, wall_th + 2, 12]);
+            cube([
+                kb_length,
+                wall_th + 2,
+                nat_height + key_top_height
+            ]);
     }
 }
 
@@ -608,7 +618,7 @@ module natural_key_top(key_idx) {
         kb_pos.z + nat_height
     ])
         color(col_natural)
-        linear_extrude(2)
+        linear_extrude(key_top_height)
             square([nat_width - 1, -kb_pos.y + 1]);
 }
 
