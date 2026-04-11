@@ -28,6 +28,8 @@ show_strings = true;
 /* [Number of keys/strings/pins] */
 // Number of keys
 num_keys = 47;
+// Short octave?
+short_octave = true;
 // Number of strings
 num_strings = 34;
 // Number of tuning pins
@@ -282,7 +284,13 @@ function key_string_idx(key_idx) =
 // Return index of the closest (to the left) natural key for the given key
 // https://oeis.org/A366701
 function nat_idx(key_idx) = key_idx > 1
-    ? (round((key_idx + 8) * log(3/2)/log(2)) - 4)
+    ? (
+        round(
+            (key_idx + (short_octave ? 8 : 0))
+            * log(3/2)/log(2)
+        )
+        - (short_octave ? 4 : 0)
+    )
     : key_idx;
 
 // Return x position of slot for given key
