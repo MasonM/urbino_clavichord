@@ -1,0 +1,331 @@
+[
+  {
+    "index": 1,
+    "note": "F",
+    "slot_position": 938.0,
+    "sounding_length": 837.0,
+    "frequency": 87.30706
+  },
+  {
+    "index": 2,
+    "note": "G",
+    "slot_position": 927.0,
+    "sounding_length": 826.0,
+    "frequency": 97.99886
+  },
+  {
+    "index": 3,
+    "note": "A",
+    "slot_position": 916.5,
+    "sounding_length": 815.5,
+    "frequency": 110.0
+  },
+  {
+    "index": 4,
+    "note": "Bb",
+    "slot_position": 902.5,
+    "sounding_length": 801.5,
+    "frequency": 116.5409
+  },
+  {
+    "index": 5,
+    "note": "B",
+    "slot_position": 888.5,
+    "sounding_length": 787.5,
+    "frequency": 123.4708
+  },
+  {
+    "index": 6,
+    "note": "c",
+    "slot_position": 875.5,
+    "sounding_length": 774.5,
+    "frequency": 130.8128
+  },
+  {
+    "index": 7,
+    "note": "c#",
+    "slot_position": 836.0,
+    "sounding_length": 735.0,
+    "frequency": 138.5913
+  },
+  {
+    "index": 8,
+    "note": "d",
+    "slot_position": 788.0,
+    "sounding_length": 687.0,
+    "frequency": 146.8324
+  },
+  {
+    "index": 9,
+    "note": "eb",
+    "slot_position": 774.0,
+    "sounding_length": 673.0,
+    "frequency": 155.5635
+  },
+  {
+    "index": 10,
+    "note": "e",
+    "slot_position": 731.0,
+    "sounding_length": 630.0,
+    "frequency": 164.8138
+  },
+  {
+    "index": 11,
+    "note": "f",
+    "slot_position": 699.0,
+    "sounding_length": 598.0,
+    "frequency": 174.6141
+  },
+  {
+    "index": 12,
+    "note": "f#",
+    "slot_position": 665.5,
+    "sounding_length": 565.0,
+    "frequency": 184.9972
+  },
+  {
+    "index": 13,
+    "note": "g",
+    "slot_position": 655.0,
+    "sounding_length": 554.0,
+    "frequency": 195.9977
+  },
+  {
+    "index": 14,
+    "note": "ab",
+    "slot_position": 627.0,
+    "sounding_length": 526.0,
+    "frequency": 207.6523
+  },
+  {
+    "index": 15,
+    "note": "a",
+    "slot_position": 593.0,
+    "sounding_length": 492.0,
+    "frequency": 220.0
+  },
+  {
+    "index": 16,
+    "note": "bb",
+    "slot_position": 582.0,
+    "sounding_length": 481.5,
+    "frequency": 233.0819
+  },
+  {
+    "index": 17,
+    "note": "b",
+    "slot_position": 549.0,
+    "sounding_length": 448.0,
+    "frequency": 246.9417
+  },
+  {
+    "index": 18,
+    "note": "c1",
+    "slot_position": 528.5,
+    "sounding_length": 427.5,
+    "frequency": 261.6256
+  },
+  {
+    "index": 19,
+    "note": "c#1",
+    "slot_position": 506.0,
+    "sounding_length": 405.0,
+    "frequency": 277.1826
+  },
+  {
+    "index": 20,
+    "note": "d1",
+    "slot_position": 495.5,
+    "sounding_length": 394.5,
+    "frequency": 293.6648
+  },
+  {
+    "index": 21,
+    "note": "eb1",
+    "slot_position": 474.0,
+    "sounding_length": 373.0,
+    "frequency": 311.127
+  },
+  {
+    "index": 22,
+    "note": "e1",
+    "slot_position": 449.5,
+    "sounding_length": 348.5,
+    "frequency": 329.6276
+  },
+  {
+    "index": 23,
+    "note": "f1",
+    "slot_position": 437.5,
+    "sounding_length": 336.5,
+    "frequency": 349.2282
+  },
+  {
+    "index": 24,
+    "note": "f#1",
+    "slot_position": 420.5,
+    "sounding_length": 319.5,
+    "frequency": 369.9944
+  },
+  {
+    "index": 25,
+    "note": "g1",
+    "slot_position": 398.0,
+    "sounding_length": 297.0,
+    "frequency": 391.9954
+  },
+  {
+    "index": 26,
+    "note": "ab1",
+    "slot_position": 383.0,
+    "sounding_length": 282.0,
+    "frequency": 415.3047
+  },
+  {
+    "index": 27,
+    "note": "a1",
+    "slot_position": 371.0,
+    "sounding_length": 270.5,
+    "frequency": 440.0
+  },
+  {
+    "index": 28,
+    "note": "bb1",
+    "slot_position": 357.5,
+    "sounding_length": 256.5,
+    "frequency": 466.1638
+  },
+  {
+    "index": 29,
+    "note": "b1",
+    "slot_position": 342.5,
+    "sounding_length": 241.5,
+    "frequency": 493.8833
+  },
+  {
+    "index": 30,
+    "note": "c2",
+    "slot_position": 328.5,
+    "sounding_length": 227.5,
+    "frequency": 523.2511
+  },
+  {
+    "index": 31,
+    "note": "c#2",
+    "slot_position": 317.5,
+    "sounding_length": 216.5,
+    "frequency": 554.3653
+  },
+  {
+    "index": 32,
+    "note": "d2",
+    "slot_position": 302.5,
+    "sounding_length": 202.0,
+    "frequency": 587.3295
+  },
+  {
+    "index": 33,
+    "note": "e2b",
+    "slot_position": 291.0,
+    "sounding_length": 190.0,
+    "frequency": 622.254
+  },
+  {
+    "index": 34,
+    "note": "e2",
+    "slot_position": 280.0,
+    "sounding_length": 179.5,
+    "frequency": 659.2551
+  },
+  {
+    "index": 35,
+    "note": "f2",
+    "slot_position": 270.5,
+    "sounding_length": 169.5,
+    "frequency": 698.4565
+  },
+  {
+    "index": 36,
+    "note": "f#2",
+    "slot_position": 262.0,
+    "sounding_length": 161.0,
+    "frequency": 739.9888
+  },
+  {
+    "index": 37,
+    "note": "g2",
+    "slot_position": 251.0,
+    "sounding_length": 150.5,
+    "frequency": 783.9909
+  },
+  {
+    "index": 38,
+    "note": "ab2",
+    "slot_position": 241.5,
+    "sounding_length": 140.5,
+    "frequency": 830.6094
+  },
+  {
+    "index": 39,
+    "note": "a2",
+    "slot_position": 232.0,
+    "sounding_length": 131.0,
+    "frequency": 880.0
+  },
+  {
+    "index": 40,
+    "note": "bb2",
+    "slot_position": 226.5,
+    "sounding_length": 125.5,
+    "frequency": 932.3275
+  },
+  {
+    "index": 41,
+    "note": "b2",
+    "slot_position": 217.0,
+    "sounding_length": 116.0,
+    "frequency": 987.7666
+  },
+  {
+    "index": 42,
+    "note": "c3",
+    "slot_position": 210.5,
+    "sounding_length": 109.5,
+    "frequency": 1046.502
+  },
+  {
+    "index": 43,
+    "note": "c#3",
+    "slot_position": 203.0,
+    "sounding_length": 102.0,
+    "frequency": 1108.731
+  },
+  {
+    "index": 44,
+    "note": "d3",
+    "slot_position": 199.0,
+    "sounding_length": 98.0,
+    "frequency": 1174.659
+  },
+  {
+    "index": 45,
+    "note": "eb3",
+    "slot_position": 192.5,
+    "sounding_length": 91.5,
+    "frequency": 1244.508
+  },
+  {
+    "index": 46,
+    "note": "e3",
+    "slot_position": 186.0,
+    "sounding_length": 85.0,
+    "frequency": 1318.51
+  },
+  {
+    "index": 47,
+    "note": "f3",
+    "slot_position": 180.5,
+    "sounding_length": 79.5,
+    "frequency": 1396.913
+  }
+]

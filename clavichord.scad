@@ -81,56 +81,6 @@ wrestplank_pos = [
     wall_th,
     27
 ];
-// Slot positions from right edge of case
-slot_positions_right = [
-    938,    // F
-    927,    // G
-    916.5,  // A
-    902.5,  // Bb
-    888.5,  // B
-    875.5,  // c
-    836,    // c#
-    788,    // d
-    774,    // eb
-    731,    // e
-    699,    // f
-    665.5,  // f#
-    655,    // g
-    627,    // ab
-    593,    // a
-    582,    // bb
-    549,    // b
-    528.5,  // c1
-    506,    // c#1
-    495.5,  // d1
-    474,    // eb1
-    449.5,  // e1
-    437.5,  // f1
-    420.5,  // f#1
-    398,    // g1
-    383,    // ab
-    371,    // a
-    357.5,  // bb
-    342.5,  // b
-    328.5,  // c1
-    317.5,  // c#1
-    302.5,  // d1
-    291,    // eb1
-    280,    // e1
-    270.5,  // f1
-    262,    // f#2
-    251,    // g2
-    241.5,  // ab2
-    232,    // a2
-    226.5,  // bb2
-    217,    // b2
-    210.5,  // c3
-    203,    // c#3
-    199,    // d3
-    192.5,  // eb3
-    186,    // e3
-    180.5,  // f3
-];
 // Slot width (?)
 slot_width = 1.5;
 
@@ -246,6 +196,57 @@ col_string = [0.90, 0.90, 0.90];
 // Iron
 col_iron = [0.37, 0.4, 0.41];
 
+// Raw data on sounding lengths and slot positions for each note
+note_slot_position_and_sounding_length = [
+    [938.0, 837.0],
+    [927.0, 826.0],
+    [916.5, 815.5],
+    [902.5, 801.5],
+    [888.5, 787.5],
+    [875.5, 774.5],
+    [836.0, 735.0],
+    [788.0, 687.0],
+    [774.0, 673.0],
+    [731.0, 630.0],
+    [699.0, 598.0],
+    [665.5, 565.0],
+    [655.0, 554.0],
+    [627.0, 526.0],
+    [593.0, 492.0],
+    [582.0, 481.5],
+    [549.0, 448.0],
+    [528.5, 427.5],
+    [506.0, 405.0],
+    [495.5, 394.5],
+    [474.0, 373.0],
+    [449.5, 348.5],
+    [437.5, 336.5],
+    [420.5, 319.5],
+    [398.0, 297.0],
+    [383.0, 282.0],
+    [371.0, 270.5],
+    [357.5, 256.5],
+    [342.5, 241.5],
+    [328.5, 227.5],
+    [317.5, 216.5],
+    [302.5, 202.0],
+    [291.0, 190.0],
+    [280.0, 179.5],
+    [270.5, 169.5],
+    [262.0, 161.0],
+    [251.0, 150.5],
+    [241.5, 140.5],
+    [232.0, 131.0],
+    [226.5, 125.5],
+    [217.0, 116.0],
+    [210.5, 109.5],
+    [203.0, 102.0],
+    [199.0, 98.0],
+    [192.5, 91.5],
+    [186.0, 85.0],
+    [180.5, 79.5]
+];
+
 /* [Advanced] */
 $fn = 16;
 // Debugging: dump out values of each function for every key/string
@@ -294,7 +295,10 @@ function nat_idx(key_idx) = key_idx > 1
     : key_idx;
 
 // Return x position of slot for given key
-function slot_x(key_idx) = right_edge_x - slot_positions_right[key_idx];
+function slot_x(key_idx) = right_edge_x - note_slot_position_and_sounding_length[key_idx][0];
+
+// Return x position of tangent for given key
+function tangent_x(key_idx) = bridge_pos.x - note_slot_position_and_sounding_length[key_idx][1] + tangent_depth/2;
 
 // Return true if given key is a sharp, false if not
 function is_sharp(key_idx) =
@@ -315,6 +319,7 @@ if (debug_mode) {
             is_sharp=is_sharp(key_idx),
             key_x=key_x(key_idx),
             slot_x=slot_x(key_idx),
+            tangent_x=tangent_x(key_idx),
             key_string_idx=key_string_idx(key_idx),
             key_string_y=string_y(key_string_idx(key_idx))
         );
@@ -547,7 +552,7 @@ module balance_pin(key_idx, radius) {
 
 module tangent(key_idx) {
     translate([
-        slot_x(key_idx) + tangent_depth/2,
+        tangent_x(key_idx),
         string_y(key_string_idx(key_idx)) - tangent_width / 4,
         kb_pos.z + nat_height
     ])
