@@ -196,7 +196,8 @@ col_string = [0.90, 0.90, 0.90];
 // Iron
 col_iron = [0.37, 0.4, 0.41];
 
-// Raw data on sounding lengths and slot positions for each note
+// Array of the format [slot_position, sounding_length], indexed by key_idx.
+// e.g. First entry is [938, 837], which says the slot for the lowest note is 938mm from the right edge of the case, and the sounding length is 837mm.
 note_slot_position_and_sounding_length = [
     [938.0, 837.0],
     [927.0, 826.0],
@@ -455,13 +456,17 @@ module soundboard() {
     difference() {
         translate(soundboard_pos)
             cube([soundboard_width, soundboard_depth, soundboard_height]);
-        // Cylinder to cut out a mousehole
-        translate([right_edge_x - 150, 120, 0])
-            cylinder(h=mousehole_height, r=mousehole_radius);
+        soundboard_mousehole();
         backrail();
         rack_block();
         balance_rail();
     };
+}
+
+// Cylinder to cut out a mousehole
+module soundboard_mousehole() {
+    translate([right_edge_x - 150, 120, 0])
+        cylinder(h=mousehole_height, r=mousehole_radius);
 }
 
 module bridge() {

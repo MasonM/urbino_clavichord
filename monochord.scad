@@ -15,18 +15,6 @@ kb_pos = [
 ];
 
 /* [Internal Component Dimensions (mm-R)] */
-// Rack thickness (?)
-rack_th = 13;
-// Rack width (?)
-rack_width = 450;
-// Rack height (?)
-rack_height = 30;
-// Rack starting position (XYZ) (?)
-rack_pos = [
-    0,
-    wall_th + c_inner_width - rack_th,
-    c_height - rack_height - wall_th
-];
 
 // Hitchpin block thickness (?)
 hitchpin_block_th = 13;
@@ -36,6 +24,19 @@ hitchpin_block_height = 60;
 hitchpin_height = 5;
 // Hitchpin radius (?)
 hitchpin_radius = 1;
+
+// Rack thickness (?)
+rack_th = 13;
+// Rack width (?)
+rack_width = 450;
+// Rack height (?)
+rack_height = 30;
+// Rack starting position (XYZ) (?)
+rack_pos = [
+    wall_th + hitchpin_block_th,
+    wall_th + c_inner_width - rack_th,
+    c_height - rack_height - wall_th
+];
 // Slot width (?)
 slot_width = 1.5;
 
@@ -72,7 +73,7 @@ key_frequencies = [
     195.9977,   // G3
     220,        // A3
     233.0819,   // Bb3
-    233.0819,   // B3
+    246.9417,   // B3
     261.6256,   // C4
     293.6648,   // D4
     329.6276,   // E4
@@ -112,17 +113,21 @@ key_semitones = [
 debug_mode = true;
 vibrating_string_length = 506;
 
+tangent_top_width = 2.5;
+tangent_height = 5;
+tangent_depth = 1;
+
 string_diameter = 0.5;
-string_tension = 6.772;
-// Brass
-string_density = 8600;
+//string_tension = 6.772;
+//string_density = 8600; // Brass
 
 col_wood_med = [0.55, 0.35, 0.15];
 col_wood_dark = [0.35, 0.20, 0.10];
+col_brass = [0.85, 0.75, 0.30];
 
 function sounding_length(key_idx) = key_idx == 0 ? vibrating_string_length : ((key_frequencies[0] * vibrating_string_length)/key_frequencies[key_idx]);
 
-function frequency(sounding_length) = (1/(sounding_length*string_diameter)) * sqrt(string_tension/(PI*string_density));
+//function frequency(sounding_length) = (1/(sounding_length*string_diameter)) * sqrt(string_tension/(PI*string_density));
 
 function slot_x(key_idx) = key_idx == 0 ? (vibrating_string_length + 5) : slot_x(key_idx - 1) * (8/9)^key_semitones[key_idx];
 
@@ -153,15 +158,17 @@ module case() {
 
 module rack_slot_cutouts() {
    for (key_idx=[0:num_keys - 1])
-        translate(rack_pos)
-            translate([vibrating_string_length  - sounding_length(key_idx) - slot_width/2, -1, 0])
-                cube([slot_width, rack_th - 2, rack_height+1]);
+        translate([
+            sounding_length(0)  - sounding_length(key_idx) - slot_width/2,
+            rack_pos.y,
+            rack_pos.z
+        ])
+            cube([slot_width, rack_th - 2, rack_height+1]);
 }
 
 module rack_block() {
     translate(rack_pos)
-        translate([wall_th + hitchpin_block_th, 0, 0])
-            cube([rack_width, rack_th, rack_height]);
+        cube([rack_width, rack_th, rack_height]);
 }
 
 module hitchpin_block() {
@@ -192,11 +199,23 @@ module wrestplank() {
         cube([wrestplank_width, c_inner_width, wrestplank_height]);
 }
 
+module tangent(key_idx) {
+    color(col_brass)
+        rotate([90, 0, 90])
+        linear_extrude(tangent_depth)
+            polygon([
+                [-tangent_top_width/4, 0],
+                [-tangent_top_width/2, tangent_height],
+                [tangent_top_width/2, tangent_height],
+                [tangent_top_width/4,0],
+            ]);
+}
+
 module assembly() {
-case();
-hitchpin_block();
-rack();
-wrestplank();
+    case();
+    hitchpin_block();
+    rack();
+    wrestplank();
 }
 
 assembly();
