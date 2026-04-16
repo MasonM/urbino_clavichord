@@ -624,13 +624,153 @@ def make_strings() -> Compound:
     return Compound(strings_list)
 
 
+def make_tangent(key_idx: int) -> Part:
+    with BuildPart() as p:
+        Box(
+            tangent_width,
+            tangent_depth,
+            tangent_height,
+            align=MIN3,
+            mode=Mode.ADD,
+        )
+        Box(
+            tangent_width - 1,
+            tangent_depth + 5,
+            tangent_height - 0.5,
+            align=MIN3,
+            mode=Mode.SUBTRACT,
+        ).move(Location((0.5, 0, 0)))
+    tang = p.part.rotate(Axis.Z, 90).move(
+        Location(
+            (
+                tangent_x(key_idx),
+                string_y(key_string_idx(key_idx)) - tangent_width / 4,
+                kb_pos.Z + nat_height,
+            )
+        )
+    )
+    tang.color = col_brass
+    return tang
+
+
+def make_rack_tongue(key_idx: int) -> Part:
+    tongue = Box(
+        rack_tongue_width,
+        rack_tongue_depth,
+        rack_tongue_height,
+        align=MIN3,
+    ).move(
+        Location(
+            (
+                slot_x(key_idx) - rack_tongue_width / 2,
+                key_lever_top_y,
+                kb_pos.Z + 2,
+            )
+        )
+    )
+    tongue.color = col_key_lever
+    return tongue
+
+
+def make_key_lever_2d(key_idx: int) -> Face:
+    top_width = 5 if key_idx > 38 else 10
+    bottom_width = (sharp_width if is_sharp(key_idx) else nat_width) - 3
+    top = (slot_x(key_idx) - top_width / 2, key_lever_top_y)
+    bottom = (key_x(key_idx), kb_pos.Y + (45 if is_sharp(key_idx) else 0))
+    second_bend_y = string_y(key_string_idx(key_idx)) - 10
+    first_bend_y = wall_th + 10 + (
+        key_idx * 10 if key_idx < 9 else max(80 - ((key_idx - 10) * 5), 0)
+    )
+    pts = [
+        bottom,
+        (bottom[0], first_bend_y),
+        (top[0], second_bend_y),
+        top,
+        (top[0] + top_width, top[1]),
+        (top[0] + top_width, second_bend_y),
+        (bottom[0] + bottom_width, first_bend_y + (6 if key_idx < 9 else -6)),
+        (bottom[0] + bottom_width, bottom[1]),
+    ]
+    with BuildSketch() as s:
+        Polygon(pts, align=None)
+    return s.sketch.face()
+
+
+def make_key_lever_3d(key_idx: int) -> Compound:
+    face = make_key_lever_2d(key_idx)
+    if not is_sharp(key_idx):
+        if key_idx > 0:
+            face = face - make_key_lever_2d(key_idx - 1).offset(1)
+        if key_idx < num_keys - 1:
+            face = face - make_key_lever_2d(key_idx + 1).offset(1)
+    lever = extrude(face, nat_height).move(Location((0, 0, kb_pos.Z)))
+    lever.color = col_key_lever
+    tongue = make_rack_tongue(key_idx)
+    tang = make_tangent(key_idx)
+    return Compound([lever, tongue, tang])
+
+
+def make_natural_key_top(key_idx: int) -> Part:
+    depth = -kb_pos.Y + 1
+    top = Box(
+        nat_width - 1,
+        depth,
+        key_top_height,
+        align=MIN3,
+    ).move(
+        Location(
+            (
+                key_x(key_idx) - 1,
+                kb_pos.Y - 1,
+                kb_pos.Z + nat_height,
+            )
+        )
+    )
+    top.color = col_natural
+    return top
+
+
+def make_sharp_key_top(key_idx: int) -> Part:
+    top = Box(
+        sharp_width,
+        sharp_depth,
+        key_top_height + sharp_height,
+        align=MIN3,
+    ).move(
+        Location(
+            (
+                key_x(key_idx),
+                -sharp_depth,
+                kb_pos.Z + nat_height,
+            )
+        )
+    )
+    top.color = col_sharp
+    return top
+
+
+def make_key(key_idx: int) -> Compound:
+    lever_assy = make_key_lever_3d(key_idx)
+    pin_hole = make_balance_pin(key_idx, balance_pin_radius + 0.5)
+    body = lever_assy - pin_hole
+    if is_sharp(key_idx):
+        return body + make_sharp_key_top(key_idx)
+    return body + make_natural_key_top(key_idx)
+
+
+def make_keyboard() -> Compound:
+    return Compound([make_key(key_idx) for key_idx in range(num_keys)])
+
+
 # --- Assembly & export ---
 
 parts = []
 if show_case:
     parts.append(make_case())
+if show_keyboard:
+    parts.append(make_keyboard())
 
 if parts:
     assembly = Compound(parts)
     export_step(assembly, "clavichord.step")
-    export_stl(assembly, "clavichord.stl")
+    #export_stl(assembly, "clavichord.stl")
