@@ -413,7 +413,6 @@ def make_balance_pin(key_idx: int, radius: float = balance_pin_radius) -> Compou
         radius,
         balance_pin_height,
         align=MIN3,
-        segments=SEGS,
     ).move(Location((cx, cy, cz)))
     pin.color = col_iron
     return pin
