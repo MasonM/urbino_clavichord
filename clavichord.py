@@ -315,6 +315,83 @@ def make_case() -> Compound:
     return p.part
 
 
+def make_hitchpin_block() -> Compound:
+    loc = Location(
+        (wall_th, wall_th, c_height - hitchpin_block_height - 10)
+    )
+    part = Box(
+        hitchpin_block_th,
+        c_width - 2 * wall_th,
+        hitchpin_block_height,
+        align=MIN3,
+    ).move(loc)
+    part.color = col_wood_dark
+    return part
+
+
+def make_hitchpins() -> Compound:
+    pins = []
+    z_base = c_height - 10
+    for string_idx in range(num_strings):
+        pin = Cylinder(
+            hitchpin_radius,
+            hitchpin_height,
+            align=MIN3,
+        ).move(
+            Location((hitch_pin_x(string_idx), string_y(string_idx), z_base))
+        )
+        pin.color = col_iron
+        pins.append(pin)
+    return Compound(pins)
+
+
+def make_backrail() -> Compound:
+    loc = Location(
+        (
+            wall_th + hitchpin_block_th,
+            c_width - wall_th - backrail_th,
+            wall_th,
+        )
+    )
+    part = Box(
+        rack_width,
+        backrail_th,
+        backrail_height,
+        align=MIN3,
+    ).move(loc)
+    part.color = col_wood_dark
+    return part
+
+
+def make_wrestplank() -> Compound:
+    part = Box(
+        wrestplank_width,
+        c_width - 2 * wall_th,
+        wrestplank_height,
+        align=MIN3,
+    ).move(Location(wrestplank_pos))
+    part.color = col_wood_dark
+    return part
+
+
+def make_tuning_pins() -> Compound:
+    pins = []
+    z_base = wrestplank_pos.Z + wrestplank_height
+    for string_idx in range(num_tuning_pins):
+        pin = Cylinder(
+            tuning_pin_radius,
+            tuning_pin_height,
+            align=MIN3,
+        ).move(
+            Location(
+                (tuning_pin_x(string_idx), string_y(string_idx), z_base)
+            )
+        )
+        pin.color = col_iron
+        pins.append(pin)
+    return Compound(pins)
+
+
 # --- Assembly & export ---
 
 parts = []
