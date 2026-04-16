@@ -322,6 +322,6 @@ if show_case:
     parts.append(make_case())
 
 if parts:
-    assembly = Compound.make_compound(parts)
+    assembly = Compound(parts)
     export_step(assembly, "clavichord.step")
     export_stl(assembly, "clavichord.stl")
