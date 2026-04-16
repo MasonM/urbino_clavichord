@@ -762,6 +762,26 @@ def make_keyboard() -> Compound:
     return Compound([make_key(key_idx) for key_idx in range(num_keys)])
 
 
+def make_internal_components() -> Compound:
+    """Hitch pins, rack, rails, wrestplank, tuning pins (matches clavichord.scad)."""
+    return Compound(
+        [
+            make_hitchpin_block(),
+            make_hitchpins(),
+            make_balance_rail(),
+            make_rack(),
+            make_backrail(),
+            make_wrestplank(),
+            make_tuning_pins(),
+        ]
+    )
+
+
+def make_soundbox() -> Compound:
+    """Bridge, soundboard, belly rail (matches clavichord.scad)."""
+    return Compound([make_bridge(), make_soundboard(), make_belly_rail()])
+
+
 # --- Assembly & export ---
 
 parts = []
@@ -769,8 +789,13 @@ if show_case:
     parts.append(make_case())
 if show_keyboard:
     parts.append(make_keyboard())
+if show_internals:
+    parts.append(make_internal_components())
+if show_soundbox:
+    parts.append(make_soundbox())
+if show_strings:
+    parts.append(make_strings())
 
-if parts:
-    assembly = Compound(parts)
-    export_step(assembly, "clavichord.step")
-    #export_stl(assembly, "clavichord.stl")
+assembly = Compound(parts)
+export_step(assembly, "clavichord.step")
+#export_stl(assembly, "clavichord.stl", ascii_format=True)
