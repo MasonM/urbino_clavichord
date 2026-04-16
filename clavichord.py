@@ -591,6 +591,39 @@ def make_tuning_pins() -> Compound:
     return Compound(pins)
 
 
+def make_strings() -> Compound:
+    """Horizontal cylinders from hitch pin to tuning pin for each string."""
+    z_base = (
+        soundboard_pos.Z
+        + soundboard_height
+        + bridge_height
+        + string_radius
+    )
+    strings_list = []
+    for string_idx in range(num_strings):
+        length = tuning_pin_x(string_idx) - hitch_pin_x(string_idx)
+        cyl = (
+            Cylinder(
+                string_radius,
+                length,
+                align=MIN3,
+            )
+            .rotate(Axis.Y, 90)
+            .move(
+                Location(
+                    (
+                        hitch_pin_x(string_idx),
+                        string_y(string_idx),
+                        z_base,
+                    )
+                )
+            )
+        )
+        cyl.color = col_string
+        strings_list.append(cyl)
+    return Compound(strings_list)
+
+
 # --- Assembly & export ---
 
 parts = []
