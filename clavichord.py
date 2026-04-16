@@ -196,4 +196,93 @@ kb_pos = Vector(
 
 key_lever_top_y = c_width - wall_th - rack_th - 1  # (?)
 
-# kb_length = key_x(num_keys + 1) - kb_pos.X  — computed after key_x() is defined
+# kb_length is computed after key_x() is defined below
+
+# --- Helper functions ---
+
+# Return y position for given string.
+# Group strings in groups of 4, except bottom 2 and top 4.
+def string_y(string_idx):
+    return (
+        key_lever_top_y
+        - 2
+        - string_idx * 1.5
+        - math.floor(string_idx / 4) * 1.5
+        - (3 if string_idx > 1 else 0)
+    )
+
+# Return x position for the tuning pin connected to the given string
+def tuning_pin_x(string_idx):
+    return right_edge_x - 7 - (string_idx % 4) * 5
+
+# Return x position for the hitch pin connected to the given string
+def hitch_pin_x(string_idx):
+    return wall_th + 3 + (3 if string_idx % 2 else 0)
+
+# Return string_idx of the first string that the tangent for the given key should strike.
+# https://oeis.org/A057356
+def key_string_idx(key_idx):
+    return num_strings - 1 - 2 * (
+        key_idx if key_idx < 5 else math.floor(2 * (key_idx - 1) / 7) + 4
+    )
+
+# Return index of the closest (to the left) natural key for the given key.
+# https://oeis.org/A366701
+# Note: OpenSCAD log() is base-10; the ratio log(3/2)/log(2) is equivalent to
+# math.log(3/2)/math.log(2) in Python regardless of base.
+def nat_idx(key_idx):
+    if key_idx > 1:
+        return (
+            round(
+                (key_idx + (8 if short_octave else 0))
+                * math.log(3 / 2) / math.log(2)
+            )
+            - (4 if short_octave else 0)
+        )
+    return key_idx
+
+# Return x position of slot for given key
+def slot_x(key_idx):
+    return right_edge_x - note_slot_position_and_sounding_length[key_idx][0]
+
+# Return x position of tangent for given key
+def tangent_x(key_idx):
+    return bridge_pos.X - note_slot_position_and_sounding_length[key_idx][1] + tangent_depth / 2
+
+# Return True if the given key is a sharp, False if natural
+def is_sharp(key_idx):
+    return (
+        key_idx > 0
+        and key_idx < num_keys - 1
+        and nat_idx(key_idx) == nat_idx(key_idx - 1)
+    )
+
+# Return x position for the given key
+def key_x(key_idx):
+    return (
+        kb_pos.X
+        + nat_idx(key_idx) * nat_width
+        + (nat_width - math.floor(sharp_width / 2) if is_sharp(key_idx) else 0)
+    )
+
+kb_length = key_x(num_keys + 1) - kb_pos.X
+
+if debug_mode:
+    for key_idx in range(num_keys):
+        print(
+            f"key_idx={key_idx}"
+            f"  nat_idx={nat_idx(key_idx)}"
+            f"  is_sharp={is_sharp(key_idx)}"
+            f"  key_x={key_x(key_idx)}"
+            f"  slot_x={slot_x(key_idx)}"
+            f"  tangent_x={tangent_x(key_idx)}"
+            f"  key_string_idx={key_string_idx(key_idx)}"
+            f"  key_string_y={string_y(key_string_idx(key_idx))}"
+        )
+    for string_idx in range(num_strings):
+        print(
+            f"string_idx={string_idx}"
+            f"  string_y={string_y(string_idx)}"
+            f"  tuning_pin_x={tuning_pin_x(string_idx)}"
+            f"  hitch_pin_x={hitch_pin_x(string_idx)}"
+        )
