@@ -363,6 +363,82 @@ def make_backrail() -> Compound:
     return part
 
 
+def make_rack_block() -> Compound:
+    part = Box(
+        rack_width,
+        rack_th,
+        rack_height,
+        align=MIN3,
+    ).move(Location(rack_pos))
+    part.color = col_wood_dark
+    return part
+
+
+def make_rack() -> Compound:
+    with BuildPart() as p:
+        Box(
+            rack_width,
+            rack_th,
+            rack_height,
+            align=MIN3,
+            mode=Mode.ADD,
+        ).move(Location(rack_pos))
+        for key_idx in range(num_keys):
+            x = slot_x(key_idx) - rack_pos.X - slot_width / 2
+            Box(
+                slot_width,
+                rack_th - 2,
+                rack_height + 1,
+                align=MIN3,
+                mode=Mode.SUBTRACT,
+            ).move(
+                Location(
+                    (
+                        rack_pos.X + x,
+                        rack_pos.Y - 1,
+                        rack_pos.Z,
+                    )
+                )
+            )
+    p.part.color = col_wood_dark
+    return p.part
+
+
+def make_balance_pin(key_idx: int, radius: float = balance_pin_radius) -> Compound:
+    half_key = sharp_width if is_sharp(key_idx) else nat_width
+    cx = key_x(key_idx) + math.floor(half_key / 2) - 1
+    cy = wall_th + 4 + (10 if is_sharp(key_idx) else 0)
+    cz = kb_pos.Z - 1
+    pin = Cylinder(
+        radius,
+        balance_pin_height,
+        align=MIN3,
+        segments=SEGS,
+    ).move(Location((cx, cy, cz)))
+    pin.color = col_iron
+    return pin
+
+
+def make_balance_rail() -> Compound:
+    rail = Box(
+        kb_length,
+        balance_rail_depth,
+        balance_rail_height,
+        align=MIN3,
+    ).move(
+        Location(
+            (
+                kb_pos.X,
+                wall_th,
+                kb_pos.Z - balance_rail_height - 1,
+            )
+        )
+    )
+    rail.color = col_wood_dark
+    pins = [make_balance_pin(key_idx) for key_idx in range(num_keys)]
+    return Compound([rail, *pins])
+
+
 def make_wrestplank() -> Compound:
     part = Box(
         wrestplank_width,
