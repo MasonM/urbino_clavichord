@@ -11,7 +11,6 @@ https://creativecommons.org/licenses/by/4.0/
 import math
 
 from build123d import *
-from build123d import export_stl, export_step
 
 MIN3 = (Align.MIN, Align.MIN, Align.MIN)
 SEGS = 16  # replaces $fn = 16
@@ -799,3 +798,6 @@ if show_strings:
 assembly = Compound(parts)
 export_step(assembly, "clavichord.step")
 #export_stl(assembly, "clavichord.stl", ascii_format=True)
+
+#from ocp_vscode import *
+#show(assembly, axes=True, axes0=True, grid=(True, True, True), transparent=True, reset_camera=Camera.RESET)
