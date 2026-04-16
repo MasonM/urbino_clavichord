@@ -286,3 +286,42 @@ if debug_mode:
             f"  tuning_pin_x={tuning_pin_x(string_idx)}"
             f"  hitch_pin_x={hitch_pin_x(string_idx)}"
         )
+
+# --- Component functions ---
+
+def make_case() -> Compound:
+    with BuildPart() as p:
+        # Outer shell
+        Box(c_length, c_width, c_height, align=MIN3)
+        # Hollow interior — open at the top (height reaches lid plane)
+        with Locations(Location((wall_th, wall_th, wall_th))):
+            Box(
+                c_length - 2 * wall_th,
+                c_width - 2 * wall_th,
+                c_height,
+                align=MIN3,
+                mode=Mode.SUBTRACT,
+            )
+        # Keyboard cutout in the front wall
+        with Locations(Location((kb_pos.X, -1, kb_pos.Z))):
+            Box(
+                kb_length,
+                wall_th + 2,
+                nat_height + key_top_height,
+                align=MIN3,
+                mode=Mode.SUBTRACT,
+            )
+    p.part.color = col_wood_med
+    return p.part
+
+
+# --- Assembly & export ---
+
+parts = []
+if show_case:
+    parts.append(make_case())
+
+if parts:
+    assembly = Compound.make_compound(parts)
+    export_step(assembly, "clavichord.step")
+    export_stl(assembly, "clavichord.stl")
