@@ -438,6 +438,130 @@ def make_balance_rail() -> Compound:
     return Compound([rail, *pins])
 
 
+def make_belly_rail() -> Compound:
+    loc = Location(
+        (
+            soundboard_pos.X - belly_rail_width,
+            soundboard_pos.Y,
+            wall_th,
+        )
+    )
+    part = Box(
+        belly_rail_width,
+        belly_rail_depth,
+        belly_rail_height,
+        align=MIN3,
+    ).move(loc)
+    part.color = col_wood_dark
+    return part
+
+
+def make_soundboard() -> Compound:
+    with BuildPart() as p:
+        Box(
+            soundboard_width,
+            soundboard_depth,
+            soundboard_height,
+            align=MIN3,
+            mode=Mode.ADD,
+        ).move(Location(soundboard_pos))
+        Cylinder(
+            mousehole_radius,
+            mousehole_height,
+            align=MIN3,
+            mode=Mode.SUBTRACT,
+        ).move(Location((right_edge_x - 150, 120, 0)))
+        Box(
+            rack_width,
+            backrail_th,
+            backrail_height,
+            align=MIN3,
+            mode=Mode.SUBTRACT,
+        ).move(
+            Location(
+                (
+                    wall_th + hitchpin_block_th,
+                    c_width - wall_th - backrail_th,
+                    wall_th,
+                )
+            )
+        )
+        Box(
+            rack_width,
+            rack_th,
+            rack_height,
+            align=MIN3,
+            mode=Mode.SUBTRACT,
+        ).move(Location(rack_pos))
+        Box(
+            kb_length,
+            balance_rail_depth,
+            balance_rail_height,
+            align=MIN3,
+            mode=Mode.SUBTRACT,
+        ).move(
+            Location(
+                (
+                    kb_pos.X,
+                    wall_th,
+                    kb_pos.Z - balance_rail_height - 1,
+                )
+            )
+        )
+    part = p.part
+    for key_idx in range(num_keys):
+        part = part - make_balance_pin(key_idx)
+    part.color = col_wood_light
+    return part
+
+
+def make_bridge_2d() -> Face:
+    with BuildSketch() as s:
+        Rectangle(bridge_width, bridge_height, align=MIN3[:2])
+        with Locations((-12, 5)):
+            Circle(bridge_height, mode=Mode.SUBTRACT)
+        with Locations((30, 0)):
+            Circle(9, mode=Mode.SUBTRACT)
+        with Locations((45, 7)):
+            Circle(10, mode=Mode.SUBTRACT)
+        with Locations((60, 0)):
+            Circle(9, mode=Mode.SUBTRACT)
+        with Locations((bridge_width + 5, 5)):
+            Circle(bridge_height, mode=Mode.SUBTRACT)
+    return s.sketch.face()
+
+
+def make_bridge() -> Compound:
+    profile_face = make_bridge_2d()
+    with BuildPart() as profile_part:
+        extrude(profile_face, amount=100)
+    profile_solid = profile_part.part
+
+    taper_pts = [
+        (-bridge_top_depth / 2, 0),
+        (-bridge_bottom_depth / 2, bridge_height + 1),
+        (bridge_bottom_depth / 2, bridge_height + 1),
+        (bridge_top_depth / 2, 0),
+    ]
+    with BuildPart() as taper_part:
+        with BuildSketch() as sk:
+            Polygon(taper_pts, align=None)
+        extrude(amount=c_length)
+    taper_solid = taper_part.part
+
+    r_outer = Rotation(90, 0, 90, ordering=Intrinsic.ZYX)
+    r_taper = Rotation(180, 90, 0, ordering=Intrinsic.ZYX)
+    taper_origin = Location(
+        (c_length / 2, bridge_height, bridge_bottom_depth / 2)
+    )
+    loc_profile = Location(bridge_pos) * r_outer
+    loc_taper = Location(bridge_pos) * r_outer * taper_origin * r_taper
+
+    result = profile_solid.moved(loc_profile) & taper_solid.moved(loc_taper)
+    result.color = col_wood_dark
+    return result
+
+
 def make_wrestplank() -> Compound:
     part = Box(
         wrestplank_width,
