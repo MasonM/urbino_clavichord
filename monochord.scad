@@ -62,59 +62,6 @@ soundboard_pos = [
     wall_th,
     50
 ];
-key_frequencies = [
-    97.99886,   // G2
-    110,        // A2
-    123.4708,   // B2
-    130.8128,   // C3
-    146.8324,   // D3
-
-    164.8138,   // E3
-    174.6141,   // F3
-    195.9977,   // G3
-    220,        // A3
-
-    233.0819,   // Bb3
-    246.9417,   // B3
-    261.6256,   // C4
-    293.6648,   // D4
-    329.6276,   // E4
-
-    349.2282,   // F4
-    391.9954,   // G4
-    440,        // A4
-    466.1638,   // Bb4
-    493.8833,   // B4
-
-    523.2511,   // C5
-    587.3295,   // D5
-    659.2551,   // E5
-];
-pitch_class_to_note2 = ["A", "Bb", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", ];
-key_octave_and_pitch_class2 = [
-    [-3, 10],  // G2
-    [-2, 0],   // A2
-    [-2, 2],   // B2
-    [-2, 3],   // C3
-    [-2, 5],   // D3
-    [-2, 7],   // E3
-    [-2, 8],   // F3
-    [-2, 10],  // G3
-    [-1, 0],   // A3
-    [-1, 1],   // Bb3
-    [-1, 2],   // B3
-    [-1, 3],   // C4
-    [-1, 5],   // D4
-    [-1, 7],   // E4
-    [-1, 8],   // F4
-    [-1, 10],  // G4
-    [0, 0],   // A4
-    [0, 1],   // Bb4
-    [0, 2],   // B4
-    [0, 3],   // C5
-    [0, 5],   // D5
-    [0, 7],   // E5
-];
 
 pitch_class_to_note = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "Bb", "B"];
 key_octave_and_pitch_class = [
@@ -155,16 +102,6 @@ function transpose(key_idx) =
 
 function transposed_pitch_class(key_idx) = modulo_floored(transpose(key_idx), 12);
 function transposed_octave(key_idx) = floor(transpose(key_idx) / 12) - 4;
-function key_label2(key_idx) = str(
-    "t=",
-    transpose(key_idx),
-    ", o=",
-    floor(transpose(key_idx) / 12) - 4,
-    ", pc=",
-    transposed_pitch_class(key_idx),
-    ", label=",
-    pitch_class_to_note[modulo_floored(transpose(key_idx), 12)]
-);
     
 function key_label(key_idx) = str(
     pitch_class_to_note[key_octave_and_pitch_class[key_idx][1]],
@@ -185,7 +122,12 @@ function key_frequency2(octave, pc) =
     frequency_a4
     * pow(2, octave)
     * rawRatio(pc) / pow(2, floor(log(rawRatio(pc)) / log(2)));
-function sounding_length(key_idx) = key_frequency(0) * vibrating_string_length / key_frequency(key_idx);
+function key_frequency3(key_idx) = 
+    key_frequency2(
+        transposed_octave(key_idx),
+        transposed_pitch_class(key_idx)
+    );
+function sounding_length(key_idx) = key_frequency3(0) * vibrating_string_length / key_frequency3(key_idx);
 
 
 tangent_top_width = 2.5;
@@ -213,10 +155,8 @@ if (debug_mode) {
             transposed_octave=transposed_octave(key_idx),
             transposed_pitch_class=transposed_pitch_class(key_idx),
             slot_x=slot_x(key_idx),
-            interval=key_interval(key_idx),
             sounding_length=sounding_length(key_idx),
-            key_frequency=key_frequency(key_idx),
-            key_frequency2=key_frequency2(transposed_octave(key_idx), transposed_pitch_class(key_idx))
+            key_frequency3=key_frequency3(key_idx),
         );
     }
 }
