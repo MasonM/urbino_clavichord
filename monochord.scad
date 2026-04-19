@@ -60,8 +60,19 @@ soundboard_height = 3;
 soundboard_pos = [
     c_inner_length - wrestplank_width - soundboard_width,
     wall_th,
-    50
+    40
 ];
+
+// Bridge position
+bridge_pos = [
+    c_inner_length - 101,
+    c_inner_width + wall_th - rack_th - 82,
+    soundboard_pos.z + soundboard_height
+];
+bridge_width = 98;
+bridge_height = 22;
+bridge_top_depth = 1;
+bridge_bottom_depth = 10;
 
 pitch_class_to_note = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "Bb", "B"];
 key_octave_and_pitch_class = [
@@ -89,45 +100,34 @@ key_octave_and_pitch_class = [
     [5, 4],    // E5
 ];
 
-vibrating_string_length = 506;
+vibrating_string_length_g2 = 506;
 frequency_a4 = 440;
-// A4 is 3 fifths and one fourth above G2
-frequency_g2 = frequency_a4 / (pow(3/2, 3) * (4/3));
 debug_mode = true;
 
-function transpose(key_idx) =
-    12*(key_octave_and_pitch_class[key_idx][0] - 1)
-    + 3
-    + key_octave_and_pitch_class[key_idx][1];
-
-function transposed_pitch_class(key_idx) = modulo_floored(transpose(key_idx), 12);
-function transposed_octave(key_idx) = floor(transpose(key_idx) / 12) - 4;
+// Transpose from C4 to A4
+function transpose(octave, pitch_class) =
+    let (transposed = 12*(octave - 1) + 3 + pitch_class)
+    [floor(transposed / 12) - 4, transposed % 12];
     
 function key_label(key_idx) = str(
     pitch_class_to_note[key_octave_and_pitch_class[key_idx][1]],
     key_octave_and_pitch_class[key_idx][0],
 );
-function modulo_floored(a, b) = a - b * floor(a / b);
-function key_pitch_class(key_idx) = transposed_pitch_class(key_idx);
-function key_interval(key_idx) = key_idx == 0
-    ? 0
-    : modulo_floored(key_pitch_class(key_idx) - key_pitch_class(key_idx - 1), 12);
-function key_frequency(key_idx) = key_idx == 0 
-    ? frequency_g2
-    : key_frequency(key_idx - 1) * (key_interval(key_idx) == 1 ? (256/243) : (9/8));
-
-function n(pc) = modulo_floored(pc*7, 12);
-function rawRatio(pc) = pow(3/2, n(pc) > 6 ? n(pc) - 12 : n(pc));
-function key_frequency2(octave, pc) = 
+function key_frequency(key_idx) = 
+    let (
+        transposed = transpose(key_octave_and_pitch_class[key_idx][0], key_octave_and_pitch_class[key_idx][1]),
+        n = (transposed[1]*7) % 12,
+        pythagoreanRatio = pow(3/2, n > 6 ? n - 12 : n),
+        normalizedRatio = pythagoreanRatio / pow(2, floor(log(pythagoreanRatio) / log(2))),
+    )
     frequency_a4
-    * pow(2, octave)
-    * rawRatio(pc) / pow(2, floor(log(rawRatio(pc)) / log(2)));
-function key_frequency3(key_idx) = 
-    key_frequency2(
-        transposed_octave(key_idx),
-        transposed_pitch_class(key_idx)
-    );
-function sounding_length(key_idx) = key_frequency3(0) * vibrating_string_length / key_frequency3(key_idx);
+    * pow(2, transposed[0])
+    * normalizedRatio;
+
+function sounding_length(key_idx) =
+    key_frequency(0) * vibrating_string_length_g2 / key_frequency(key_idx);
+
+function slot_x(key_idx) = bridge_pos.x - sounding_length(key_idx);
 
 
 tangent_top_width = 2.5;
@@ -135,28 +135,19 @@ tangent_height = 5;
 tangent_depth = 1;
 
 string_diameter = 0.5;
-//string_tension = 6.772;
-//string_density = 8600; // Brass
 
 col_wood_med = [0.55, 0.35, 0.15];
 col_wood_dark = [0.35, 0.20, 0.10];
 col_brass = [0.85, 0.75, 0.30];
 
-//function frequency(sounding_length) = (1/(sounding_length*string_diameter)) * sqrt(string_tension/(PI*string_density));
-
-function slot_x(key_idx) = sounding_length(key_idx);
-//    ? (vibrating_string_length + 5)
-//    : slot_x(key_idx - 1) * (8/9)*key_label_and_semitones[key_idx][1];
-
 if (debug_mode) {
     for (key_idx=[0:num_keys-1]) {
         echo(key_idx=key_idx,
             key_label=key_label(key_idx),
-            transposed_octave=transposed_octave(key_idx),
-            transposed_pitch_class=transposed_pitch_class(key_idx),
-            slot_x=slot_x(key_idx),
             sounding_length=sounding_length(key_idx),
-            key_frequency3=key_frequency3(key_idx),
+            slot_x=slot_x(key_idx),
+            transpose=transpose(key_octave_and_pitch_class[key_idx][0], key_octave_and_pitch_class[key_idx][1]),
+            key_frequency=key_frequency(key_idx),
         );
     }
 }
@@ -180,7 +171,7 @@ module case() {
 module rack_slot_cutouts() {
    for (key_idx=[0:num_keys - 1])
         translate([
-            sounding_length(0)  - sounding_length(key_idx) - slot_width/2,
+            slot_x(key_idx),
             rack_pos.y,
             rack_pos.z
         ])
@@ -232,11 +223,56 @@ module tangent(key_idx) {
             ]);
 }
 
+module bridge() {
+    translate(bridge_pos)
+        rotate([90, 0, 90])
+        color(col_wood_dark)
+        intersection() {
+            linear_extrude(100)
+                bridge_2d();
+            bridge_taper();
+        }
+}
+
+module bridge_2d() {
+    difference() {
+        square([bridge_width, bridge_height]);
+        translate([-12, 5, 0])
+            circle(bridge_height);
+        translate([30, 0, 0])
+            circle(9);
+        translate([45, 7, 0])
+            circle(10);
+        translate([60, 0, 0])
+            circle(9);
+        translate([bridge_width+5, 5, 0])
+            circle(bridge_height);
+    };
+}
+
+// Long trapezoid to intersect with the bridge so it tapers to top
+module bridge_taper() {
+    translate([
+        c_inner_length/2,
+        bridge_height,
+        bridge_bottom_depth/2
+    ])
+        rotate([180, 90, 0])
+        linear_extrude(c_inner_length)
+            polygon([
+                [-bridge_top_depth/2, 0],
+                [-bridge_bottom_depth/2, bridge_height+1],
+                [bridge_bottom_depth/2, bridge_height+1],
+                [bridge_top_depth/2, 0],
+            ]);
+    }
+
 module assembly() {
     case();
     hitchpin_block();
     rack();
     wrestplank();
+    bridge();
 }
 
 assembly();
