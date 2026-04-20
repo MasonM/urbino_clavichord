@@ -80,7 +80,6 @@ bridge_height = 22;
 bridge_top_depth = 1;
 bridge_bottom_depth = 10;
 
-pitch_class_to_note = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "Bb", "B"];
 key_octave_and_pitch_class = [
     [2, 7],    // G2
     [2, 9],    // A2
@@ -111,7 +110,7 @@ frequency_a4 = 440;
 key_lever_top_y = c_inner_width - rack_th - 1;
 debug_mode = true;
 
-function is_sharp(key_idx) = 
+function is_accidental(key_idx) =
     let (pitch_class = key_octave_and_pitch_class[key_idx][1])
     pitch_class == 1 || pitch_class == 3 || pitch_class == 6 || pitch_class == 8;
 
@@ -120,19 +119,22 @@ function transpose(octave, pitch_class) =
     let (transposed = 12*(octave - 1) + 3 + pitch_class)
     [floor(transposed / 12) - 4, transposed % 12];
     
-function key_label(key_idx) = str(
-    pitch_class_to_note[key_octave_and_pitch_class[key_idx][1]],
-    key_octave_and_pitch_class[key_idx][0],
-);
+function key_label(key_idx) = 
+    let (
+        key = key_octave_and_pitch_class[key_idx],
+        pitch_class_to_note = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "Bb", "B"],
+    )
+    str(pitch_class_to_note[key[1]], key[0]);
+
 function key_frequency(key_idx) = 
     let (
         transposed = transpose(key_octave_and_pitch_class[key_idx][0], key_octave_and_pitch_class[key_idx][1]),
         n = (transposed[1]*7) % 12,
-        pythagoreanRatio = pow(3/2, n > 6 ? n - 12 : n),
-        normalizedRatio = pythagoreanRatio / pow(2, floor(log(pythagoreanRatio) / log(2))),
+        pythagoreanRatio = (3/2) ^ (n > 6 ? n - 12 : n),
+        normalizedRatio = pythagoreanRatio / 2 ^ floor(log(pythagoreanRatio) / log(2)),
     )
     frequency_a4
-    * pow(2, transposed[0])
+    * 2^transposed[0]
     * normalizedRatio;
 
 function sounding_length(key_idx) =
@@ -244,7 +246,7 @@ function key_x(key_idx) =
     kb_pos.x
     // TOOD: simplify
     + (key_idx - (key_idx >= 9 ? (key_idx >= 17 ? 2 : 1) : 0)) * nat_width
-    + (is_sharp(key_idx) ? nat_width - floor(sharp_width/2) : 0);
+    + (is_accidental(key_idx) ? nat_width - floor(sharp_width/2) : 0);
 
 module rack_tongue(key_idx) {
     translate([
@@ -261,14 +263,14 @@ string_y = key_lever_top_y - 15;
 // This is a mess because I couldn't figue out an underlying pattern in how the keys are cranked.
 module key_lever_2d(key_idx) {
     top_width = key_idx > 38 ? 5 : 10;
-    bottom_width = (is_sharp(key_idx) ? sharp_width : nat_width) - 3;
+    bottom_width = (is_accidental(key_idx) ? sharp_width : nat_width) - 3;
     top = [
         slot_x(key_idx) - top_width/2,
         key_lever_top_y
     ];
     bottom = [
         key_x(key_idx),
-        kb_pos.y + (is_sharp(key_idx) ? 45 : 0)
+        kb_pos.y + (is_accidental(key_idx) ? 45 : 0)
     ];
     second_bend_y = string_y - 10;
     first_bend_y = wall_th + 10 + (key_idx < 9 ? key_idx * 10 : max(80 - ((key_idx-10)*5), 0));
@@ -297,7 +299,7 @@ module key_lever_3d(key_idx) {
                 difference() {
                     key_lever_2d(key_idx);
                     // Subtract neighboring keys so they don't overlap
-                    if (!is_sharp(key_idx)) {
+                    if (!is_accidental(key_idx)) {
                         if(key_idx > 0) offset(delta=1) key_lever_2d(key_idx-1);
                         if (key_idx < num_keys - 1) offset(delta=1) key_lever_2d(key_idx+1);
                     }
