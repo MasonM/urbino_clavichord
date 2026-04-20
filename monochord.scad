@@ -13,6 +13,12 @@ kb_pos = [
     key_depth,
     c_height - key_height - 16
 ];
+nat_width = 17;
+nat_depth = 81.5;
+nat_height = 10;
+sharp_width = 14.3;
+sharp_depth = 41.2;
+sharp_height = 4.9;
 
 /* [Internal Component Dimensions (mm-R)] */
 
@@ -102,7 +108,12 @@ key_octave_and_pitch_class = [
 
 vibrating_string_length_g2 = 506;
 frequency_a4 = 440;
+key_lever_top_y = c_inner_width - rack_th - 1;
 debug_mode = true;
+
+function is_sharp(key_idx) = 
+    let (pitch_class = key_octave_and_pitch_class[key_idx][1])
+    pitch_class == 1 || pitch_class == 3 || pitch_class == 6 || pitch_class == 8;
 
 // Transpose from C4 to A4
 function transpose(octave, pitch_class) =
@@ -133,12 +144,18 @@ function slot_x(key_idx) = bridge_pos.x - sounding_length(key_idx);
 tangent_top_width = 2.5;
 tangent_height = 5;
 tangent_depth = 1;
+rack_tongue_width = 1;
+rack_tongue_depth = 7;
+rack_tongue_height = 5;
 
 string_diameter = 0.5;
 
 col_wood_med = [0.55, 0.35, 0.15];
 col_wood_dark = [0.35, 0.20, 0.10];
 col_brass = [0.85, 0.75, 0.30];
+col_key_lever = [0.9, 0.9, 0.9];
+col_natural = [0.90, 0.88, 0.80];
+col_sharp = [0.15, 0.15, 0.15];
 
 if (debug_mode) {
     for (key_idx=[0:num_keys-1]) {
@@ -223,6 +240,86 @@ module tangent(key_idx) {
             ]);
 }
 
+function key_x(key_idx) =
+    kb_pos.x
+    // TOOD: simplify
+    + (key_idx - (key_idx >= 9 ? (key_idx >= 17 ? 2 : 1) : 0)) * nat_width
+    + (is_sharp(key_idx) ? nat_width - floor(sharp_width/2) : 0);
+
+module rack_tongue(key_idx) {
+    translate([
+        slot_x(key_idx) - rack_tongue_width/2,
+        key_lever_top_y,
+        kb_pos.z + 2
+    ])
+        cube([rack_tongue_width, rack_tongue_depth, rack_tongue_height]);
+}
+
+string_y = key_lever_top_y - 15;
+
+// 2d polygon for the key lever, which will be extruded.
+// This is a mess because I couldn't figue out an underlying pattern in how the keys are cranked.
+module key_lever_2d(key_idx) {
+    top_width = key_idx > 38 ? 5 : 10;
+    bottom_width = (is_sharp(key_idx) ? sharp_width : nat_width) - 3;
+    top = [
+        slot_x(key_idx) - top_width/2,
+        key_lever_top_y
+    ];
+    bottom = [
+        key_x(key_idx),
+        kb_pos.y + (is_sharp(key_idx) ? 45 : 0)
+    ];
+    second_bend_y = string_y - 10;
+    first_bend_y = wall_th + 10 + (key_idx < 9 ? key_idx * 10 : max(80 - ((key_idx-10)*5), 0));
+
+    polygon([
+       // Bottom to first bend
+       bottom,
+       [bottom.x, first_bend_y],
+       // Second bend to top
+       [top.x, second_bend_y],
+       top,
+       // Top to second bend
+       [top.x + top_width, top.y],
+       [top.x + top_width, second_bend_y],
+       // Second bend to first bend
+       [bottom.x + bottom_width, first_bend_y + (key_idx < 9 ? 6 : -6)],
+       [bottom.x + bottom_width, bottom.y],
+    ]);
+}
+
+module key_lever_3d(key_idx) {
+    color(col_key_lever) {
+        rack_tongue(key_idx);
+        translate([0, 0, kb_pos.z])
+            linear_extrude(nat_height)
+                difference() {
+                    key_lever_2d(key_idx);
+                    // Subtract neighboring keys so they don't overlap
+                    if (!is_sharp(key_idx)) {
+                        if(key_idx > 0) offset(delta=1) key_lever_2d(key_idx-1);
+                        if (key_idx < num_keys - 1) offset(delta=1) key_lever_2d(key_idx+1);
+                    }
+                };
+    }
+    tangent(key_idx);
+}
+
+
+module key(key_idx) {
+    difference() {
+        key_lever_3d(key_idx);
+        // TODO
+        //balance_pin(key_idx, balance_pin_radius + 0.5);
+    }
+}
+
+module keyboard() {
+   for (key_idx=[0:num_keys - 1])
+       key(key_idx);
+}
+
 module bridge() {
     translate([
         bridge_pos.x,
@@ -246,6 +343,7 @@ module assembly() {
     rack();
     wrestplank();
     bridge();
+    keyboard();
 }
 
 assembly();
