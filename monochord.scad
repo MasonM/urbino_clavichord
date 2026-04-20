@@ -10,7 +10,7 @@ key_height = 10;
 kb_length = 414;
 kb_pos = [
     wall_th + (c_inner_length - kb_length) / 2,
-    key_depth,
+    -key_depth,
     c_height - key_height - 16
 ];
 nat_width = 17;
@@ -107,7 +107,7 @@ key_octave_and_pitch_class = [
 
 vibrating_string_length_g2 = 506;
 frequency_a4 = 440;
-key_lever_top_y = c_inner_width - rack_th - 1;
+key_lever_top_y = c_inner_width + wall_th - rack_th - 1;
 debug_mode = true;
 
 function is_accidental(key_idx) =
@@ -273,7 +273,7 @@ module key_lever_2d(key_idx) {
         kb_pos.y + (is_accidental(key_idx) ? 45 : 0)
     ];
     second_bend_y = string_y - 10;
-    first_bend_y = wall_th + 10 + (key_idx < 9 ? key_idx * 10 : max(80 - ((key_idx-10)*5), 0));
+    first_bend_y = wall_th + 10 + (key_idx < 5 ? key_idx * 10 : max(80 - ((key_idx-10)*5), 0));
 
     polygon([
        // Bottom to first bend
