@@ -66,10 +66,10 @@ soundboard_pos = [
 // Bridge position
 bridge_pos = [
     c_inner_length - 101,
-    c_inner_width + wall_th - rack_th - 82,
+    (c_inner_width / 2) + wall_th,
     soundboard_pos.z + soundboard_height
 ];
-bridge_width = 98;
+bridge_width = 40;
 bridge_height = 22;
 bridge_top_depth = 1;
 bridge_bottom_depth = 10;
@@ -224,45 +224,18 @@ module tangent(key_idx) {
 }
 
 module bridge() {
-    translate(bridge_pos)
-        rotate([90, 0, 90])
-        color(col_wood_dark)
-        intersection() {
-            linear_extrude(100)
-                bridge_2d();
-            bridge_taper();
-        }
-}
-
-module bridge_2d() {
-    difference() {
-        square([bridge_width, bridge_height]);
-        translate([-12, 5, 0])
-            circle(bridge_height);
-        translate([30, 0, 0])
-            circle(9);
-        translate([45, 7, 0])
-            circle(10);
-        translate([60, 0, 0])
-            circle(9);
-        translate([bridge_width+5, 5, 0])
-            circle(bridge_height);
-    };
-}
-
-// Long trapezoid to intersect with the bridge so it tapers to top
-module bridge_taper() {
     translate([
-        c_inner_length/2,
-        bridge_height,
-        bridge_bottom_depth/2
+        bridge_pos.x,
+        bridge_pos.y + bridge_width,
+        bridge_pos.z + bridge_height
     ])
-        rotate([180, 90, 0])
-        linear_extrude(c_inner_length)
+        rotate([90, 180, 0])
+        color(col_wood_dark)
+        linear_extrude(bridge_width)
             polygon([
                 [-bridge_top_depth/2, 0],
-                [-bridge_bottom_depth/2, bridge_height+1],
-                [bridge_bottom_depth/2, bridge_height+1],
+                [-bridge_bottom_depth/2, bridge_height],
+                [bridge_bottom_depth/2, bridge_height],
                 [bridge_top_depth/2, 0],
             ]);
     }
