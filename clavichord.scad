@@ -197,7 +197,7 @@ col_string = [0.90, 0.90, 0.90];
 col_iron = [0.37, 0.4, 0.41];
 
 // Array of the format [slot_position, sounding_length], indexed by key_idx, both relative to the bridge.
-// e.g. 11th entry is [564.5, 565], which says the slot for the lowest note is 564.5mm to the left of the bridge, and the sounding length is 565mm.
+// e.g. 11th entry is [564.5, 565], which says the slot for the f# key is 564.5mm to the left of the bridge, and the sounding length is 565mm.
 note_slot_position_and_sounding_length = [
     [837.0, 837.0], // F
     [826.0, 826.0], // G
