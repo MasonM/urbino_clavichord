@@ -146,15 +146,13 @@ bridge_height = 22;
 bridge_top_depth = 1;
 // Bridge bottom depth
 bridge_bottom_depth = 10;
-// Soundboard width (?)
-soundboard_width = 190;
 // Soundboard depth (?)
 soundboard_depth = c_width - wall_th*2;
 // Soundboard height (?)
 soundboard_height = 3;
 // Soundboard position
 soundboard_pos = [
-    right_edge_x - wrestplank_width - soundboard_width,
+    wall_th + hitchpin_block_th,
     wall_th,
     50
 ];
@@ -168,12 +166,6 @@ bridge_pos = [
 mousehole_height = 100;
 // Mousehole radius (?)
 mousehole_radius = 30;
-// Belly rail width (?)
-belly_rail_width = 10;
-// Belly rail depth (?)
-belly_rail_depth = 162;
-// Belly rail height (?)
-belly_rail_height = 43;
 
 /* [String/Pin Dimensions (mm-R)] */
 // Hitchpin height (?)
@@ -430,33 +422,15 @@ module balance_rail() {
         balance_pin(key_idx, balance_pin_radius);
 }
 
-module belly_rail() {
-    translate([
-        soundboard_pos.x - belly_rail_width,
-        soundboard_pos.y,
-        wall_th
-    ])
-        color(col_wood_dark)
-        difference() {
-            cube([belly_rail_width, belly_rail_depth, belly_rail_height]);
-            // Commented out because I'm not sure if this is needed/desirable if we have a mousehole
-            //belly_rail_hole();
-        }
-}
-
-// Oblong cylinder to create a hole in the belly rail
-module belly_rail_hole() {
-    rotate([0, 90, 0])
-        translate([-20, (belly_rail_depth / 2), -15])
-            scale([1,4,1])
-                cylinder(h=100, r=10);
-}
-
 module soundboard() {
     color(col_wood_light)
     difference() {
         translate(soundboard_pos)
-            cube([soundboard_width, soundboard_depth, soundboard_height]);
+            cube([
+                wrestplank_pos.x - soundboard_pos.x,
+                soundboard_depth,
+                soundboard_height
+            ]);
         soundboard_mousehole();
         backrail();
         rack_block();
@@ -685,7 +659,6 @@ module internal_components() {
 module soundbox() {
     bridge();
     soundboard();
-    belly_rail();
 }
 
 module assembly() {
