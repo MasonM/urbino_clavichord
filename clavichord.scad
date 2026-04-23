@@ -196,56 +196,56 @@ col_string = [0.90, 0.90, 0.90];
 // Iron
 col_iron = [0.37, 0.4, 0.41];
 
-// Array of the format [slot_position, sounding_length], indexed by key_idx.
-// e.g. First entry is [938, 837], which says the slot for the lowest note is 938mm from the right edge of the case, and the sounding length is 837mm.
+// Array of the format [slot_position, sounding_length], indexed by key_idx, both relative to the bridge.
+// e.g. 11th entry is [564.5, 565], which says the slot for the lowest note is 564.5mm to the left of the bridge, and the sounding length is 565mm.
 note_slot_position_and_sounding_length = [
-    [938.0, 837.0],
-    [927.0, 826.0],
-    [916.5, 815.5],
-    [902.5, 801.5],
-    [888.5, 787.5],
-    [875.5, 774.5],
-    [836.0, 735.0],
-    [788.0, 687.0],
-    [774.0, 673.0],
-    [731.0, 630.0],
-    [699.0, 598.0],
-    [665.5, 565.0],
-    [655.0, 554.0],
-    [627.0, 526.0],
-    [593.0, 492.0],
-    [582.0, 481.5],
-    [549.0, 448.0],
-    [528.5, 427.5],
-    [506.0, 405.0],
-    [495.5, 394.5],
-    [474.0, 373.0],
-    [449.5, 348.5],
-    [437.5, 336.5],
-    [420.5, 319.5],
-    [398.0, 297.0],
-    [383.0, 282.0],
-    [371.0, 270.5],
-    [357.5, 256.5],
-    [342.5, 241.5],
-    [328.5, 227.5],
-    [317.5, 216.5],
-    [302.5, 202.0],
-    [291.0, 190.0],
-    [280.0, 179.5],
-    [270.5, 169.5],
-    [262.0, 161.0],
-    [251.0, 150.5],
-    [241.5, 140.5],
-    [232.0, 131.0],
-    [226.5, 125.5],
-    [217.0, 116.0],
-    [210.5, 109.5],
-    [203.0, 102.0],
-    [199.0, 98.0],
-    [192.5, 91.5],
-    [186.0, 85.0],
-    [180.5, 79.5]
+    [837.0, 837.0], // F
+    [826.0, 826.0], // G
+    [815.5, 815.5], // A
+    [801.5, 801.5], // Bb
+    [787.5, 787.5], // B
+    [774.5, 774.5], // c
+    [735.0, 735.0], // c#
+    [687.0, 687.0], // d
+    [673.0, 673.0], // eb
+    [630.0, 630.0], // e
+    [598.0, 598.0], // f
+    [564.5, 565.0], // f#
+    [554.0, 554.0], // g
+    [526.0, 526.0], // ab
+    [492.0, 492.0], // a
+    [481.0, 481.5], // bb
+    [448.0, 448.0], // b
+    [427.5, 427.5], // c1
+    [405.0, 405.0], // c#1
+    [394.5, 394.5], // d1
+    [373.0, 373.0], // eb1
+    [348.5, 348.5], // e1
+    [336.5, 336.5], // f1
+    [319.5, 319.5], // f#1
+    [297.0, 297.0], // g1
+    [282.0, 282.0], // ab1
+    [270.0, 270.5], // a1
+    [256.5, 256.5], // bb1
+    [241.5, 241.5], // b1
+    [227.5, 227.5], // c2
+    [216.5, 216.5], // c#2
+    [201.5, 202.0], // d2
+    [190.0, 190.0], // eb2
+    [179.0, 179.5], // e2
+    [169.5, 169.5], // f2
+    [161.0, 161.0], // f#2
+    [150.0, 150.5], // g2
+    [140.5, 140.5], // ab2
+    [131.0, 131.0], // a2
+    [125.5, 125.5], // bb2
+    [116.0, 116.0], // b2
+    [109.5, 109.5], // c3
+    [102.0, 102.0], // c#3
+    [98.0, 98.0],   // d3
+    [91.5, 91.5],   // eb3
+    [85.0, 85.0],   // e3
+    [79.5, 79.5]    // f3
 ];
 
 /* [Advanced] */
@@ -296,7 +296,7 @@ function nat_idx(key_idx) = key_idx > 1
     : key_idx;
 
 // Return x position of slot for given key
-function slot_x(key_idx) = right_edge_x - note_slot_position_and_sounding_length[key_idx][0];
+function slot_x(key_idx) = bridge_pos.x - note_slot_position_and_sounding_length[key_idx][0];
 
 // Return x position of tangent for given key
 function tangent_x(key_idx) = bridge_pos.x - note_slot_position_and_sounding_length[key_idx][1] + tangent_depth/2;
