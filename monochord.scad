@@ -164,9 +164,9 @@ if (debug_mode) {
         echo(key_idx=key_idx,
             key_label=key_label(key_idx),
             sounding_length=sounding_length(key_idx),
+            key_frequency=key_frequency(key_idx),
             slot_x=slot_x(key_idx),
             transpose=transpose(key_octave_and_pitch_class[key_idx][0], key_octave_and_pitch_class[key_idx][1]),
-            key_frequency=key_frequency(key_idx),
         );
     }
 }
