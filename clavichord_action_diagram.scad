@@ -142,7 +142,7 @@ col_wood_light = [0.80, 0.65, 0.40];
 // Medium wood
 col_wood_med = [0.55, 0.35, 0.15];
 // Key lever
-col_key_lever = [0.9, 0.9, 0.9];
+col_key_lever = [0.7, 0.7, 0.7];
 // Natural key top
 col_natural = [0.90, 0.88, 0.80];
 // Sharp key top
@@ -150,7 +150,7 @@ col_sharp = [0.15, 0.15, 0.15];
 // Brass
 col_brass = [0.85, 0.75, 0.30];
 // String
-col_string = [0.90, 0.90, 0.90];
+col_string = [0.95, 0.85, 0.40];
 // Iron
 col_iron = [0.37, 0.4, 0.41];
 
@@ -460,7 +460,7 @@ module key(key_idx) {
         key_lever_3d(key_idx);
         balance_pin(key_idx, balance_pin_radius + 0.5);
     }
-    natural_key_top(key_idx);
+    //natural_key_top(key_idx);
 }
 
 // Draw a text label in the YZ plane (facing +X) with the text baseline running
@@ -522,4 +522,4 @@ module assembly() {
 }
 
 //projection(cut=false) rotate([0, 90, 0]) 
-assembly();
+rotate([270, -90, 0]) assembly();
