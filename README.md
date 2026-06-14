@@ -7,4 +7,4 @@ Revisited](https://harpsichords.weebly.com/uploads/2/5/0/1/25019733/verbeek_magn
 
 # STL Rendering
 
-See [clavichord.stl](./clavichord.stl)
+See [clavichord.stl](./render/clavichord.stl)

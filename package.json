@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "gltf-optimizer": "^0.4.1",
+    "openscad-gltf-wasm": "github:iliagrigorevdev/openscad-gltf-wasm"
+  }
+}
