@@ -462,64 +462,12 @@ module key(key_idx) {
     }
     //natural_key_top(key_idx);
 }
-
-// Draw a text label in the YZ plane (facing +X) with the text baseline running
-// along the +Y axis. An arrow is drawn from just below the text down to the
-// anchor point on the element being labeled.
-module label(str, label_pos, anchor, size=8, halign="center") {
-    color([0, 0, 0]) {
-        translate(label_pos)
-            rotate([90, 0, 90])
-            linear_extrude(0.5)
-                text(str, size=size, halign=halign, valign="center",
-                    font="Liberation Sans");
-
-        // Arrow tail starts just below the text and goes to the anchor.
-        arrow_start = label_pos - [0, 0, size];
-        stroke([arrow_start, anchor], width=1.2,
-               endcap1="butt", endcap2="arrow2");
-    }
-}
-
-module labels() {
-    key_string_y = string_y(key_string_idx(0));
-    lever_mid_x  = key_x(0) + nat_width/2;
-
-    // Key lever - label above the front of the lever
-    label("key lever",
-        label_pos=[lever_mid_x-45, 60, c_height + 55],
-        anchor=[lever_mid_x-45, 60, kb_pos.z + nat_height]);
-
-    // Balance pin - label above the pin/rail
-    label("balance pin",
-        label_pos=[lever_mid_x, wall_th + 4, c_height + 20],
-        anchor=[lever_mid_x, wall_th + 4, kb_pos.z + 15 ]);
-
-    // Tangent - label above the tangent
-    label("tangent",
-        label_pos=[tangent_x(0) + tangent_width/2, key_string_y - 25, c_height + 20],
-        anchor=[tangent_x(0) + tangent_width/2, key_string_y,
-                kb_pos.z + nat_height + tangent_height]);
-
-    // String - label above the string, between tangent and bridge
-    label("string",
-        label_pos=[(tangent_x(0) + bridge_pos.x) / 2, key_string_y, c_height + 30],
-        anchor=[(tangent_x(0) + bridge_pos.x) / 2, key_string_y,
-                soundboard_pos.z + soundboard_height + bridge_height + 2*string_radius]);
-
-    // Bridge - label above the bridge where the string crosses it
-    label("bridge",
-        label_pos=[bridge_pos.x, key_string_y-50, c_height + 55],
-        anchor=[bridge_pos.x, key_string_y-50, bridge_pos.z + bridge_height]);
-}
-
 module assembly() {
     key(0);
     balance_rail();
     bridge();
     strings();
-    labels();
 }
 
 //projection(cut=false) rotate([0, 90, 0]) 
-rotate([270, -90, 0]) assembly();
+rotate([0, 0, 270]) assembly();
