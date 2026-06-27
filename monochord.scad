@@ -1,24 +1,128 @@
+// German:
+// "Das unserer Rekonstruktion zugrundeliegende innere Längenmaß von 644 mm (die
+// äußere Länge beträgt 664 mm) wurde durch Annahme eines Vielfachen der von
+// Arnaut! zur divisio longitudinis verwendeten Zahl 14 erreicht, wobei eine auf
+// dem Verhältnis 1 :3 beruhende Übereinstimmung mit der Figur des Magisters
+// (Tafel IX) besteht. Freilich kann diese Größenwahl lediglich als eine von
+// vielen Möglichkeiten angesehen werden. Auch die Annahme des
+// Längen-Breiten-Höhen-Verhältnisses (Breite = 3/14 longitudo = 138 mm; Höhe
+// bzw. „altitudo tota" = 1/2 latitudo = 69 mm) erfolgte nach Arnaut. Eine
+// Verkürzung der latitudo wurde nicht vorgenommen, da sich – abgesehen von
+// Conrads Hinweis, das Monochord-corpus sei „ad instar clavichordii corporis in
+// consimili longitudine, profunditate et si placet auch latitudine"
+// herzustellen – ein Beibehalten der vollen Breite wegen des uneingeschränkten
+// Resonanzbodens günstig auf die Klangfülle des Instrumentes auswirkt.
+// Desgleichen wurden Anfangs- und Endpunkt der Messung, Steg und Resonanzloch
+// an folgenden Orten eingesetzt: Der terminus a quo mensurationis und stephanus
+// (= terminus ad quem mensurationis) bei 1/14 und 6/7 der longitudo (= 46 und
+// 552 mm). Die dem '-ut zugehörige schwingende Saitenlänge mißt somit 506 mm.
+// Demgegenüber befindet sich der Mittelpunkt des foramen rotundum pro
+// resonantia bei 506 mm (= 11/14 der longitudo). Zudem erfahren wir bei Arnaut,
+// daß der zwischen dem oberen und unteren Boden herrschende Abstand ("distantia
+// inter duos fundos") 1/6 der Breite (= 1/28 der Länge = 23 mm) umfasse."
+// English:
+// "The internal length used for our reconstruction is 644 mm (the external
+// length is 664 mm), which was determined by adopting a multiple of the number
+// 14, as used by Arnaut for dividing the length, resulting in a 1:3 ratio
+// consistent with the master's diagram (Plate IX). Of course, this choice of
+// size is only one of many possible options. The length-width-height ratio
+// (width = 3/14 of the length = 138 mm; height or "altitudo tota" = 1/2 of the
+// width = 69 mm) was also adopted from Arnaut. The width was not reduced,
+// since—apart from Conrad's note that the monochord body should be made "in the
+// manner of a clavichord body, with similar length, depth, and, if desired,
+// also width"—retaining the full width, due to the unrestricted soundboard, has
+// a positive effect on the instrument's fullness of sound. Likewise, the
+// starting and ending points for measurement, the bridge, and the sound hole
+// were placed as follows: the starting point of measurement and the bridge
+// (terminus a quo mensurationis and stephanus = terminus ad quem mensurationis)
+// at 1/14 and 6/7 of the length (46 and 552 mm). The vibrating string length
+// for '-ut is thus 506 mm. In contrast, the center of the sound hole (foramen
+// rotundum pro resonantia) is at 506 mm (11/14 of the length). According to
+// Arnaut, the distance between the upper and lower boards ("distantia inter
+// duos fundos") is 1/6 of the width (1/28 of the length = 23 mm)."
 c_inner_length = 644;
-c_inner_width = 138;
-c_height = 69;
+c_inner_width = c_inner_length * (3/14);
+c_height = c_inner_width / 2;
 wall_th = 10;
+vibrating_string_length_g2 = c_inner_length * (11/14);
 
-num_keys = 22;
-key_width = 20.7;
-key_depth = 30;
+// German:
+// "Moduli autem, id est claves ligneae, quae chordam tangere sive percutere
+// debent, numero viginti praeter duo b-mollia, in ea parte, qua extra corpus
+// monochordi protenduntur, omnes aequalis sint latitudinis, omnes quoque omnino
+// integrae ad instar primae et ultimae clavium in ipso clavichordio ut
+// communiter repertarum praeter has duas claves sub secundo scilicet et tertio
+// c immediate positas. Quarum quaelibet -durum faciens sive repraesentans intra
+// se capiet et admittet, quoad anteriorem sive priorem sui partem aut
+// medietatem, ipsum modulum sive clavem b-mollis per modum semitonii sive parvi
+// moduli."
+// English:
+// "The keys, that is, the wooden levers which are to touch or strike the
+// string, should number twenty, plus two for B-flat. In the part where they
+// extend outside the monochord’s body, all should be of equal width and
+// completely solid, like the first and last keys of a typical clavichord,
+// except for the two keys placed immediately under the second and third C. Each
+// key representing B-natural should, in its front or middle part, contain and
+// admit the B-flat key as a small or semitone key."
+key_octave_and_pitch_class = [
+    [2, 7],  // G2
+    [2, 9],  // A2
+    [2, 11], // B2
+    [3, 0],  // C3
+    [3, 2],  // D3
+    [3, 4],  // E3
+    [3, 5],  // F3
+    [3, 7],  // G3
+    [3, 9],  // A3
+    [3, 10], // Bb3
+    [3, 11], // B3
+    [4, 0],  // C4
+    [4, 2],  // D4
+    [4, 4],  // E4
+    [4, 5],  // F4
+    [4, 7],  // G4
+    [4, 9],  // A4
+    [4, 10], // Bb4
+    [4, 11], // B4
+    [5, 0],  // C5
+    [5, 2],  // D5
+    [5, 4],  // E5
+];
+num_keys = len(key_octave_and_pitch_class);
+cumsum_accidentals = [for (a=0, i=0; i < num_keys; i = i + 1, a = a + (is_accidental(i) ? 1 : 0)) a];
+num_naturals = num_keys - cumsum_accidentals[num_keys - 1];
+
+// English:
+// "To conclude regarding the construction of the keys: According to Conrad's
+// specifications, the outer surfaces of the "first ... and last ... keys" each
+// begin at a distance from the ends that is a little more than one-sixth of the
+// total length ( = 115 mm). By evenly dividing the remaining space ( = 414 mm),
+// a theoretical width of 20.7 mm could be achieved for each of the twenty
+// "lower keys," while in practice the width was just under 20 mm. (For the
+// width of the two "upper keys," the "half-width of a key" was used.) The
+// length of these keys was again calculated according to Arnaut ( = about 40
+// mm). Regarding the inner part of the key, the rear start of the taper is at
+// 2/5 of the width ( = 55.2 mm). Furthermore, the string runs at the location
+// designated by Arnaut for the "first pair of strings" ( = 3/5 of the width =
+// 82.8 mm, and 13.8 mm from the center). Thus, Conrad's requirement that it be
+// placed "beyond the center of the total internal width of the monochord,
+// toward the side away from us" was also fulfilled. (All further details can be
+// seen in Fig. II.)"
+key_depth = 40;
 key_height = 10;
 kb_length = 414;
 kb_pos = [
-    wall_th + (c_inner_length - kb_length) / 2,
+    wall_th + 115,
     -key_depth,
     c_height - key_height - 16
 ];
-nat_width = 17;
-nat_depth = 81.5;
+nat_width = kb_length / num_naturals;
 nat_height = 10;
-sharp_width = 14.3;
-sharp_depth = 41.2;
-sharp_height = 4.9;
+accidental_width = nat_width / 2;
+accidental_height = nat_height / 2;
+accidental_depth = key_depth / 2;
+
+// TODO: bottom board
 
 /* [Internal Component Dimensions (mm-R)] */
 
@@ -80,39 +184,36 @@ bridge_height = 22;
 bridge_top_depth = 1;
 bridge_bottom_depth = 10;
 
-key_octave_and_pitch_class = [
-    [2, 7],    // G2
-    [2, 9],    // A2
-    [2, 11],   // B2
-    [3, 0],    // C3
-    [3, 2],    // D3
-    [3, 4],    // E3
-    [3, 5],    // F3
-    [3, 7],    // G3
-    [3, 9],    // A3
-    [3, 10],   // Bb3
-    [3, 11],   // B3
-    [4, 0],    // C4
-    [4, 2],    // D4
-    [4, 4],    // E4
-    [4, 5],    // F4
-    [4, 7],    // G4
-    [4, 9],    // A4
-    [4, 10],   // Bb4
-    [4, 11],   // B4
-    [5, 0],    // C5
-    [5, 2],    // D5
-    [5, 4],    // E5
-];
-
-vibrating_string_length_g2 = 506;
 frequency_a4 = 440;
 key_lever_top_y = c_inner_width + wall_th - rack_th - 1;
 debug_mode = true;
 
+tangent_top_width = 2.5;
+tangent_height = 5;
+tangent_depth = 1;
+rack_tongue_width = 1;
+rack_tongue_depth = 7;
+rack_tongue_height = 5;
+
+string_diameter = 0.5;
+
+col_wood_med = [0.55, 0.35, 0.15];
+col_wood_dark = [0.35, 0.20, 0.10];
+col_brass = [0.85, 0.75, 0.30];
+col_key_lever = [0.9, 0.9, 0.9];
+col_natural = [0.90, 0.88, 0.80];
+col_accidental = [0.15, 0.15, 0.15];
+
 function is_accidental(key_idx) =
-    let (pitch_class = key_octave_and_pitch_class[key_idx][1])
-    pitch_class == 1 || pitch_class == 3 || pitch_class == 6 || pitch_class == 8;
+    let (
+        pitch_class = key_octave_and_pitch_class[key_idx][1],
+        pitch_class_accidentals = [false, true, false, true, false, false, true, false, true, false, true, false]
+    )
+    pitch_class_accidentals[pitch_class];
+
+function key_x(key_idx) =
+    kb_pos.x
+    + (key_idx - cumsum_accidentals[key_idx]) * nat_width;
 
 // Transpose from C4 to A4
 function transpose(octave, pitch_class) =
@@ -142,26 +243,10 @@ function sounding_length(key_idx) =
 
 function slot_x(key_idx) = bridge_pos.x - sounding_length(key_idx);
 
-
-tangent_top_width = 2.5;
-tangent_height = 5;
-tangent_depth = 1;
-rack_tongue_width = 1;
-rack_tongue_depth = 7;
-rack_tongue_height = 5;
-
-string_diameter = 0.5;
-
-col_wood_med = [0.55, 0.35, 0.15];
-col_wood_dark = [0.35, 0.20, 0.10];
-col_brass = [0.85, 0.75, 0.30];
-col_key_lever = [0.9, 0.9, 0.9];
-col_natural = [0.90, 0.88, 0.80];
-col_sharp = [0.15, 0.15, 0.15];
-
 if (debug_mode) {
     for (key_idx=[0:num_keys-1]) {
         echo(key_idx=key_idx,
+            is_accidental=is_accidental(key_idx),
             key_label=key_label(key_idx),
             sounding_length=sounding_length(key_idx),
             key_frequency=key_frequency(key_idx),
@@ -242,12 +327,6 @@ module tangent(key_idx) {
             ]);
 }
 
-function key_x(key_idx) =
-    kb_pos.x
-    // TOOD: simplify
-    + (key_idx - (key_idx >= 9 ? (key_idx >= 17 ? 2 : 1) : 0)) * nat_width
-    + (is_accidental(key_idx) ? nat_width - floor(sharp_width/2) : 0);
-
 module rack_tongue(key_idx) {
     translate([
         slot_x(key_idx) - rack_tongue_width/2,
@@ -263,7 +342,7 @@ string_y = key_lever_top_y - 15;
 // This is a mess because I couldn't figue out an underlying pattern in how the keys are cranked.
 module key_lever_2d(key_idx) {
     top_width = key_idx > 38 ? 5 : 10;
-    bottom_width = (is_accidental(key_idx) ? sharp_width : nat_width) - 3;
+    bottom_width = (is_accidental(key_idx) ? accidental_width : nat_width) - 3;
     top = [
         slot_x(key_idx) - top_width/2,
         key_lever_top_y
@@ -273,7 +352,7 @@ module key_lever_2d(key_idx) {
         kb_pos.y + (is_accidental(key_idx) ? 45 : 0)
     ];
     second_bend_y = string_y - 10;
-    first_bend_y = wall_th + 10 + (key_idx < 5 ? key_idx * 10 : max(80 - ((key_idx-10)*5), 0));
+    first_bend_y = wall_th + 10 + (key_idx < 5 ? key_idx * 10 : max(50 - ((key_idx-10)*5), 0));
 
     polygon([
        // Bottom to first bend
@@ -308,6 +387,15 @@ module key_lever_3d(key_idx) {
     tangent(key_idx);
 }
 
+module accidental_key_top(key_idx) {
+    translate([
+        key_x(key_idx),
+        -accidental_depth,
+        kb_pos.z + nat_height
+    ])
+        color(col_accidental)
+        cube([accidental_width, accidental_depth, accidental_height]);
+}
 
 module key(key_idx) {
     difference() {
@@ -315,6 +403,8 @@ module key(key_idx) {
         // TODO
         //balance_pin(key_idx, balance_pin_radius + 0.5);
     }
+    if (is_accidental(key_idx))
+        accidental_key_top(key_idx);
 }
 
 module keyboard() {
