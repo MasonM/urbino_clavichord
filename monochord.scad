@@ -125,18 +125,22 @@ wrestplank_pos = [
     wall_th,
     37
 ];
+soundboard_pos = [
+    rack_pos.x + rack_width + 1,
+    wall_th,
+    40
+];
 // Soundboard width (?)
-soundboard_width = 190;
+soundboard_width = wrestplank_pos.x - soundboard_pos.x;
 // Soundboard depth (?)
 soundboard_depth = c_inner_width;
 // Soundboard height (?)
 soundboard_height = 3;
 // Soundboard position
-soundboard_pos = [
-    c_inner_length - wrestplank_width - soundboard_width,
-    wall_th,
-    40
-];
+
+mousehole_height = 100;
+// Mousehole radius (?)
+mousehole_radius = 20;
 
 // Bridge position
 bridge_pos = [
@@ -172,6 +176,7 @@ rack_tongue_height = 5;
 
 col_wood_med = [0.55, 0.35, 0.15];
 col_wood_dark = [0.35, 0.20, 0.10];
+col_wood_light = [0.80, 0.65, 0.40];
 col_brass = [0.85, 0.75, 0.30];
 col_key_lever = [0.90, 0.88, 0.80];
 col_natural = [0.9, 0.9, 0.9];
@@ -454,7 +459,29 @@ module bridge() {
                 [bridge_bottom_depth/2, bridge_height],
                 [bridge_top_depth/2, 0],
             ]);
-    }
+}
+
+module soundboard() {
+    color(col_wood_light)
+    difference() {
+        translate(soundboard_pos)
+            cube([
+                wrestplank_pos.x - soundboard_pos.x,
+                soundboard_depth,
+                soundboard_height
+            ]);
+        soundboard_mousehole();
+        //backrail();
+        //rack_block();
+        //balance_rail();
+    };
+}
+
+// Cylinder to cut out a mousehole
+module soundboard_mousehole() {
+    translate([soundboard_pos.x + 30, bridge_pos.y + mousehole_radius, 0])
+        cylinder(h=mousehole_height, r=mousehole_radius);
+}
 
 module assembly() {
     case();
@@ -466,6 +493,7 @@ module assembly() {
     tuning_pin();
     hitchpin();
     string();
+    soundboard();
 }
 
 assembly();
