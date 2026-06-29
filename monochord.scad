@@ -94,9 +94,9 @@ accidental_depth = key_depth / 2;
 // Hitchpin block thickness (?)
 hitchpin_block_th = 13;
 // Hitchpin block height (?)
-hitchpin_block_height = 60;
+hitchpin_block_height = 20;
 // Hitchpin height (?)
-hitchpin_height = 5;
+hitchpin_height = 10;
 // Hitchpin radius (?)
 hitchpin_radius = 1;
 
@@ -123,7 +123,7 @@ wrestplank_height = 20;
 wrestplank_pos = [
     wall_th + c_inner_length - wrestplank_width,
     wall_th,
-    27
+    37
 ];
 // Soundboard width (?)
 soundboard_width = 190;
@@ -150,12 +150,14 @@ bridge_top_depth = 1;
 bridge_bottom_depth = 10;
 
 string_radius = 0.4;
-string_x = wall_th + hitchpin_block_th;
-string_y = c_inner_width * (3/5);
+string_x = wall_th + (hitchpin_block_th / 2);
+string_y = wall_th + c_inner_width * (3/5);
+string_z = soundboard_pos.z + soundboard_height + bridge_height + string_radius;
 
-tuning_pin_height = 23;
 // Tuning pin radius (?)
 tuning_pin_radius = 1.5;
+tuning_pin_x = wrestplank_pos.x + wrestplank_width - tuning_pin_radius - 5;
+tuning_pin_height = string_z - (wrestplank_pos.z + wrestplank_height) + 5;
 
 frequency_a4 = 440;
 key_lever_top_y = c_inner_width + wall_th - rack_th - 1;
@@ -171,9 +173,8 @@ rack_tongue_height = 5;
 col_wood_med = [0.55, 0.35, 0.15];
 col_wood_dark = [0.35, 0.20, 0.10];
 col_brass = [0.85, 0.75, 0.30];
-col_key_lever = [0.9, 0.9, 0.9];
-col_natural = [0.90, 0.88, 0.80];
-col_accidental = [0.15, 0.15, 0.15];
+col_key_lever = [0.90, 0.88, 0.80];
+col_natural = [0.9, 0.9, 0.9];
 col_iron = [0.37, 0.4, 0.41];
 
 function is_accidental(key_idx) =
@@ -185,7 +186,7 @@ function is_accidental(key_idx) =
 
 function key_x(key_idx) =
     kb_pos.x
-    + (key_idx - cumsum_accidentals[key_idx]) * nat_width;
+    + (key_idx - (key_idx > 0 ? cumsum_accidentals[key_idx - 1] : 0)) * nat_width;
 
 // Transpose from C4 to A4
 function transpose(octave, pitch_class) =
@@ -221,6 +222,7 @@ function tangent_x(key_idx) = slot_x(key_idx) + tangent_depth/2;
 if (debug_mode) {
     for (key_idx=[0:num_keys-1]) {
         echo(key_idx=key_idx,
+            cumsum_accidentals=cumsum_accidentals[key_idx],
             is_accidental=is_accidental(key_idx),
             key_label=key_label(key_idx),
             sounding_length=sounding_length(key_idx),
@@ -266,7 +268,7 @@ module hitchpin_block() {
     translate([
         wall_th,
         wall_th,
-        c_height - hitchpin_block_height - 10
+        wrestplank_pos.z,
     ])
         color(col_wood_dark)
         cube([
@@ -316,59 +318,38 @@ module rack_tongue(key_idx) {
         cube([rack_tongue_width, rack_tongue_depth, rack_tongue_height]);
 }
 
+key_lever_side_clearance = 1;
+
 function key_lever_top_width(key_idx) =
     let (
-        top_width = 10,
-        bottom_width = (is_accidental(key_idx) ? accidental_width : nat_width) - 3,
-        top = [
-            slot_x(key_idx) - top_width/2,
-            key_lever_top_y
-        ],
-        bottom = [
-            key_x(key_idx),
-            kb_pos.y + (is_accidental(key_idx) ? 45 : 0)
-        ],
-        second_bend_y = string_y - 20,
-        first_bend_y = wall_th + 10 + (key_idx < 5 ? key_idx * 10 : max(50 - ((key_idx-10)*5), 0))
+        distance_from_left = key_idx == 0 ? 999 : tangent_x(key_idx) - tangent_x(key_idx-1) - key_lever_side_clearance,
+        distance_from_right = key_idx == num_keys - 1 ? 999 : tangent_x(key_idx+1) - tangent_x(key_idx) - key_lever_side_clearance
     )
-    let (
-        top_to_second_bend_slope = (top.y - second_bend_y) / (top.x - (top.x + top_width)),
-        second_bend_to_first_bend_slope = (second_bend_y - first_bend_y) / ((bottom.x + bottom_width) - (top.x + top_width)),
-        first_bend_to_bottom_slope = (first_bend_y - bottom.y) / ((bottom.x + bottom_width) - bottom.x),
-    )
-    let (
-        second_bend_x = top.x + top_width + (second_bend_y - top.y) / top_to_second_bend_slope,
-        first_bend_x = bottom.x + bottom_width + (first_bend_y - bottom.y) / first_bend_to_bottom_slope
-    )
-    first_bend_x - second_bend_x;
+    min(distance_from_left, distance_from_right, nat_width) - key_lever_side_clearance;
+
 // 2d polygon for the key lever, which will be extruded.
 // This is a mess because I couldn't figue out an underlying pattern in how the keys are cranked.
 module key_lever_2d(key_idx) {
-    top_width = 10;
-    bottom_width = (is_accidental(key_idx) ? accidental_width : nat_width) - 3;
+    top_width = key_lever_top_width(key_idx);
+    bottom_width = ((is_accidental(key_idx) || is_accidental(key_idx - 1)) ? accidental_width : nat_width) - 3;
+    second_bend_y = string_y - 20;
+    first_bend_y = wall_th;
     top = [
         slot_x(key_idx) - top_width/2,
         key_lever_top_y
     ];
     bottom = [
-        key_x(key_idx),
-        kb_pos.y + (is_accidental(key_idx) ? 45 : 0)
+        key_x(key_idx) + (is_accidental(key_idx -1) ? accidental_width : 0),
+        first_bend_y
     ];
-    second_bend_y = string_y - 20;
-    first_bend_y = wall_th + 10 + (key_idx < 5 ? key_idx * 10 : max(50 - ((key_idx-10)*5), 0));
 
     polygon([
-       // Bottom to first bend
        bottom,
-       [bottom.x, first_bend_y],
-       // Second bend to top
        [top.x, second_bend_y],
        top,
        // Top to second bend
        [top.x + top_width, top.y],
        [top.x + top_width, second_bend_y],
-       // Second bend to first bend
-       [bottom.x + bottom_width, first_bend_y + (key_idx < 9 ? 6 : -6)],
        [bottom.x + bottom_width, bottom.y],
     ]);
 }
@@ -378,49 +359,55 @@ module key_lever_3d(key_idx) {
         rack_tongue(key_idx);
         translate([0, 0, kb_pos.z])
             linear_extrude(nat_height)
-                difference() {
-                    key_lever_2d(key_idx);
-                    // Subtract neighboring keys so they don't overlap
-                    if (!is_accidental(key_idx)) {
-                        if(key_idx > 0) offset(delta=1) key_lever_2d(key_idx-1);
-                        if (key_idx < num_keys - 1) offset(delta=1) key_lever_2d(key_idx+1);
-                    }
-                };
+                key_lever_2d(key_idx);
     }
     tangent(key_idx);
 }
 
-module accidental_key_top(key_idx) {
+module key_marking(key_idx) {
     translate([
-        key_x(key_idx),
-        -accidental_depth,
-        kb_pos.z + nat_height
+        key_x(key_idx) + 2,
+        -accidental_depth + (is_accidental(key_idx) ? 5 : 0),
+        kb_pos.z + nat_height + (is_accidental(key_idx) ? accidental_height + 1 : 1)
     ])
-        color(col_accidental)
-        cube([accidental_width, accidental_depth, accidental_height]);
+        color("black")
+            text(text=key_label(key_idx), size=is_accidental(key_idx) ? 3 : 7);
 }
 
 module key(key_idx) {
-    difference() {
-        key_lever_3d(key_idx);
-        // TODO
-        //balance_pin(key_idx, balance_pin_radius + 0.5);
-    }
-    if (is_accidental(key_idx))
-        accidental_key_top(key_idx);
+    translate([
+        key_x(key_idx),
+        kb_pos.y + (is_accidental(key_idx) ? accidental_depth : 0),
+        kb_pos.z
+    ])
+        color(col_natural)
+        cube([
+            (is_accidental(key_idx) ? accidental_width : nat_width - 1),
+            (is_accidental(key_idx) ? accidental_depth : key_depth),
+            nat_height + (is_accidental(key_idx) ? accidental_height : 0)
+        ]);
 }
 
 module keyboard() {
-   for (key_idx=[0:num_keys - 1])
-       key(key_idx);
+    for (key_idx=[0:num_keys - 1]) {
+        difference() {
+            key(key_idx);
+            key(key_idx - 1);
+        }
+        difference() {
+            key_lever_3d(key_idx);
+            // TODO
+            //balance_pin(key_idx, balance_pin_radius + 0.5);
+        }
+        key_marking(key_idx);
+    }
 }
 
-tuning_pin_x = wrestplank_pos.x + wrestplank_width - tuning_pin_radius - 5;
 module string() {
     translate([
         string_x,
         string_y,
-        soundboard_pos.z + soundboard_height + bridge_height + string_radius
+        string_z,
     ])
         rotate([0, 90, 0])
         color(col_brass)
@@ -434,7 +421,7 @@ module hitchpin() {
     translate([
         string_x,
         string_y,
-        c_height - 10
+        wrestplank_pos.z + wrestplank_height
     ])
         color(col_iron)
         cylinder(h=hitchpin_height, r=hitchpin_radius);
