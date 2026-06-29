@@ -1,26 +1,3 @@
-// German:
-// "Das unserer Rekonstruktion zugrundeliegende innere Längenmaß von 644 mm (die
-// äußere Länge beträgt 664 mm) wurde durch Annahme eines Vielfachen der von
-// Arnaut! zur divisio longitudinis verwendeten Zahl 14 erreicht, wobei eine auf
-// dem Verhältnis 1 :3 beruhende Übereinstimmung mit der Figur des Magisters
-// (Tafel IX) besteht. Freilich kann diese Größenwahl lediglich als eine von
-// vielen Möglichkeiten angesehen werden. Auch die Annahme des
-// Längen-Breiten-Höhen-Verhältnisses (Breite = 3/14 longitudo = 138 mm; Höhe
-// bzw. „altitudo tota" = 1/2 latitudo = 69 mm) erfolgte nach Arnaut. Eine
-// Verkürzung der latitudo wurde nicht vorgenommen, da sich – abgesehen von
-// Conrads Hinweis, das Monochord-corpus sei „ad instar clavichordii corporis in
-// consimili longitudine, profunditate et si placet auch latitudine"
-// herzustellen – ein Beibehalten der vollen Breite wegen des uneingeschränkten
-// Resonanzbodens günstig auf die Klangfülle des Instrumentes auswirkt.
-// Desgleichen wurden Anfangs- und Endpunkt der Messung, Steg und Resonanzloch
-// an folgenden Orten eingesetzt: Der terminus a quo mensurationis und stephanus
-// (= terminus ad quem mensurationis) bei 1/14 und 6/7 der longitudo (= 46 und
-// 552 mm). Die dem '-ut zugehörige schwingende Saitenlänge mißt somit 506 mm.
-// Demgegenüber befindet sich der Mittelpunkt des foramen rotundum pro
-// resonantia bei 506 mm (= 11/14 der longitudo). Zudem erfahren wir bei Arnaut,
-// daß der zwischen dem oberen und unteren Boden herrschende Abstand ("distantia
-// inter duos fundos") 1/6 der Breite (= 1/28 der Länge = 23 mm) umfasse."
-// English:
 // "The internal length used for our reconstruction is 644 mm (the external
 // length is 664 mm), which was determined by adopting a multiple of the number
 // 14, as used by Arnaut for dividing the length, resulting in a 1:3 ratio
@@ -46,17 +23,6 @@ c_height = c_inner_width / 2;
 wall_th = 10;
 vibrating_string_length_g2 = c_inner_length * (11/14);
 
-// German:
-// "Moduli autem, id est claves ligneae, quae chordam tangere sive percutere
-// debent, numero viginti praeter duo b-mollia, in ea parte, qua extra corpus
-// monochordi protenduntur, omnes aequalis sint latitudinis, omnes quoque omnino
-// integrae ad instar primae et ultimae clavium in ipso clavichordio ut
-// communiter repertarum praeter has duas claves sub secundo scilicet et tertio
-// c immediate positas. Quarum quaelibet -durum faciens sive repraesentans intra
-// se capiet et admittet, quoad anteriorem sive priorem sui partem aut
-// medietatem, ipsum modulum sive clavem b-mollis per modum semitonii sive parvi
-// moduli."
-// English:
 // "The keys, that is, the wooden levers which are to touch or strike the
 // string, should number twenty, plus two for B-flat. In the part where they
 // extend outside the monochord’s body, all should be of equal width and
@@ -92,7 +58,6 @@ num_keys = len(key_octave_and_pitch_class);
 cumsum_accidentals = [for (a=0, i=0; i < num_keys; i = i + 1, a = a + (is_accidental(i) ? 1 : 0)) a];
 num_naturals = num_keys - cumsum_accidentals[num_keys - 1];
 
-// English:
 // "To conclude regarding the construction of the keys: According to Conrad's
 // specifications, the outer surfaces of the "first ... and last ... keys" each
 // begin at a distance from the ends that is a little more than one-sixth of the
@@ -184,18 +149,24 @@ bridge_height = 22;
 bridge_top_depth = 1;
 bridge_bottom_depth = 10;
 
+string_radius = 0.4;
+string_x = wall_th + hitchpin_block_th;
+string_y = c_inner_width * (3/5);
+
+tuning_pin_height = 23;
+// Tuning pin radius (?)
+tuning_pin_radius = 1.5;
+
 frequency_a4 = 440;
 key_lever_top_y = c_inner_width + wall_th - rack_th - 1;
 debug_mode = true;
 
-tangent_top_width = 2.5;
-tangent_height = 5;
+tangent_top_width = 4;
+tangent_height = 10;
 tangent_depth = 1;
 rack_tongue_width = 1;
 rack_tongue_depth = 7;
 rack_tongue_height = 5;
-
-string_diameter = 0.5;
 
 col_wood_med = [0.55, 0.35, 0.15];
 col_wood_dark = [0.35, 0.20, 0.10];
@@ -203,6 +174,7 @@ col_brass = [0.85, 0.75, 0.30];
 col_key_lever = [0.9, 0.9, 0.9];
 col_natural = [0.90, 0.88, 0.80];
 col_accidental = [0.15, 0.15, 0.15];
+col_iron = [0.37, 0.4, 0.41];
 
 function is_accidental(key_idx) =
     let (
@@ -242,6 +214,9 @@ function sounding_length(key_idx) =
     key_frequency(0) * vibrating_string_length_g2 / key_frequency(key_idx);
 
 function slot_x(key_idx) = bridge_pos.x - sounding_length(key_idx);
+
+// Return x position of tangent for given key
+function tangent_x(key_idx) = slot_x(key_idx) + tangent_depth/2;
 
 if (debug_mode) {
     for (key_idx=[0:num_keys-1]) {
@@ -316,8 +291,13 @@ module wrestplank() {
 }
 
 module tangent(key_idx) {
-    color(col_brass)
-        rotate([90, 0, 90])
+    translate([
+        tangent_x(key_idx),
+        string_y - tangent_top_width / 4,
+        kb_pos.z + nat_height
+    ])
+        color(col_brass)
+        rotate([90, 0, -90])
         linear_extrude(tangent_depth)
             polygon([
                 [-tangent_top_width/4, 0],
@@ -336,12 +316,35 @@ module rack_tongue(key_idx) {
         cube([rack_tongue_width, rack_tongue_depth, rack_tongue_height]);
 }
 
-string_y = key_lever_top_y - 15;
-
+function key_lever_top_width(key_idx) =
+    let (
+        top_width = 10,
+        bottom_width = (is_accidental(key_idx) ? accidental_width : nat_width) - 3,
+        top = [
+            slot_x(key_idx) - top_width/2,
+            key_lever_top_y
+        ],
+        bottom = [
+            key_x(key_idx),
+            kb_pos.y + (is_accidental(key_idx) ? 45 : 0)
+        ],
+        second_bend_y = string_y - 20,
+        first_bend_y = wall_th + 10 + (key_idx < 5 ? key_idx * 10 : max(50 - ((key_idx-10)*5), 0))
+    )
+    let (
+        top_to_second_bend_slope = (top.y - second_bend_y) / (top.x - (top.x + top_width)),
+        second_bend_to_first_bend_slope = (second_bend_y - first_bend_y) / ((bottom.x + bottom_width) - (top.x + top_width)),
+        first_bend_to_bottom_slope = (first_bend_y - bottom.y) / ((bottom.x + bottom_width) - bottom.x),
+    )
+    let (
+        second_bend_x = top.x + top_width + (second_bend_y - top.y) / top_to_second_bend_slope,
+        first_bend_x = bottom.x + bottom_width + (first_bend_y - bottom.y) / first_bend_to_bottom_slope
+    )
+    first_bend_x - second_bend_x;
 // 2d polygon for the key lever, which will be extruded.
 // This is a mess because I couldn't figue out an underlying pattern in how the keys are cranked.
 module key_lever_2d(key_idx) {
-    top_width = key_idx > 38 ? 5 : 10;
+    top_width = 10;
     bottom_width = (is_accidental(key_idx) ? accidental_width : nat_width) - 3;
     top = [
         slot_x(key_idx) - top_width/2,
@@ -351,7 +354,7 @@ module key_lever_2d(key_idx) {
         key_x(key_idx),
         kb_pos.y + (is_accidental(key_idx) ? 45 : 0)
     ];
-    second_bend_y = string_y - 10;
+    second_bend_y = string_y - 20;
     first_bend_y = wall_th + 10 + (key_idx < 5 ? key_idx * 10 : max(50 - ((key_idx-10)*5), 0));
 
     polygon([
@@ -412,6 +415,41 @@ module keyboard() {
        key(key_idx);
 }
 
+tuning_pin_x = wrestplank_pos.x + wrestplank_width - tuning_pin_radius - 5;
+module string() {
+    translate([
+        string_x,
+        string_y,
+        soundboard_pos.z + soundboard_height + bridge_height + string_radius
+    ])
+        rotate([0, 90, 0])
+        color(col_brass)
+        cylinder(
+            h=tuning_pin_x - string_x,
+            r=string_radius
+        );
+}
+
+module hitchpin() {
+    translate([
+        string_x,
+        string_y,
+        c_height - 10
+    ])
+        color(col_iron)
+        cylinder(h=hitchpin_height, r=hitchpin_radius);
+}
+
+module tuning_pin() {
+    translate([
+        tuning_pin_x,
+        string_y,
+        wrestplank_pos.z + wrestplank_height
+    ])
+        color(col_iron)
+        cylinder(h=tuning_pin_height, r=tuning_pin_radius);
+}
+
 module bridge() {
     translate([
         bridge_pos.x,
@@ -436,6 +474,9 @@ module assembly() {
     wrestplank();
     bridge();
     keyboard();
+    tuning_pin();
+    hitchpin();
+    string();
 }
 
 assembly();
