@@ -245,7 +245,7 @@ module case() {
 
         // Keyboard cutout in the front wall
         translate([kb_pos.x, -1, kb_pos.z])
-            cube([kb_length, wall_th + 2, 12]);
+            cube([kb_length, wall_th + 2, 112]);
     }
 }
 
@@ -331,7 +331,7 @@ function key_lever_top_width(key_idx) =
 // This is a mess because I couldn't figue out an underlying pattern in how the keys are cranked.
 module key_lever_2d(key_idx) {
     top_width = key_lever_top_width(key_idx);
-    bottom_width = ((is_accidental(key_idx) || is_accidental(key_idx - 1)) ? accidental_width : nat_width) - 3;
+    bottom_width = ((is_accidental(key_idx) || is_accidental(key_idx - 1)) ? accidental_width : nat_width) - 1;
     second_bend_y = string_y - 20;
     first_bend_y = wall_th;
     top = [
@@ -340,16 +340,18 @@ module key_lever_2d(key_idx) {
     ];
     bottom = [
         key_x(key_idx) + (is_accidental(key_idx -1) ? accidental_width : 0),
-        first_bend_y
+        kb_pos.y + key_depth
     ];
 
     polygon([
        bottom,
+       [bottom.x, first_bend_y],
        [top.x, second_bend_y],
        top,
        // Top to second bend
        [top.x + top_width, top.y],
        [top.x + top_width, second_bend_y],
+       [bottom.x + bottom_width, first_bend_y],
        [bottom.x + bottom_width, bottom.y],
     ]);
 }
