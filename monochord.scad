@@ -87,6 +87,7 @@ nat_height = 10;
 accidental_width = nat_width / 2;
 accidental_height = nat_height / 2;
 accidental_depth = key_depth / 2;
+key_lever_side_clearance = 0.5;
 
 // TODO: bottom board
 
@@ -159,10 +160,20 @@ string_x = wall_th + (hitchpin_block_th / 2);
 string_y = wall_th + c_inner_width * (3/5);
 string_z = soundboard_pos.z + soundboard_height + bridge_height + string_radius;
 
+second_bend_y = string_y - 20;
+
 // Tuning pin radius (?)
 tuning_pin_radius = 1.5;
 tuning_pin_x = wrestplank_pos.x + wrestplank_width - tuning_pin_radius - 5;
 tuning_pin_height = string_z - (wrestplank_pos.z + wrestplank_height) + 5;
+
+// Balance pin height (?)
+balance_pin_height = 15;
+// Balance pin radius (?)
+balance_pin_radius = 1;
+balance_rail_height = 30;
+// Balance rail depth (?)
+balance_rail_depth = 10;
 
 key_lever_top_y = c_inner_width + wall_th - rack_th - 1;
 debug_mode = true;
@@ -192,6 +203,9 @@ function is_accidental(key_idx) =
 function key_x(key_idx) =
     kb_pos.x
     + (key_idx - (key_idx > 0 ? cumsum_accidentals[key_idx - 1] : 0)) * nat_width;
+
+function key_lever_x(key_idx) =
+    key_x(key_idx) + (is_accidental(key_idx-1) ? accidental_width : 0);
 
 // Transpose from C4 to A4
 function transpose(octave, pitch_class) =
@@ -323,8 +337,6 @@ module rack_tongue(key_idx) {
         cube([rack_tongue_width, rack_tongue_depth, rack_tongue_height]);
 }
 
-key_lever_side_clearance = 0.5;
-
 function key_lever_top_width(key_idx) =
     let (
         distance_from_left = key_idx == 0 ? 999 : tangent_x(key_idx) - tangent_x(key_idx-1) - key_lever_side_clearance,
@@ -332,7 +344,6 @@ function key_lever_top_width(key_idx) =
     )
     min(distance_from_left, distance_from_right, nat_width) - key_lever_side_clearance;
 
-second_bend_y = string_y - 20;
 // 2d polygon for the key lever, which will be extruded.
 // This is a mess because I couldn't figue out an underlying pattern in how the keys are cranked.
 module key_lever_2d(key_idx) {
@@ -344,7 +355,7 @@ module key_lever_2d(key_idx) {
         key_lever_top_y
     ];
     bottom = [
-        key_x(key_idx) + (is_accidental(key_idx -1) ? accidental_width : 0),
+        key_lever_x(key_idx),
         kb_pos.y + key_depth
     ];
 
@@ -395,6 +406,29 @@ module key(key_idx) {
         ]);
 }
 
+module balance_rail() {
+    translate([
+        kb_pos.x,
+        wall_th,
+        kb_pos.z - balance_rail_height - 1
+    ])
+        color(col_wood_dark)
+        cube([kb_length, balance_rail_depth, balance_rail_height]);
+
+    for(key_idx=[0:num_keys - 1])
+        balance_pin(key_idx, balance_pin_radius);
+}
+
+module balance_pin(key_idx, radius) {
+    translate([
+        (key_lever_x(key_idx) + key_lever_x(key_idx+1)) / 2 - 1,
+        wall_th / 2,
+        kb_pos.z
+    ])
+        color(col_iron)
+        cylinder(h=balance_pin_height, r=radius);
+}
+
 module keyboard() {
     for (key_idx=[0:num_keys - 1]) {
         difference() {
@@ -403,9 +437,9 @@ module keyboard() {
         }
         difference() {
             key_lever_3d(key_idx);
-            // TODO
-            //balance_pin(key_idx, balance_pin_radius + 0.5);
+            balance_pin(key_idx, balance_pin_radius + 0.5);
         }
+        balance_pin(key_idx, balance_pin_radius);
         key_marking(key_idx);
     }
 }
@@ -493,6 +527,7 @@ module assembly() {
     rack();
     bridge();
     keyboard();
+    //balance_rail();
     wrestplank();
     tuning_pin();
     hitchpin_block();
