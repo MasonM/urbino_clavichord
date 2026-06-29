@@ -22,6 +22,7 @@ c_inner_width = c_inner_length * (3/14);
 c_height = c_inner_width / 2;
 wall_th = 10;
 vibrating_string_length_g2 = c_inner_length * (11/14);
+bridge_x = c_inner_length * (6/7);
 
 // "The keys, that is, the wooden levers which are to touch or strike the
 // string, should number twenty, plus two for B-flat. In the part where they
@@ -91,29 +92,30 @@ accidental_depth = key_depth / 2;
 
 /* [Internal Component Dimensions (mm-R)] */
 
+frequency_a4 = 440;
 // Hitchpin block thickness (?)
 hitchpin_block_th = 13;
 // Hitchpin block height (?)
-hitchpin_block_height = 20;
+hitchpin_block_height = 25;
 // Hitchpin height (?)
 hitchpin_height = 10;
 // Hitchpin radius (?)
 hitchpin_radius = 1;
 
+// Slot width (?)
+slot_width = 1.5;
 // Rack thickness (?)
 rack_th = 13;
-// Rack width (?)
-rack_width = 450;
 // Rack height (?)
-rack_height = 30;
+rack_height = 20;
 // Rack starting position (XYZ) (?)
 rack_pos = [
     wall_th + hitchpin_block_th,
     wall_th + c_inner_width - rack_th,
     c_height - rack_height - wall_th
 ];
-// Slot width (?)
-slot_width = 1.5;
+// Rack width (?)
+rack_width = (slot_x(num_keys - 1) - rack_pos.x) + slot_width + 5;
 
 // Wrestplank width (?)
 wrestplank_width = 20;
@@ -126,8 +128,8 @@ wrestplank_pos = [
     37
 ];
 soundboard_pos = [
-    rack_pos.x + rack_width + 1,
-    wall_th,
+    rack_pos.x + rack_width +  1,
+    c_inner_width + wall_th,
     40
 ];
 // Soundboard width (?)
@@ -138,13 +140,12 @@ soundboard_depth = c_inner_width;
 soundboard_height = 3;
 // Soundboard position
 
-mousehole_height = 100;
 // Mousehole radius (?)
-mousehole_radius = 20;
+mousehole_radius = 15;
 
 // Bridge position
 bridge_pos = [
-    c_inner_length - 101,
+    bridge_x,
     (c_inner_width / 2) + wall_th,
     soundboard_pos.z + soundboard_height
 ];
@@ -163,7 +164,6 @@ tuning_pin_radius = 1.5;
 tuning_pin_x = wrestplank_pos.x + wrestplank_width - tuning_pin_radius - 5;
 tuning_pin_height = string_z - (wrestplank_pos.z + wrestplank_height) + 5;
 
-frequency_a4 = 440;
 key_lever_top_y = c_inner_width + wall_th - rack_th - 1;
 debug_mode = true;
 
@@ -219,7 +219,7 @@ function key_frequency(key_idx) =
 function sounding_length(key_idx) =
     key_frequency(0) * vibrating_string_length_g2 / key_frequency(key_idx);
 
-function slot_x(key_idx) = bridge_pos.x - sounding_length(key_idx);
+function slot_x(key_idx) = bridge_x - sounding_length(key_idx);
 
 // Return x position of tangent for given key
 function tangent_x(key_idx) = slot_x(key_idx) + tangent_depth/2;
@@ -323,7 +323,7 @@ module rack_tongue(key_idx) {
         cube([rack_tongue_width, rack_tongue_depth, rack_tongue_height]);
 }
 
-key_lever_side_clearance = 1;
+key_lever_side_clearance = 0.5;
 
 function key_lever_top_width(key_idx) =
     let (
@@ -332,12 +332,12 @@ function key_lever_top_width(key_idx) =
     )
     min(distance_from_left, distance_from_right, nat_width) - key_lever_side_clearance;
 
+second_bend_y = string_y - 20;
 // 2d polygon for the key lever, which will be extruded.
 // This is a mess because I couldn't figue out an underlying pattern in how the keys are cranked.
 module key_lever_2d(key_idx) {
     top_width = key_lever_top_width(key_idx);
     bottom_width = ((is_accidental(key_idx) || is_accidental(key_idx - 1)) ? accidental_width : nat_width) - 1;
-    second_bend_y = string_y - 20;
     first_bend_y = wall_th;
     top = [
         slot_x(key_idx) - top_width/2,
@@ -464,12 +464,17 @@ module bridge() {
 module soundboard() {
     color(col_wood_light)
     difference() {
-        translate(soundboard_pos)
-            cube([
-                wrestplank_pos.x - soundboard_pos.x,
-                soundboard_depth,
-                soundboard_height
-            ]);
+        translate([0, 0, soundboard_pos.z]) {
+            linear_extrude(soundboard_height)
+                polygon([
+                    [soundboard_pos.x, soundboard_pos.y],
+                    [soundboard_pos.x + soundboard_width, soundboard_pos.y],
+                    [soundboard_pos.x + soundboard_width, wall_th],
+                    [kb_pos.x + kb_length, wall_th],
+                    [soundboard_pos.x, second_bend_y],
+                    [soundboard_pos.x, soundboard_pos.y],
+                ]);
+        }
         soundboard_mousehole();
         //backrail();
         //rack_block();
@@ -480,17 +485,17 @@ module soundboard() {
 // Cylinder to cut out a mousehole
 module soundboard_mousehole() {
     translate([soundboard_pos.x + 30, bridge_pos.y + mousehole_radius, 0])
-        cylinder(h=mousehole_height, r=mousehole_radius);
+        cylinder(h=100, r=mousehole_radius);
 }
 
 module assembly() {
     case();
-    hitchpin_block();
     rack();
-    wrestplank();
     bridge();
     keyboard();
+    wrestplank();
     tuning_pin();
+    hitchpin_block();
     hitchpin();
     string();
     soundboard();
