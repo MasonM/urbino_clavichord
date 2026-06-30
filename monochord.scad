@@ -1,3 +1,17 @@
+show_case = true;
+show_rack = true;
+show_backrail = true;
+show_bridge = true;
+show_keyboard = true;
+show_balance_pins = true;
+show_tangents = true;
+show_wrestplank = true;
+show_tuning_pin = true;
+show_hitchpin_block = true;
+show_hitchpin = true;
+show_string = true;
+show_soundboard = true;
+
 // "The internal length used for our reconstruction is 644 mm (the external
 // length is 664 mm), which was determined by adopting a multiple of the number
 // 14, as used by Arnaut for dividing the length, resulting in a 1:3 ratio
@@ -9,7 +23,10 @@
 // manner of a clavichord body, with similar length, depth, and, if desired,
 // also width"—retaining the full width, due to the unrestricted soundboard, has
 // a positive effect on the instrument's fullness of sound."
+
+// Inner case length
 c_inner_length = 644;
+// Inner case width
 c_inner_width = c_inner_length * (3/14);
 c_height = c_inner_width / 2;
 wall_th = 10;
@@ -73,7 +90,7 @@ num_naturals = num_keys - cumsum_accidentals[num_keys - 1];
 // seen in Fig. II.)"
 key_depth = 40;
 kb_length = 414;
-nat_height = 10;
+nat_height = 6;
 kb_pos = [
     wall_th + 115,
     -key_depth,
@@ -124,7 +141,7 @@ string_x = wall_th + (hitchpin_block_th / 2);
 string_y = wall_th + c_inner_width * (3/5);
 
 // Wrestplank width (?)
-wrestplank_width = 20;
+wrestplank_width = 10;
 // Wrestplank height (?)
 wrestplank_height = 20;
 // Wrestplank position (?)
@@ -175,8 +192,8 @@ second_bend_y = string_y - 20;
 
 // Tuning pin radius (?)
 tuning_pin_radius = 1.5;
-tuning_pin_x = wrestplank_pos.x + wrestplank_width - tuning_pin_radius - 5;
-tuning_pin_height = string_z - (wrestplank_pos.z + wrestplank_height) + 5;
+tuning_pin_x = wrestplank_pos.x + (wrestplank_width / 2);
+tuning_pin_height = c_height - wrestplank_pos.z - wrestplank_height - 1;
 
 // Balance pin height (?)
 balance_pin_height = 15;
@@ -400,7 +417,6 @@ module key_lever_3d(key_idx) {
             linear_extrude(nat_height)
                 key_lever_2d(key_idx);
     }
-    tangent(key_idx);
 }
 
 module key_marking(key_idx) {
@@ -452,6 +468,16 @@ module balance_pin(key_idx, radius) {
         cylinder(h=balance_pin_height, r=radius);
 }
 
+module balance_pins() {
+    for (key_idx=[0:num_keys - 1])
+        balance_pin(key_idx, balance_pin_radius);
+}
+
+module tangents() {
+    for (key_idx=[0:num_keys - 1])
+        tangent(key_idx);
+}
+
 module keyboard() {
     for (key_idx=[0:num_keys - 1]) {
         difference() {
@@ -462,7 +488,6 @@ module keyboard() {
             key_lever_3d(key_idx);
             balance_pin(key_idx, balance_pin_radius + 0.5);
         }
-        balance_pin(key_idx, balance_pin_radius);
         key_marking(key_idx);
     }
 }
@@ -543,18 +568,19 @@ module soundboard_mousehole() {
 }
 
 module assembly() {
-    case();
-    rack();
-    backrail();
-    bridge();
-    keyboard();
-    //balance_rail();
-    wrestplank();
-    tuning_pin();
-    hitchpin_block();
-    hitchpin();
-    string();
-    soundboard();
+    if (show_case) case();
+    if (show_rack) rack();
+    if (show_backrail) backrail();
+    if (show_bridge) bridge();
+    if (show_keyboard) keyboard();
+    if (show_balance_pins) balance_pins();
+    if (show_tangents) tangents();
+    if (show_wrestplank) wrestplank();
+    if (show_tuning_pin) tuning_pin();
+    if (show_hitchpin_block) hitchpin_block();
+    if (show_hitchpin) hitchpin();
+    if (show_string) string();
+    if (show_soundboard) soundboard();
 }
 
 assembly();
