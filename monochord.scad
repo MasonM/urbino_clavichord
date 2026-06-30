@@ -24,19 +24,18 @@ show_soundboard = true;
 // also width"—retaining the full width, due to the unrestricted soundboard, has
 // a positive effect on the instrument's fullness of sound."
 
-// Inner case length
-c_inner_length = 644;
-// Inner case width
-c_inner_width = c_inner_length * (3/14);
-c_height = c_inner_width / 2;
+inner_length = 644;
+inner_width = inner_length * (3/14);
+height = inner_width / 2;
 wall_th = 10;
 // "Likewise, the starting and ending points for measurement, the bridge, and
 // the sound hole were placed as follows: the starting point of measurement and
 // the bridge (terminus a quo mensurationis and stephanus = terminus ad quem
 // mensurationis) at 1/14 and 6/7 of the length (46 and 552 mm). The vibrating
 // string length for '-ut is thus 506 mm."
-vibrating_string_length_g2 = c_inner_length * (11/14);
-bridge_x = c_inner_length * (6/7);
+
+vibrating_string_length_g2 = inner_length * (11/14);
+bridge_x = inner_length * (6/7);
 
 // "The keys, that is, the wooden levers which are to touch or strike the
 // string, should number twenty, plus two for B-flat. In the part where they
@@ -88,13 +87,14 @@ num_naturals = num_keys - cumsum_accidentals[num_keys - 1];
 // placed "beyond the center of the total internal width of the monochord,
 // toward the side away from us" was also fulfilled. (All further details can be
 // seen in Fig. II.)"
+
 key_depth = 40;
 kb_length = 414;
 nat_height = 6;
 kb_pos = [
     wall_th + 115,
     -key_depth,
-    c_height - nat_height - 16
+    height - nat_height - 16
 ];
 nat_width = kb_length / num_naturals;
 accidental_width = nat_width / 2;
@@ -130,15 +130,15 @@ rack_height = 40;
 // Rack starting position (XYZ) (?)
 rack_pos = [
     wall_th + hitchpin_block_th,
-    wall_th + c_inner_width - rack_th,
-    c_height - rack_height - wall_th
+    wall_th + inner_width - rack_th,
+    height - rack_height - wall_th
 ];
 // Rack width (?)
 rack_width = (slot_x(num_keys - 1) - rack_pos.x) + slot_width + 5;
 
 string_radius = 0.4;
 string_x = wall_th + (hitchpin_block_th / 2);
-string_y = wall_th + c_inner_width * (3/5);
+string_y = wall_th + inner_width * (3/5);
 
 // Wrestplank width (?)
 wrestplank_width = 10;
@@ -146,20 +146,20 @@ wrestplank_width = 10;
 wrestplank_height = 20;
 // Wrestplank position (?)
 wrestplank_pos = [
-    wall_th + c_inner_length - wrestplank_width,
+    wall_th + inner_length - wrestplank_width,
     wall_th,
     37
 ];
 soundboard_clearance = 1;
 soundboard_pos = [
     rack_pos.x + rack_width +  soundboard_clearance,
-    c_inner_width + wall_th,
+    inner_width + wall_th,
     40
 ];
 // Soundboard width (?)
 soundboard_width = wrestplank_pos.x - soundboard_pos.x;
 // Soundboard depth (?)
-soundboard_depth = c_inner_width;
+soundboard_depth = inner_width;
 // Soundboard height (?)
 soundboard_height = 3;
 
@@ -183,7 +183,7 @@ mousehole_radius = 15;
 // Arnaut, the distance between the upper and lower boards ("distantia inter
 // duos fundos") is 1/6 of the width (1/28 of the length = 23 mm)."
 mousehole_pos = [
-    (c_inner_length * (11/14)) + mousehole_radius,
+    (inner_length * (11/14)) + mousehole_radius,
     bridge_pos.y + mousehole_radius,
     0
 ];
@@ -193,7 +193,7 @@ second_bend_y = string_y - 20;
 // Tuning pin radius (?)
 tuning_pin_radius = 1.5;
 tuning_pin_x = wrestplank_pos.x + (wrestplank_width / 2);
-tuning_pin_height = c_height - wrestplank_pos.z - wrestplank_height - 1;
+tuning_pin_height = height - wrestplank_pos.z - wrestplank_height - 1;
 
 // Balance pin height (?)
 balance_pin_height = 15;
@@ -203,7 +203,7 @@ balance_rail_height = 30;
 // Balance rail depth (?)
 balance_rail_depth = 10;
 
-key_lever_top_y = c_inner_width + wall_th - rack_th - 1;
+key_lever_top_y = inner_width + wall_th - rack_th - 1;
 debug_mode = true;
 
 tangent_top_width = 4;
@@ -291,11 +291,11 @@ module case() {
     color(col_wood_med)
     difference() {
         // Main outer block
-        cube([c_inner_length + 2*wall_th, c_inner_width + 2*wall_th, c_height]);
+        cube([inner_length + 2*wall_th, inner_width + 2*wall_th, height]);
 
         // Hollow interior
         translate([wall_th, wall_th, wall_th])
-            cube([c_inner_length, c_inner_width, c_height]);
+            cube([inner_length, inner_width, height]);
 
         // Keyboard cutout in the front wall
         translate([kb_pos.x, -1, kb_pos.z])
@@ -327,7 +327,7 @@ module hitchpin_block() {
         color(col_wood_dark)
         cube([
             hitchpin_block_th,
-            c_inner_width,
+            inner_width,
             hitchpin_block_height
         ]);
 }
@@ -343,7 +343,7 @@ module rack() {
 module backrail() {
     translate([
         rack_pos.x,
-        c_inner_width - backrail_th,
+        inner_width - backrail_th,
         kb_pos.z  - backrail_height
     ])
         color(col_wood_dark)
@@ -353,7 +353,7 @@ module backrail() {
 module wrestplank() {
     translate(wrestplank_pos)
         color(col_wood_dark)
-        cube([wrestplank_width, c_inner_width, wrestplank_height]);
+        cube([wrestplank_width, inner_width, wrestplank_height]);
 }
 
 module tangent(key_idx) {
