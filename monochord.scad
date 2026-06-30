@@ -205,7 +205,7 @@ tuning_pin_x = wrestplank_pos.x + (wrestplank_width / 2);
 tuning_pin_height = height - wrestplank_pos.z - wrestplank_height - 1;
 
 // Balance pin height (?)
-balance_pin_height = 15;
+balance_pin_height = nat_height + 1;
 // Balance pin radius (?)
 balance_pin_radius = 1;
 balance_rail_height = 30;
