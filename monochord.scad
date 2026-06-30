@@ -8,19 +8,16 @@
 // since—apart from Conrad's note that the monochord body should be made "in the
 // manner of a clavichord body, with similar length, depth, and, if desired,
 // also width"—retaining the full width, due to the unrestricted soundboard, has
-// a positive effect on the instrument's fullness of sound. Likewise, the
-// starting and ending points for measurement, the bridge, and the sound hole
-// were placed as follows: the starting point of measurement and the bridge
-// (terminus a quo mensurationis and stephanus = terminus ad quem mensurationis)
-// at 1/14 and 6/7 of the length (46 and 552 mm). The vibrating string length
-// for '-ut is thus 506 mm. In contrast, the center of the sound hole (foramen
-// rotundum pro resonantia) is at 506 mm (11/14 of the length). According to
-// Arnaut, the distance between the upper and lower boards ("distantia inter
-// duos fundos") is 1/6 of the width (1/28 of the length = 23 mm)."
+// a positive effect on the instrument's fullness of sound."
 c_inner_length = 644;
 c_inner_width = c_inner_length * (3/14);
 c_height = c_inner_width / 2;
 wall_th = 10;
+// "Likewise, the starting and ending points for measurement, the bridge, and
+// the sound hole were placed as follows: the starting point of measurement and
+// the bridge (terminus a quo mensurationis and stephanus = terminus ad quem
+// mensurationis) at 1/14 and 6/7 of the length (46 and 552 mm). The vibrating
+// string length for '-ut is thus 506 mm."
 vibrating_string_length_g2 = c_inner_length * (11/14);
 bridge_x = c_inner_length * (6/7);
 
@@ -75,15 +72,14 @@ num_naturals = num_keys - cumsum_accidentals[num_keys - 1];
 // toward the side away from us" was also fulfilled. (All further details can be
 // seen in Fig. II.)"
 key_depth = 40;
-key_height = 10;
 kb_length = 414;
+nat_height = 10;
 kb_pos = [
     wall_th + 115,
     -key_depth,
-    c_height - key_height - 16
+    c_height - nat_height - 16
 ];
 nat_width = kb_length / num_naturals;
-nat_height = 10;
 accidental_width = nat_width / 2;
 accidental_height = nat_height / 2;
 accidental_depth = key_depth / 2;
@@ -103,12 +99,17 @@ hitchpin_height = 10;
 // Hitchpin radius (?)
 hitchpin_radius = 1;
 
+// Backrail thickness (?)
+backrail_th = 15;
+// Backrail height (?)
+backrail_height = 20;
+
 // Slot width (?)
 slot_width = 1.5;
 // Rack thickness (?)
 rack_th = 13;
 // Rack height (?)
-rack_height = 20;
+rack_height = 40;
 // Rack starting position (XYZ) (?)
 rack_pos = [
     wall_th + hitchpin_block_th,
@@ -117,6 +118,10 @@ rack_pos = [
 ];
 // Rack width (?)
 rack_width = (slot_x(num_keys - 1) - rack_pos.x) + slot_width + 5;
+
+string_radius = 0.4;
+string_x = wall_th + (hitchpin_block_th / 2);
+string_y = wall_th + c_inner_width * (3/5);
 
 // Wrestplank width (?)
 wrestplank_width = 20;
@@ -128,8 +133,9 @@ wrestplank_pos = [
     wall_th,
     37
 ];
+soundboard_clearance = 1;
 soundboard_pos = [
-    rack_pos.x + rack_width +  1,
+    rack_pos.x + rack_width +  soundboard_clearance,
     c_inner_width + wall_th,
     40
 ];
@@ -139,26 +145,31 @@ soundboard_width = wrestplank_pos.x - soundboard_pos.x;
 soundboard_depth = c_inner_width;
 // Soundboard height (?)
 soundboard_height = 3;
-// Soundboard position
-
-// Mousehole radius (?)
-mousehole_radius = 15;
 
 // Bridge position
-bridge_pos = [
-    bridge_x,
-    (c_inner_width / 2) + wall_th,
-    soundboard_pos.z + soundboard_height
-];
 bridge_width = 40;
 bridge_height = 22;
 bridge_top_depth = 1;
 bridge_bottom_depth = 10;
+bridge_pos = [
+    bridge_x,
+    string_y - string_radius - bridge_width / 2,
+    soundboard_pos.z + soundboard_height
+];
 
-string_radius = 0.4;
-string_x = wall_th + (hitchpin_block_th / 2);
-string_y = wall_th + c_inner_width * (3/5);
 string_z = soundboard_pos.z + soundboard_height + bridge_height + string_radius;
+
+// Mousehole radius (?)
+mousehole_radius = 15;
+// "In contrast, the center of the sound hole (foramen
+// rotundum pro resonantia) is at 506 mm (11/14 of the length). According to
+// Arnaut, the distance between the upper and lower boards ("distantia inter
+// duos fundos") is 1/6 of the width (1/28 of the length = 23 mm)."
+mousehole_pos = [
+    (c_inner_length * (11/14)) + mousehole_radius,
+    bridge_pos.y + mousehole_radius,
+    0
+];
 
 second_bend_y = string_y - 20;
 
@@ -238,6 +249,13 @@ function slot_x(key_idx) = bridge_x - sounding_length(key_idx);
 // Return x position of tangent for given key
 function tangent_x(key_idx) = slot_x(key_idx) + tangent_depth/2;
 
+function key_lever_top_width(key_idx) =
+    let (
+        distance_from_left = key_idx == 0 ? 999 : tangent_x(key_idx) - tangent_x(key_idx-1) - key_lever_side_clearance,
+        distance_from_right = key_idx == num_keys - 1 ? 999 : tangent_x(key_idx+1) - tangent_x(key_idx) - key_lever_side_clearance
+    )
+    min(distance_from_left, distance_from_right, nat_width) - key_lever_side_clearance;
+
 if (debug_mode) {
     for (key_idx=[0:num_keys-1]) {
         echo(key_idx=key_idx,
@@ -305,6 +323,16 @@ module rack() {
     }
 }
 
+module backrail() {
+    translate([
+        rack_pos.x,
+        c_inner_width - backrail_th,
+        kb_pos.z  - backrail_height
+    ])
+        color(col_wood_dark)
+        cube([rack_width, backrail_th, backrail_height]);
+}
+
 module wrestplank() {
     translate(wrestplank_pos)
         color(col_wood_dark)
@@ -314,7 +342,7 @@ module wrestplank() {
 module tangent(key_idx) {
     translate([
         tangent_x(key_idx),
-        string_y - tangent_top_width / 4,
+        string_y,
         kb_pos.z + nat_height
     ])
         color(col_brass)
@@ -337,15 +365,6 @@ module rack_tongue(key_idx) {
         cube([rack_tongue_width, rack_tongue_depth, rack_tongue_height]);
 }
 
-function key_lever_top_width(key_idx) =
-    let (
-        distance_from_left = key_idx == 0 ? 999 : tangent_x(key_idx) - tangent_x(key_idx-1) - key_lever_side_clearance,
-        distance_from_right = key_idx == num_keys - 1 ? 999 : tangent_x(key_idx+1) - tangent_x(key_idx) - key_lever_side_clearance
-    )
-    min(distance_from_left, distance_from_right, nat_width) - key_lever_side_clearance;
-
-// 2d polygon for the key lever, which will be extruded.
-// This is a mess because I couldn't figue out an underlying pattern in how the keys are cranked.
 module key_lever_2d(key_idx) {
     top_width = key_lever_top_width(key_idx);
     bottom_width = ((is_accidental(key_idx) || is_accidental(key_idx - 1)) ? accidental_width : nat_width) - 1;
@@ -389,6 +408,7 @@ module key_marking(key_idx) {
         kb_pos.z + nat_height + (is_accidental(key_idx) ? accidental_height + 1 : 1)
     ])
         color("black")
+            linear_extrude(1)
             text(text=key_label(key_idx), size=is_accidental(key_idx) ? 3 : 7);
 }
 
@@ -504,27 +524,25 @@ module soundboard() {
                     [soundboard_pos.x, soundboard_pos.y],
                     [soundboard_pos.x + soundboard_width, soundboard_pos.y],
                     [soundboard_pos.x + soundboard_width, wall_th],
-                    [kb_pos.x + kb_length, wall_th],
+                    [kb_pos.x + kb_length + soundboard_clearance, wall_th],
                     [soundboard_pos.x, second_bend_y],
                     [soundboard_pos.x, soundboard_pos.y],
                 ]);
         }
         soundboard_mousehole();
-        //backrail();
-        //rack_block();
-        //balance_rail();
     };
 }
 
 // Cylinder to cut out a mousehole
 module soundboard_mousehole() {
-    translate([soundboard_pos.x + 30, bridge_pos.y + mousehole_radius, 0])
+    translate(mousehole_pos)
         cylinder(h=100, r=mousehole_radius);
 }
 
 module assembly() {
     case();
     rack();
+    backrail();
     bridge();
     keyboard();
     //balance_rail();
