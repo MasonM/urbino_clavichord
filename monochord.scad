@@ -216,7 +216,7 @@ function key_x(key_idx) =
     + (key_idx - (key_idx > 0 ? cumsum_accidentals[key_idx - 1] : 0)) * nat_width;
 
 function key_lever_x(key_idx) =
-    key_x(key_idx) + (is_accidental(key_idx-1) ? accidental_width : 0);
+    key_x(key_idx) + (is_accidental(key_idx-1) ? accidental_width + 1: 0);
 
 // Transpose from C4 to A4
 function transpose(octave, pitch_class) =
@@ -367,7 +367,9 @@ module rack_tongue(key_idx) {
 
 module key_lever_2d(key_idx) {
     top_width = key_lever_top_width(key_idx);
-    bottom_width = ((is_accidental(key_idx) || is_accidental(key_idx - 1)) ? accidental_width : nat_width) - 1;
+    bottom_width = is_accidental(key_idx)
+        ? accidental_width
+        : (is_accidental(key_idx - 1) ? accidental_width - 1 : nat_width) - 1;
     first_bend_y = wall_th;
     top = [
         slot_x(key_idx) - top_width/2,
@@ -404,7 +406,7 @@ module key_lever_3d(key_idx) {
 module key_marking(key_idx) {
     translate([
         key_x(key_idx) + 2,
-        -accidental_depth + (is_accidental(key_idx) ? 5 : 0),
+        (is_accidental(key_idx) ? -accidental_depth : -key_depth) + 5,
         kb_pos.z + nat_height + (is_accidental(key_idx) ? accidental_height + 1 : 1)
     ])
         color("black")
@@ -412,18 +414,19 @@ module key_marking(key_idx) {
             text(text=key_label(key_idx), size=is_accidental(key_idx) ? 3 : 7);
 }
 
-module key(key_idx) {
+module key(key_idx, offset_delta=0) {
     translate([
         key_x(key_idx),
         kb_pos.y + (is_accidental(key_idx) ? accidental_depth : 0),
         kb_pos.z
     ])
         color(col_natural)
-        cube([
-            (is_accidental(key_idx) ? accidental_width : nat_width - 1),
-            (is_accidental(key_idx) ? accidental_depth : key_depth),
-            nat_height + (is_accidental(key_idx) ? accidental_height : 0)
-        ]);
+        linear_extrude(nat_height + (is_accidental(key_idx) ? accidental_height : 0))
+            offset(delta=offset_delta)
+            square([
+                (is_accidental(key_idx) ? accidental_width : nat_width - 1),
+                (is_accidental(key_idx) ? accidental_depth : key_depth),
+            ]);
 }
 
 module balance_rail() {
@@ -453,7 +456,7 @@ module keyboard() {
     for (key_idx=[0:num_keys - 1]) {
         difference() {
             key(key_idx);
-            key(key_idx - 1);
+            key(key_idx - 1, 1);
         }
         difference() {
             key_lever_3d(key_idx);
