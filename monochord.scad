@@ -1,8 +1,10 @@
+/* [Visibility Toggles] */
 show_case = true;
 show_rack = true;
 show_backrail = true;
 show_bridge = true;
 show_keyboard = true;
+show_key_labels = true;
 show_balance_pins = true;
 show_tangents = true;
 show_wrestplank = true;
@@ -12,6 +14,7 @@ show_hitchpin = true;
 show_string = true;
 show_soundboard = true;
 
+/* [Main Dimensions] */
 // "The internal length used for our reconstruction is 644 mm (the external
 // length is 664 mm), which was determined by adopting a multiple of the number
 // 14, as used by Arnaut for dividing the length, resulting in a 1:3 ratio
@@ -28,6 +31,7 @@ inner_length = 644;
 inner_width = inner_length * (3/14);
 height = inner_width / 2;
 wall_th = 10;
+
 // "Likewise, the starting and ending points for measurement, the bridge, and
 // the sound hole were placed as follows: the starting point of measurement and
 // the bridge (terminus a quo mensurationis and stephanus = terminus ad quem
@@ -44,6 +48,7 @@ bridge_x = inner_length * (6/7);
 // except for the two keys placed immediately under the second and third C. Each
 // key representing B-natural should, in its front or middle part, contain and
 // admit the B-flat key as a small or semitone key."
+
 key_octave_and_pitch_class = [
     [2, 7],  // G2
     [2, 9],  // A2
@@ -68,8 +73,13 @@ key_octave_and_pitch_class = [
     [5, 2],  // D5
     [5, 4],  // E5
 ];
+frequency_a4 = 440;
 num_keys = len(key_octave_and_pitch_class);
-cumsum_accidentals = [for (a=0, i=0; i < num_keys; i = i + 1, a = a + (is_accidental(i) ? 1 : 0)) a];
+cumsum_accidentals = [for (
+    a=0, i=0;
+    i < num_keys;
+    i = i + 1, a = a + (is_accidental(i) ? 1 : 0)
+) a];
 num_naturals = num_keys - cumsum_accidentals[num_keys - 1];
 
 // "To conclude regarding the construction of the keys: According to Conrad's
@@ -104,9 +114,8 @@ key_lever_side_clearance = 0.5;
 
 // TODO: bottom board
 
-/* [Internal Component Dimensions (mm-R)] */
+/* [Internal Component Dimensions] */
 
-frequency_a4 = 440;
 // Hitchpin block thickness (?)
 hitchpin_block_th = 13;
 // Hitchpin block height (?)
@@ -204,14 +213,12 @@ balance_rail_height = 30;
 balance_rail_depth = 10;
 
 key_lever_top_y = inner_width + wall_th - rack_th - 1;
-debug_mode = true;
 
 tangent_top_width = 4;
 tangent_height = 10;
 tangent_depth = 1;
 rack_tongue_width = 1;
 rack_tongue_depth = 7;
-rack_tongue_height = 5;
 
 col_wood_med = [0.55, 0.35, 0.15];
 col_wood_dark = [0.35, 0.20, 0.10];
@@ -220,6 +227,7 @@ col_brass = [0.85, 0.75, 0.30];
 col_key_lever = [0.90, 0.88, 0.80];
 col_natural = [0.9, 0.9, 0.9];
 col_iron = [0.37, 0.4, 0.41];
+debug_mode = true;
 
 function is_accidental(key_idx) =
     let (
@@ -268,8 +276,11 @@ function tangent_x(key_idx) = slot_x(key_idx) + tangent_depth/2;
 
 function key_lever_top_width(key_idx) =
     let (
-        distance_from_left = key_idx == 0 ? 999 : tangent_x(key_idx) - tangent_x(key_idx-1) - key_lever_side_clearance,
-        distance_from_right = key_idx == num_keys - 1 ? 999 : tangent_x(key_idx+1) - tangent_x(key_idx) - key_lever_side_clearance
+        cur_tangent_x = tangent_x(key_idx),
+        left_tangent_x = key_idx == 0 ? -999 : tangent_x(key_idx-1),
+        right_tangent_x = key_idx == num_keys - 1 ? 999 : tangent_x(key_idx+1),
+        distance_from_left = cur_tangent_x - left_tangent_x,
+        distance_from_right = right_tangent_x - cur_tangent_x
     )
     min(distance_from_left, distance_from_right, nat_width) - key_lever_side_clearance;
 
@@ -375,11 +386,11 @@ module tangent(key_idx) {
 
 module rack_tongue(key_idx) {
     translate([
-        slot_x(key_idx) - rack_tongue_width/2,
+        slot_x(key_idx) + (slot_width - rack_tongue_width) / 2,
         key_lever_top_y,
-        kb_pos.z + 2
+        kb_pos.z
     ])
-        cube([rack_tongue_width, rack_tongue_depth, rack_tongue_height]);
+        cube([rack_tongue_width, rack_tongue_depth, nat_height]);
 }
 
 module key_lever_2d(key_idx) {
@@ -417,17 +428,6 @@ module key_lever_3d(key_idx) {
             linear_extrude(nat_height)
                 key_lever_2d(key_idx);
     }
-}
-
-module key_marking(key_idx) {
-    translate([
-        key_x(key_idx) + 2,
-        (is_accidental(key_idx) ? -accidental_depth : -key_depth) + 5,
-        kb_pos.z + nat_height + (is_accidental(key_idx) ? accidental_height + 1 : 1)
-    ])
-        color("black")
-            linear_extrude(1)
-            text(text=key_label(key_idx), size=is_accidental(key_idx) ? 3 : 7);
 }
 
 module key(key_idx, offset_delta=0) {
@@ -478,6 +478,18 @@ module tangents() {
         tangent(key_idx);
 }
 
+module key_labels() {
+    for (key_idx=[0:num_keys - 1])
+        translate([
+            key_x(key_idx) + 2,
+            (is_accidental(key_idx) ? -accidental_depth : -key_depth) + 5,
+            kb_pos.z + nat_height + (is_accidental(key_idx) ? accidental_height + 1 : 1)
+        ])
+            color("black")
+                linear_extrude(1)
+                text(text=key_label(key_idx), size=is_accidental(key_idx) ? 3 : 7);
+}
+
 module keyboard() {
     for (key_idx=[0:num_keys - 1]) {
         difference() {
@@ -488,7 +500,6 @@ module keyboard() {
             key_lever_3d(key_idx);
             balance_pin(key_idx, balance_pin_radius + 0.5);
         }
-        key_marking(key_idx);
     }
 }
 
@@ -573,6 +584,7 @@ module assembly() {
     if (show_backrail) backrail();
     if (show_bridge) bridge();
     if (show_keyboard) keyboard();
+    if (show_key_labels) key_labels();
     if (show_balance_pins) balance_pins();
     if (show_tangents) tangents();
     if (show_wrestplank) wrestplank();
