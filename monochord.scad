@@ -130,8 +130,11 @@ backrail_th = 15;
 // Backrail height (?)
 backrail_height = 20;
 
+rack_tongue_width = 2;
+rack_tongue_depth = 7;
+
 // Slot width (?)
-slot_width = 1.5;
+slot_width = rack_tongue_width + 1;
 // Rack thickness (?)
 rack_th = 13;
 // Rack height (?)
@@ -217,8 +220,6 @@ key_lever_top_y = inner_width + wall_th - rack_th - 1;
 tangent_top_width = 4;
 tangent_height = 10;
 tangent_depth = 1;
-rack_tongue_width = 1;
-rack_tongue_depth = 7;
 
 col_wood_med = [0.55, 0.35, 0.15];
 col_wood_dark = [0.35, 0.20, 0.10];
@@ -317,11 +318,11 @@ module case() {
 module rack_slot_cutouts() {
    for (key_idx=[0:num_keys - 1])
         translate([
-            slot_x(key_idx),
+            slot_x(key_idx) - (slot_width) / 2,
             rack_pos.y,
             rack_pos.z
         ])
-            cube([slot_width, rack_th - 2, rack_height+1]);
+            cube([slot_width, rack_tongue_depth, rack_height+1]);
 }
 
 module rack_block() {
@@ -386,7 +387,7 @@ module tangent(key_idx) {
 
 module rack_tongue(key_idx) {
     translate([
-        slot_x(key_idx) + (slot_width - rack_tongue_width) / 2,
+        slot_x(key_idx) - (rack_tongue_width) / 2,
         key_lever_top_y,
         kb_pos.z
     ])
