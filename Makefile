@@ -1,6 +1,8 @@
 .PHONY: all
-all: render/clavichord.stl render/clavichord.glb render/clavichord_action_diagram.glb
+all: render/monochord.stl render/clavichord.stl render/clavichord.glb render/clavichord_action_diagram.glb
 
+render/monochord.stl: monochord.scad
+	openscad --enable import-function -o render/monochord.stl monochord.scad
 render/clavichord.stl: clavichord.scad
 	openscad --enable import-function -o render/clavichord.stl clavichord.scad
 render/clavichord.glb: clavichord.scad
