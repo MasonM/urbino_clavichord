@@ -13,6 +13,8 @@ show_hitchpin_block = true;
 show_hitchpin = true;
 show_string = true;
 show_soundboard = true;
+show_soundboard_liner = true;
+show_belly_rail = true;
 
 /* [Main Dimensions] */
 // "The internal length used for our reconstruction is 644 mm (the external
@@ -107,6 +109,7 @@ kb_pos = [
     height - nat_height - 16
 ];
 nat_width = kb_length / num_naturals;
+kb_end = kb_pos.x + kb_length;
 accidental_width = nat_width / 2;
 accidental_height = nat_height / 2;
 accidental_depth = key_depth / 2;
@@ -174,6 +177,10 @@ soundboard_width = wrestplank_pos.x - soundboard_pos.x;
 soundboard_depth = inner_width;
 // Soundboard height (?)
 soundboard_height = 3;
+// Width of rabbet (ledge) cut into case walls for the soundboard to rest on
+soundboard_liner_th = 5;
+// Belly rail thickness (supports front edge of soundboard)
+belly_rail_th = 12;
 
 // Bridge position
 bridge_width = 40;
@@ -208,7 +215,7 @@ tuning_pin_x = wrestplank_pos.x + (wrestplank_width / 2);
 tuning_pin_height = height - wrestplank_pos.z - wrestplank_height - 1;
 
 // Balance pin height (?)
-balance_pin_height = nat_height + 1;
+balance_pin_height = nat_height + 5;
 // Balance pin radius (?)
 balance_pin_radius = 1;
 balance_rail_height = 30;
@@ -228,6 +235,7 @@ col_brass = [0.85, 0.75, 0.30];
 col_key_lever = [0.90, 0.88, 0.80];
 col_natural = [0.9, 0.9, 0.9];
 col_iron = [0.37, 0.4, 0.41];
+$fn = 16;
 debug_mode = true;
 
 function is_accidental(key_idx) =
@@ -484,7 +492,7 @@ module key_labels() {
         translate([
             key_x(key_idx) + 2,
             (is_accidental(key_idx) ? -accidental_depth : -key_depth) + 5,
-            kb_pos.z + nat_height + (is_accidental(key_idx) ? accidental_height + 1 : 1)
+            kb_pos.z + nat_height + (is_accidental(key_idx) ? accidental_height  : 0)
         ])
             color("black")
                 linear_extrude(1)
@@ -564,7 +572,7 @@ module soundboard() {
                     [soundboard_pos.x, soundboard_pos.y],
                     [soundboard_pos.x + soundboard_width, soundboard_pos.y],
                     [soundboard_pos.x + soundboard_width, wall_th],
-                    [kb_pos.x + kb_length + soundboard_clearance, wall_th],
+                    [kb_end + soundboard_clearance, wall_th],
                     [soundboard_pos.x, second_bend_y],
                     [soundboard_pos.x, soundboard_pos.y],
                 ]);
@@ -577,6 +585,58 @@ module soundboard() {
 module soundboard_mousehole() {
     translate(mousehole_pos)
         cylinder(h=100, r=mousehole_radius);
+}
+
+// Belly rail: supports the front edge of the soundboard, following its
+// angled outline, plus a ledge along the wrestplank for the rear edge.
+module belly_rail() {
+    color(col_wood_light) {
+        // Rail under the soundboard's front edge
+        translate([0, 0, wall_th])
+            linear_extrude(soundboard_pos.z - wall_th)
+                polygon([
+                    [soundboard_pos.x, soundboard_pos.y],
+                    [soundboard_pos.x, second_bend_y],
+                    [kb_end + soundboard_clearance, wall_th],
+                    [kb_end + soundboard_clearance + belly_rail_th, wall_th],
+                    [soundboard_pos.x + belly_rail_th, second_bend_y],
+                    [soundboard_pos.x + belly_rail_th, soundboard_pos.y],
+                ]);
+    }
+}
+
+module soundboard_liner() {
+    color(col_wood_light)
+        translate([0, wall_th, wall_th]) {
+            // Liner along the front wall supporting the soundboard's front edge
+            translate([kb_end + belly_rail_th, 0, 0])
+                cube([
+                    wrestplank_pos.x - soundboard_liner_th - kb_end - belly_rail_th,
+                    soundboard_liner_th,
+                    soundboard_pos.z - wall_th
+                ]);
+
+            // Liner along the wrestplank face supporting the soundboard's right edge
+            translate([wrestplank_pos.x - soundboard_liner_th, 0, 0])
+                cube([
+                    soundboard_liner_th,
+                    inner_width,
+                    soundboard_pos.z - wall_th
+                ]);
+
+            // Liner along the back wall for supporting the soundboard's rear edge
+            translate([
+                soundboard_pos.x + belly_rail_th,
+                inner_width - soundboard_liner_th,
+                0
+            ])
+                cube([
+                    wrestplank_pos.x - soundboard_pos.x - soundboard_liner_th - belly_rail_th,
+                    soundboard_liner_th,
+                    soundboard_pos.z - wall_th
+                ]);
+
+        }
 }
 
 module assembly() {
@@ -594,6 +654,8 @@ module assembly() {
     if (show_hitchpin) hitchpin();
     if (show_string) string();
     if (show_soundboard) soundboard();
+    if (show_belly_rail) belly_rail();
+    if (show_soundboard_liner) soundboard_liner();
 }
 
 assembly();
