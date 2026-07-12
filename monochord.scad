@@ -133,6 +133,7 @@ kb_end = kb_pos.x + kb_length;
 accidental_width = key_width / 2;
 accidental_height = nat_height / 2;
 accidental_depth = key_depth / 2;
+key_clearance = key_width / num_keys;
 
 /* [Tangents] */
 
@@ -297,7 +298,7 @@ function key_x(key_idx) =
     + (key_idx - (key_idx > 0 ? cumsum_accidentals[key_idx - 1] : 0)) * key_width;
 
 function key_lever_x(key_idx) =
-    key_x(key_idx) + (is_accidental(key_idx-1) ? accidental_width + 1: 0);
+    key_x(key_idx) + (is_accidental(key_idx-1) ? accidental_width + key_clearance: 0);
 
 // Transpose from C4 to A4
 function transpose(octave, pitch_class) =
@@ -482,7 +483,7 @@ module key_lever_2d(key_idx) {
     top_width = key_lever_top_width(key_idx);
     bottom_width = is_accidental(key_idx)
         ? accidental_width
-        : (is_accidental(key_idx - 1) ? accidental_width - 1 : key_width) - 1;
+        : (is_accidental(key_idx - 1) ? accidental_width - key_clearance : key_width) - key_clearance;
     first_bend_y = wall_th;
     top = [
         slot_x(key_idx) - top_width/2,
@@ -525,16 +526,16 @@ module key(key_idx, offset_delta=0) {
         linear_extrude(nat_height + (is_accidental(key_idx) ? accidental_height : 0))
             offset(delta=offset_delta)
             square([
-                (is_accidental(key_idx) ? accidental_width : key_width - 1),
+                (is_accidental(key_idx) ? accidental_width : key_width - key_clearance),
                 (is_accidental(key_idx) ? accidental_depth : key_depth),
             ]);
 }
 
 module balance_pin(key_idx, radius) {
     translate([
-        (key_lever_x(key_idx) + key_lever_x(key_idx+1)) / 2 - 1,
+        (key_lever_x(key_idx) + key_lever_x(key_idx+1)) / 2 - key_clearance,
         wall_th / 2,
-        kb_pos.z - 5
+        kb_pos.z - (balance_pin_height / 3)
     ])
         color(col_iron)
         cylinder(h=balance_pin_height, r=radius);
@@ -558,15 +559,15 @@ module key_labels() {
             kb_pos.z + nat_height + (is_accidental(key_idx) ? accidental_height  : 0)
         ])
             color("black")
-                linear_extrude(1)
-                text(text=key_label(key_idx), size=is_accidental(key_idx) ? 3 : 7);
+                linear_extrude(key_clearance)
+                text(text=key_label(key_idx), size=(is_accidental(key_idx) ? accidental_width : key_width) / 3);
 }
 
 module keyboard() {
     for (key_idx=[0:num_keys - 1]) {
         difference() {
             key(key_idx);
-            key(key_idx - 1, 1);
+            key(key_idx - 1, key_clearance);
         }
         difference() {
             key_lever_3d(key_idx);
