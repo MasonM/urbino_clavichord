@@ -1,3 +1,12 @@
+/**
+ * Model of a 15th-century keyed monochord described by Conrad von Zabern in
+ * "Novellus musicae artis tractatus", and expounded on by Karl-Werner Gümpel in
+ * "Das Tastenmonochord Conrads von Zabern".
+ *
+ * All quotes taken from "Das Tastenmonochord Conrads von Zabern", translated
+ * from German using DeepL.
+ */ 
+
 /* [Visibility Toggles] */
 show_all = true;
 show_case = false;
@@ -22,15 +31,18 @@ show_belly_rail = false;
 // length is 664 mm), which was determined by adopting a multiple of the number
 // 14, as used by Arnaut for dividing the length, resulting in a 1:3 ratio
 // consistent with the master's diagram (Plate IX). Of course, this choice of
-// size is only one of many possible options. The length-width-height ratio
-// (width = 3/14 of the length = 138 mm; height or "altitudo tota" = 1/2 of the
-// width = 69 mm) was also adopted from Arnaut. The width was not reduced,
-// since—apart from Conrad's note that the monochord body should be made "in the
-// manner of a clavichord body, with similar length, depth, and, if desired,
-// also width"—retaining the full width, due to the unrestricted soundboard, has
-// a positive effect on the instrument's fullness of sound."
+// size is only one of many possible options."
 
 inner_length = 644;
+
+// "The length-width-height ratio (width = 3/14 of the length = 138 mm; height
+// or "altitudo tota" = 1/2 of the width = 69 mm) was also adopted from Arnaut.
+// The width was not reduced, since—apart from Conrad's note that the monochord
+// body should be made "in the manner of a clavichord body, with similar length,
+// depth, and, if desired, also width"—retaining the full width, due to the
+// unrestricted soundboard, has a positive effect on the instrument's fullness
+// of sound."
+
 inner_width = inner_length * (3/14);
 height = inner_width / 2;
 wall_th = 10;
@@ -43,6 +55,8 @@ wall_th = 10;
 
 vibrating_string_length_g2 = inner_length * (11/14);
 bridge_x = inner_length * (6/7);
+
+/* [Keyboard] */
 
 // "The keys, that is, the wooden levers which are to touch or strike the
 // string, should number twenty, plus two for B-flat. In the part where they
@@ -76,7 +90,6 @@ key_octave_and_pitch_class = [
     [5, 2],  // D5
     [5, 4],  // E5
 ];
-frequency_a4 = 440;
 num_keys = len(key_octave_and_pitch_class);
 cumsum_accidentals = [for (
     a=0, i=0;
@@ -91,34 +104,35 @@ num_naturals = num_keys - cumsum_accidentals[num_keys - 1];
 // total length ( = 115 mm). By evenly dividing the remaining space ( = 414 mm),
 // a theoretical width of 20.7 mm could be achieved for each of the twenty
 // "lower keys," while in practice the width was just under 20 mm. (For the
-// width of the two "upper keys," the "half-width of a key" was used.) The
-// length of these keys was again calculated according to Arnaut ( = about 40
-// mm). Regarding the inner part of the key, the rear start of the taper is at
-// 2/5 of the width ( = 55.2 mm). Furthermore, the string runs at the location
-// designated by Arnaut for the "first pair of strings" ( = 3/5 of the width =
-// 82.8 mm, and 13.8 mm from the center). Thus, Conrad's requirement that it be
-// placed "beyond the center of the total internal width of the monochord,
-// toward the side away from us" was also fulfilled. (All further details can be
-// seen in Fig. II.)"
+// width of the two "upper keys," the "half-width of a key" was used.)""
+
+kb_length = 414;
+key_width = kb_length / num_naturals;
+
+// "The length of these keys was again calculated according to Arnaut ( = about
+// 40 mm)."
 
 key_depth = 40;
-kb_length = 414;
 nat_height = 6;
 kb_pos = [
     wall_th + 115,
     -key_depth,
     height - nat_height - 16
 ];
-nat_width = kb_length / num_naturals;
 kb_end = kb_pos.x + kb_length;
-accidental_width = nat_width / 2;
+accidental_width = key_width / 2;
 accidental_height = nat_height / 2;
 accidental_depth = key_depth / 2;
-key_lever_side_clearance = 0.5;
+
+/* [Tangents] */
+
+tangent_top_width = 4;
+tangent_height = 10;
+tangent_depth = 1;
 
 // TODO: bottom board
 
-/* [Internal Component Dimensions] */
+/* [Hitchpin Block] */
 
 // Hitchpin block thickness (?)
 hitchpin_block_th = 13;
@@ -129,16 +143,22 @@ hitchpin_height = 10;
 // Hitchpin radius (?)
 hitchpin_radius = 1;
 
+/* [Backrail] */
+
 // Backrail thickness (?)
 backrail_th = 15;
 // Backrail height (?)
 backrail_height = 20;
 
-rack_tongue_width = 2;
-rack_tongue_depth = 7;
+/* [Balance Rail] */
+balance_rail_height = 30;
+// Balance rail depth (?)
+balance_rail_depth = 10;
+
+/* [Rack] */
 
 // Slot width (?)
-slot_width = rack_tongue_width + 1;
+slot_width = 3;
 // Rack thickness (?)
 rack_th = 13;
 // Rack height (?)
@@ -152,9 +172,18 @@ rack_pos = [
 // Rack width (?)
 rack_width = (slot_x(num_keys - 1) - rack_pos.x) + slot_width + 5;
 
-string_radius = 0.4;
-string_x = wall_th + (hitchpin_block_th / 2);
-string_y = wall_th + inner_width * (3/5);
+/* [Key Levers] */
+
+// "Regarding the inner part of the key, the rear start of the taper is
+// at 2/5 of the width ( = 55.2 mm)."
+
+second_bend_y = inner_width * (2/5);
+key_lever_top_y = inner_width + wall_th - rack_th - 1;
+key_lever_side_clearance = 0.5;
+rack_tongue_width = slot_width - 1;
+rack_tongue_depth = 7;
+
+/* [Wrestplank] */
 
 // Wrestplank width (?)
 wrestplank_width = 10;
@@ -166,6 +195,35 @@ wrestplank_pos = [
     wall_th,
     37
 ];
+
+// Belly rail thickness (supports front edge of soundboard)
+belly_rail_th = 12;
+
+/* [String and pins] */
+
+string_radius = 0.4;
+string_x = wall_th + (hitchpin_block_th / 2);
+
+// "Furthermore, the string runs at the location designated by Arnaut for the
+// "first pair of strings" ( = 3/5 of the width = 82.8 mm, and 13.8 mm from the
+// center). Thus, Conrad's requirement that it be placed "beyond the center of
+// the total internal width of the monochord, toward the side away from us" was
+// also fulfilled. (All further details can be seen in Fig. II.)""
+
+string_y = wall_th + inner_width * (3/5);
+
+// Tuning pin radius (?)
+tuning_pin_radius = 1.5;
+tuning_pin_x = wrestplank_pos.x + (wrestplank_width / 2);
+tuning_pin_height = height - wrestplank_pos.z - wrestplank_height - 1;
+
+// Balance pin height (?)
+balance_pin_height = nat_height + 5;
+// Balance pin radius (?)
+balance_pin_radius = 1;
+
+/* [Soundboard] */
+
 soundboard_clearance = 1;
 soundboard_pos = [
     rack_pos.x + rack_width +  soundboard_clearance,
@@ -180,8 +238,8 @@ soundboard_depth = inner_width;
 soundboard_height = 3;
 // Width of rabbet (ledge) cut into case walls for the soundboard to rest on
 soundboard_liner_th = 5;
-// Belly rail thickness (supports front edge of soundboard)
-belly_rail_th = 12;
+
+/* [Bridge] */
 
 // Bridge position
 bridge_width = 40;
@@ -193,8 +251,6 @@ bridge_pos = [
     string_y - string_radius - bridge_width / 2,
     soundboard_pos.z + soundboard_height
 ];
-
-string_z = soundboard_pos.z + soundboard_height + bridge_height + string_radius;
 
 // Mousehole radius (?)
 mousehole_radius = 15;
@@ -208,27 +264,7 @@ mousehole_pos = [
     0
 ];
 
-second_bend_y = string_y - 20;
-
-// Tuning pin radius (?)
-tuning_pin_radius = 1.5;
-tuning_pin_x = wrestplank_pos.x + (wrestplank_width / 2);
-tuning_pin_height = height - wrestplank_pos.z - wrestplank_height - 1;
-
-// Balance pin height (?)
-balance_pin_height = nat_height + 5;
-// Balance pin radius (?)
-balance_pin_radius = 1;
-balance_rail_height = 30;
-// Balance rail depth (?)
-balance_rail_depth = 10;
-
-key_lever_top_y = inner_width + wall_th - rack_th - 1;
-
-tangent_top_width = 4;
-tangent_height = 10;
-tangent_depth = 1;
-
+/* [Colors] */
 col_wood_med = [0.55, 0.35, 0.15];
 col_wood_dark = [0.35, 0.20, 0.10];
 col_wood_light = [0.80, 0.65, 0.40];
@@ -236,8 +272,10 @@ col_brass = [0.85, 0.75, 0.30];
 col_key_lever = [0.90, 0.88, 0.80];
 col_natural = [0.9, 0.9, 0.9];
 col_iron = [0.37, 0.4, 0.41];
+
+/* [Advanced] */
+debug_mode = false;
 $fn = 16;
-debug_mode = true;
 
 function is_accidental(key_idx) =
     let (
@@ -248,7 +286,7 @@ function is_accidental(key_idx) =
 
 function key_x(key_idx) =
     kb_pos.x
-    + (key_idx - (key_idx > 0 ? cumsum_accidentals[key_idx - 1] : 0)) * nat_width;
+    + (key_idx - (key_idx > 0 ? cumsum_accidentals[key_idx - 1] : 0)) * key_width;
 
 function key_lever_x(key_idx) =
     key_x(key_idx) + (is_accidental(key_idx-1) ? accidental_width + 1: 0);
@@ -265,14 +303,14 @@ function key_label(key_idx) =
     )
     str(pitch_class_to_note[key[1]], key[0]);
 
-function key_frequency(key_idx) = 
+function key_frequency(key_idx, reference_frequency_a4=1) = 
     let (
         transposed = transpose(key_octave_and_pitch_class[key_idx][0], key_octave_and_pitch_class[key_idx][1]),
         n = (transposed[1]*7) % 12,
         pythagoreanRatio = (3/2) ^ (n > 6 ? n - 12 : n),
         normalizedRatio = pythagoreanRatio / 2 ^ floor(log(pythagoreanRatio) / log(2)),
     )
-    frequency_a4
+    reference_frequency_a4
     * 2^transposed[0]
     * normalizedRatio;
 
@@ -292,7 +330,7 @@ function key_lever_top_width(key_idx) =
         distance_from_left = cur_tangent_x - left_tangent_x,
         distance_from_right = right_tangent_x - cur_tangent_x
     )
-    min(distance_from_left, distance_from_right, nat_width) - key_lever_side_clearance;
+    min(distance_from_left, distance_from_right, key_width) - key_lever_side_clearance;
 
 if (debug_mode) {
     for (key_idx=[0:num_keys-1]) {
@@ -301,7 +339,7 @@ if (debug_mode) {
             is_accidental=is_accidental(key_idx),
             key_label=key_label(key_idx),
             sounding_length=sounding_length(key_idx),
-            key_frequency=key_frequency(key_idx),
+            key_frequency=key_frequency(key_idx, 440),
             slot_x=slot_x(key_idx),
             transpose=transpose(key_octave_and_pitch_class[key_idx][0], key_octave_and_pitch_class[key_idx][1]),
         );
@@ -407,7 +445,7 @@ module key_lever_2d(key_idx) {
     top_width = key_lever_top_width(key_idx);
     bottom_width = is_accidental(key_idx)
         ? accidental_width
-        : (is_accidental(key_idx - 1) ? accidental_width - 1 : nat_width) - 1;
+        : (is_accidental(key_idx - 1) ? accidental_width - 1 : key_width) - 1;
     first_bend_y = wall_th;
     top = [
         slot_x(key_idx) - top_width/2,
@@ -450,7 +488,7 @@ module key(key_idx, offset_delta=0) {
         linear_extrude(nat_height + (is_accidental(key_idx) ? accidental_height : 0))
             offset(delta=offset_delta)
             square([
-                (is_accidental(key_idx) ? accidental_width : nat_width - 1),
+                (is_accidental(key_idx) ? accidental_width : key_width - 1),
                 (is_accidental(key_idx) ? accidental_depth : key_depth),
             ]);
 }
@@ -517,7 +555,7 @@ module string() {
     translate([
         string_x,
         string_y,
-        string_z,
+        soundboard_pos.z + soundboard_height + bridge_height + string_radius,
     ])
         rotate([0, 90, 0])
         color(col_brass)
