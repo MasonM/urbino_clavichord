@@ -19,7 +19,6 @@ show_keyboard = false;
 show_key_labels = false;
 show_balance_pins = false;
 show_tangents = false;
-show_balance_rail = false;
 
 show_tuning_pin = false;
 show_hitchpin = false;
@@ -158,11 +157,6 @@ hitchpin_radius = 1;
 backrail_th = 15;
 // Backrail height
 backrail_height = kb_pos.z - inner_bottom_z;
-
-/* [Balance Rail] */
-balance_rail_height = 30;
-// Balance rail depth (?)
-balance_rail_depth = 10;
 
 /* [Rack] */
 
@@ -530,16 +524,6 @@ module key(key_idx, offset_delta=0) {
             ]);
 }
 
-module balance_rail() {
-    translate([
-        kb_pos.x,
-        wall_th,
-        kb_pos.z - balance_rail_height - 1
-    ])
-        color(col_wood_dark)
-        cube([kb_length, balance_rail_depth, balance_rail_height]);
-}
-
 module balance_pin(key_idx, radius) {
     translate([
         (key_lever_x(key_idx) + key_lever_x(key_idx+1)) / 2 - 1,
@@ -718,7 +702,6 @@ module assembly() {
     if (show_backrail || show_all) backrail();
     if (show_bridge || show_all) bridge();
     if (show_keyboard || show_all) keyboard();
-    if (show_balance_rail || show_all) balance_rail();
     if (show_key_labels || show_all) key_labels();
     if (show_balance_pins || show_all) balance_pins();
     if (show_tangents || show_all) tangents();
