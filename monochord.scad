@@ -8,26 +8,25 @@
  */
 
 /* [Visibility Toggles] */
-show_all = true;
-show_case = false;
-show_hitchpin_block = false;
-show_wrestplank = false;
-show_rack = false;
-show_backrail = false;
+show_case = true;
+show_hitchpin_block = true;
+show_wrestplank = true;
+show_rack = true;
+show_backrail = true;
 
-show_keyboard = false;
-show_key_labels = false;
-show_balance_pins = false;
-show_tangents = false;
+show_keyboard = true;
+show_key_labels = true;
+show_balance_pins = true;
+show_tangents = true;
 
-show_tuning_pin = false;
-show_hitchpin = false;
-show_string = false;
+show_tuning_pin = true;
+show_hitchpin = true;
+show_string = true;
 
-show_bridge = false;
-show_soundboard = false;
-show_soundboard_liner = false;
-show_belly_rail = false;
+show_bridge = true;
+show_soundboard = true;
+show_soundboard_liner = true;
+show_belly_rail = true;
 
 /* [Main Dimensions] */
 // "The internal length used for our reconstruction is 644 mm (the external
@@ -698,22 +697,22 @@ module soundboard_liner() {
 }
 
 module assembly() {
-    if (show_case || show_all) case();
-    if (show_rack || show_all) rack();
-    if (show_backrail || show_all) backrail();
-    if (show_bridge || show_all) bridge();
-    if (show_keyboard || show_all) keyboard();
-    if (show_key_labels || show_all) key_labels();
-    if (show_balance_pins || show_all) balance_pins();
-    if (show_tangents || show_all) tangents();
-    if (show_wrestplank || show_all) wrestplank();
-    if (show_tuning_pin || show_all) tuning_pin();
-    if (show_hitchpin_block || show_all) hitchpin_block();
-    if (show_hitchpin || show_all) hitchpin();
-    if (show_string || show_all) string();
-    if (show_soundboard || show_all) soundboard();
-    if (show_belly_rail || show_all) belly_rail();
-    if (show_soundboard_liner || show_all) soundboard_liner();
+    if (show_case) case();
+    if (show_rack) rack();
+    if (show_backrail) backrail();
+    if (show_bridge) bridge();
+    if (show_keyboard) keyboard();
+    if (show_key_labels) key_labels();
+    if (show_balance_pins) balance_pins();
+    if (show_tangents) tangents();
+    if (show_wrestplank) wrestplank();
+    if (show_tuning_pin) tuning_pin();
+    if (show_hitchpin_block) hitchpin_block();
+    if (show_hitchpin) hitchpin();
+    if (show_string) string();
+    if (show_soundboard) soundboard();
+    if (show_belly_rail) belly_rail();
+    if (show_soundboard_liner) soundboard_liner();
 }
 
 assembly();
