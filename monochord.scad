@@ -10,18 +10,22 @@
 /* [Visibility Toggles] */
 show_all = true;
 show_case = false;
+show_hitchpin_block = false;
+show_wrestplank = false;
 show_rack = false;
 show_backrail = false;
-show_bridge = false;
+
 show_keyboard = false;
 show_key_labels = false;
 show_balance_pins = false;
 show_tangents = false;
-show_wrestplank = false;
+show_balance_rail = false;
+
 show_tuning_pin = false;
-show_hitchpin_block = false;
 show_hitchpin = false;
 show_string = false;
+
+show_bridge = false;
 show_soundboard = false;
 show_soundboard_liner = false;
 show_belly_rail = false;
@@ -144,7 +148,7 @@ hitchpin_block_th = 13;
 // Hitchpin block height (?)
 hitchpin_block_height = 25;
 // Hitchpin height (?)
-hitchpin_height = 10;
+hitchpin_height = 20;
 // Hitchpin radius (?)
 hitchpin_radius = 1;
 
@@ -221,7 +225,7 @@ string_y = wall_th + inner_width * (3/5);
 // Tuning pin radius (?)
 tuning_pin_radius = 1.5;
 tuning_pin_x = wrestplank_pos.x + (wrestplank_width / 2);
-tuning_pin_height = height - wrestplank_pos.z - wrestplank_height - 1;
+tuning_pin_height = height - wrestplank_pos.z - wrestplank_height + 5;
 
 // Balance pin height (?)
 balance_pin_height = nat_height + 5;
@@ -242,7 +246,7 @@ soundboard_width = wrestplank_pos.x - soundboard_pos.x;
 soundboard_depth = inner_width;
 // Soundboard height (?)
 soundboard_height = 3;
-// Width of rabbet (ledge) cut into case walls for the soundboard to rest on
+// Width of liners for the soundboard to rest on
 soundboard_liner_th = 5;
 
 /* [Bridge] */
@@ -405,17 +409,20 @@ module rack_block() {
 }
 
 module hitchpin_block() {
-    translate([
-        wall_th,
-        wall_th,
-        wrestplank_pos.z,
-    ])
-        color(col_wood_dark)
-        cube([
-            hitchpin_block_th,
-            inner_width,
-            hitchpin_block_height
-        ]);
+    color(col_wood_dark)
+    difference() {
+        translate([
+            wall_th,
+            wall_th,
+            wrestplank_pos.z,
+        ])
+            cube([
+                hitchpin_block_th,
+                inner_width,
+                hitchpin_block_height
+            ]);
+        hitchpin();
+    }
 }
 
 module rack() {
@@ -437,9 +444,12 @@ module backrail() {
 }
 
 module wrestplank() {
-    translate(wrestplank_pos)
-        color(col_wood_dark)
-        cube([wrestplank_width, inner_width, wrestplank_height]);
+    color(col_wood_dark)
+    difference() {
+        translate(wrestplank_pos)
+            cube([wrestplank_width, inner_width, wrestplank_height]);
+        tuning_pin();
+    }
 }
 
 module tangent(key_idx) {
@@ -528,9 +538,6 @@ module balance_rail() {
     ])
         color(col_wood_dark)
         cube([kb_length, balance_rail_depth, balance_rail_height]);
-
-    for(key_idx=[0:num_keys - 1])
-        balance_pin(key_idx, balance_pin_radius);
 }
 
 module balance_pin(key_idx, radius) {
@@ -596,7 +603,7 @@ module hitchpin() {
     translate([
         string_x,
         string_y,
-        wrestplank_pos.z + wrestplank_height
+        wrestplank_pos.z + wrestplank_height - 5
     ])
         color(col_iron)
         cylinder(h=hitchpin_height, r=hitchpin_radius);
@@ -606,7 +613,7 @@ module tuning_pin() {
     translate([
         tuning_pin_x,
         string_y,
-        wrestplank_pos.z + wrestplank_height
+        wrestplank_pos.z + wrestplank_height - 5
     ])
         color(col_iron)
         cylinder(h=tuning_pin_height, r=tuning_pin_radius);
@@ -711,6 +718,7 @@ module assembly() {
     if (show_backrail || show_all) backrail();
     if (show_bridge || show_all) bridge();
     if (show_keyboard || show_all) keyboard();
+    if (show_balance_rail || show_all) balance_rail();
     if (show_key_labels || show_all) key_labels();
     if (show_balance_pins || show_all) balance_pins();
     if (show_tangents || show_all) tangents();
