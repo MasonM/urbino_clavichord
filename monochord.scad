@@ -222,7 +222,7 @@ tuning_pin_x = wrestplank_pos.x + (wrestplank_width / 2);
 tuning_pin_height = height - wrestplank_pos.z - wrestplank_height + 5;
 
 // Balance pin height (?)
-balance_pin_height = nat_height + 5;
+balance_pin_height = nat_height + 10;
 // Balance pin radius (?)
 balance_pin_radius = 1;
 
@@ -383,6 +383,7 @@ module case() {
                 back_wall();
             translate([kb_pos.x, -1, kb_pos.z])
                 cube([kb_length, wall_th + 2, 112]);
+            balance_pins();
         }
     }
 }
@@ -528,7 +529,7 @@ module balance_pin(key_idx, radius) {
     translate([
         (key_lever_x(key_idx) + key_lever_x(key_idx+1)) / 2 - 1,
         wall_th / 2,
-        kb_pos.z
+        kb_pos.z - 5
     ])
         color(col_iron)
         cylinder(h=balance_pin_height, r=radius);
