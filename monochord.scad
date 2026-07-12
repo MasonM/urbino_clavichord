@@ -115,18 +115,18 @@ num_naturals = num_keys - cumsum_accidentals[num_keys - 1];
 // "lower keys," while in practice the width was just under 20 mm. (For the
 // width of the two "upper keys," the "half-width of a key" was used.)""
 
-kb_length = 414;
+kb_length = inner_length * (4/6);
 key_width = kb_length / num_naturals;
 
 // "The length of these keys was again calculated according to Arnaut ( = about
 // 40 mm)."
 
-key_depth = 40;
-nat_height = 6;
+key_depth = inner_width * (2/7);
+nat_height = wall_th;
 kb_pos = [
-    wall_th + 115,
+    wall_th + inner_length * (1/6),
     -key_depth,
-    height - nat_height - 16
+    height * (2/3)
 ];
 kb_end = kb_pos.x + kb_length;
 accidental_width = key_width / 2;
@@ -142,27 +142,27 @@ tangent_depth = 1;
 /* [Hitchpin Block] */
 
 // Hitchpin block thickness (?)
-hitchpin_block_th = 13;
+hitchpin_block_th = wall_th;
 // Hitchpin block height (?)
-hitchpin_block_height = 25;
+hitchpin_block_height = height / 3;
 // Hitchpin height (?)
-hitchpin_height = 20;
+hitchpin_height = wall_th * 2;
 // Hitchpin radius (?)
 hitchpin_radius = 1;
 
 /* [Backrail] */
 
 // Backrail thickness (?)
-backrail_th = 15;
+backrail_th = wall_th;
 // Backrail height
 backrail_height = kb_pos.z - inner_bottom_z;
 
 /* [Rack] */
 
 // Slot width (?)
-slot_width = 3;
+slot_width = key_width * (2/14);
 // Rack thickness (?)
-rack_th = 13;
+rack_th = wall_th;
 rack_top_clearance = 5;
 // Rack height (?)
 rack_height = height - inner_bottom_z - rack_top_clearance;
@@ -189,9 +189,9 @@ rack_tongue_depth = 7;
 /* [Wrestplank] */
 
 // Wrestplank width (?)
-wrestplank_width = 10;
+wrestplank_width = wall_th;
 // Wrestplank height (?)
-wrestplank_height = 20;
+wrestplank_height = height / 3;
 // Wrestplank position (?)
 wrestplank_pos = [
     wall_th + inner_length - wrestplank_width,
@@ -200,7 +200,7 @@ wrestplank_pos = [
 ];
 
 // Belly rail thickness (supports front edge of soundboard)
-belly_rail_th = 12;
+belly_rail_th = wall_th;
 
 /* [String and pins] */
 
@@ -221,9 +221,16 @@ tuning_pin_x = wrestplank_pos.x + (wrestplank_width / 2);
 tuning_pin_height = height - wrestplank_pos.z - wrestplank_height + 5;
 
 // Balance pin height (?)
-balance_pin_height = nat_height + 10;
+balance_pin_height = nat_height + wall_th;
 // Balance pin radius (?)
 balance_pin_radius = 1;
+
+/* [Bridge] */
+
+bridge_width = 40;
+bridge_height = 22;
+bridge_top_depth = string_radius * 2;
+bridge_bottom_depth = wall_th;
 
 /* [Soundboard] */
 
@@ -231,7 +238,8 @@ soundboard_clearance = 1;
 soundboard_pos = [
     rack_pos.x + rack_width +  soundboard_clearance,
     inner_width + wall_th,
-    40
+    // Keep the string (soundboard + bridge + string) just above the tangent
+    kb_pos.z + nat_height + tangent_height - bridge_height
 ];
 // Soundboard width (?)
 soundboard_width = wrestplank_pos.x - soundboard_pos.x;
@@ -240,15 +248,11 @@ soundboard_depth = inner_width;
 // Soundboard height (?)
 soundboard_height = 3;
 // Width of liners for the soundboard to rest on
-soundboard_liner_th = 5;
+soundboard_liner_th = wall_th;
 
 /* [Bridge] */
 
 // Bridge position
-bridge_width = 40;
-bridge_height = 22;
-bridge_top_depth = 1;
-bridge_bottom_depth = 10;
 bridge_pos = [
     bridge_x,
     string_y - string_radius - bridge_width / 2,
@@ -381,7 +385,7 @@ module case() {
             translate([wall_th, 0, 0])
                 back_wall();
             translate([kb_pos.x, -1, kb_pos.z])
-                cube([kb_length, wall_th + 2, 112]);
+                cube([kb_length, wall_th * 2, 999]);
             balance_pins();
         }
     }
@@ -430,7 +434,7 @@ module rack() {
 module backrail() {
     translate([
         rack_pos.x,
-        inner_width - backrail_th,
+        wall_th + inner_width - rack_th - backrail_th,
         wrestplank_pos.z
     ])
         color(col_wood_dark)
@@ -459,7 +463,7 @@ module tangent(key_idx) {
                 [-tangent_top_width/4, 0],
                 [-tangent_top_width/2, tangent_height],
                 [tangent_top_width/2, tangent_height],
-                [tangent_top_width/4,0],
+                [tangent_top_width/4, 0],
             ]);
 }
 
@@ -564,7 +568,7 @@ module keyboard() {
         }
         difference() {
             key_lever_3d(key_idx);
-            balance_pin(key_idx, balance_pin_radius + 0.5);
+            balance_pin(key_idx, balance_pin_radius * (3/2));
         }
     }
 }
