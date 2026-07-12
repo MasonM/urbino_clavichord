@@ -29,6 +29,8 @@ show_soundboard_liner = true;
 show_belly_rail = true;
 
 /* [Main Dimensions] */
+wall_th = 10;
+
 // "The internal length used for our reconstruction is 644 mm (the external
 // length is 664 mm), which was determined by adopting a multiple of the number
 // 14, as used by Arnaut for dividing the length, resulting in a 1:3 ratio
@@ -47,7 +49,6 @@ inner_length = 644;
 
 inner_width = inner_length * (3/14);
 height = inner_width / 2;
-wall_th = 10;
 
 // "Likewise, the starting and ending points for measurement, the bridge, and
 // the sound hole were placed as follows: the starting point of measurement and
@@ -126,7 +127,7 @@ nat_height = wall_th;
 kb_pos = [
     wall_th + inner_length * (1/6),
     -key_depth,
-    height * (2/3)
+    key_depth
 ];
 kb_end = kb_pos.x + kb_length;
 accidental_width = key_width / 2;
@@ -135,20 +136,20 @@ accidental_depth = key_depth / 2;
 
 /* [Tangents] */
 
-tangent_top_width = 4;
-tangent_height = 10;
-tangent_depth = 1;
+tangent_height = wall_th;
+tangent_top_width = tangent_height / 2;
+tangent_depth = wall_th / 10;
 
 /* [Hitchpin Block] */
 
 // Hitchpin block thickness (?)
 hitchpin_block_th = wall_th;
 // Hitchpin block height (?)
-hitchpin_block_height = height / 3;
+hitchpin_block_height = (height - inner_bottom_z) * (2/3);
 // Hitchpin height (?)
 hitchpin_height = wall_th * 2;
 // Hitchpin radius (?)
-hitchpin_radius = 1;
+hitchpin_radius = wall_th * (1/14);
 
 /* [Backrail] */
 
@@ -160,12 +161,11 @@ backrail_height = kb_pos.z - inner_bottom_z;
 /* [Rack] */
 
 // Slot width (?)
-slot_width = key_width * (2/14);
+slot_width = key_width * (1/7);
 // Rack thickness (?)
 rack_th = wall_th;
-rack_top_clearance = 5;
 // Rack height (?)
-rack_height = height - inner_bottom_z - rack_top_clearance;
+rack_height = hitchpin_block_height;
 // Rack starting position (XYZ) (?)
 rack_pos = [
     wall_th + hitchpin_block_th,
@@ -173,7 +173,7 @@ rack_pos = [
     inner_bottom_z
 ];
 // Rack width (?)
-rack_width = (slot_x(num_keys - 1) - rack_pos.x) + slot_width + 5;
+rack_width = (slot_x(num_keys - 1) - rack_pos.x) + slot_width * 2;
 
 /* [Key Levers] */
 
@@ -181,10 +181,10 @@ rack_width = (slot_x(num_keys - 1) - rack_pos.x) + slot_width + 5;
 // at 2/5 of the width ( = 55.2 mm)."
 
 second_bend_y = inner_width * (2/5);
-key_lever_top_y = inner_width + wall_th - rack_th - 1;
-key_lever_side_clearance = 0.5;
-rack_tongue_width = slot_width - 1;
-rack_tongue_depth = 7;
+key_lever_side_clearance = slot_width / 6;
+key_lever_top_y = inner_width + wall_th - rack_th - key_lever_side_clearance;
+rack_tongue_width = slot_width * (2/3);
+rack_tongue_depth = rack_th * (2/3);
 
 /* [Wrestplank] */
 
@@ -202,41 +202,17 @@ wrestplank_pos = [
 // Belly rail thickness (supports front edge of soundboard)
 belly_rail_th = wall_th;
 
-/* [String and pins] */
-
-string_radius = 0.4;
-string_x = wall_th + (hitchpin_block_th / 2);
-
-// "Furthermore, the string runs at the location designated by Arnaut for the
-// "first pair of strings" ( = 3/5 of the width = 82.8 mm, and 13.8 mm from the
-// center). Thus, Conrad's requirement that it be placed "beyond the center of
-// the total internal width of the monochord, toward the side away from us" was
-// also fulfilled. (All further details can be seen in Fig. II.)""
-
-string_y = wall_th + inner_width * (3/5);
-
-// Tuning pin radius (?)
-tuning_pin_radius = 1.5;
-tuning_pin_x = wrestplank_pos.x + (wrestplank_width / 2);
-tuning_pin_height = height - wrestplank_pos.z - wrestplank_height + 5;
-
-// Balance pin height (?)
-balance_pin_height = nat_height + wall_th;
-// Balance pin radius (?)
-balance_pin_radius = 1;
-
 /* [Bridge] */
 
-bridge_width = 40;
-bridge_height = 22;
-bridge_top_depth = string_radius * 2;
+bridge_width = wall_th * 4;
+bridge_height = wall_th * 2;
+bridge_top_depth = wall_th * (2/14);
 bridge_bottom_depth = wall_th;
 
 /* [Soundboard] */
 
-soundboard_clearance = 1;
 soundboard_pos = [
-    rack_pos.x + rack_width +  soundboard_clearance,
+    rack_pos.x + rack_width,
     inner_width + wall_th,
     // Keep the string (soundboard + bridge + string) just above the tangent
     kb_pos.z + nat_height + tangent_height - bridge_height
@@ -246,21 +222,46 @@ soundboard_width = wrestplank_pos.x - soundboard_pos.x;
 // Soundboard depth (?)
 soundboard_depth = inner_width;
 // Soundboard height (?)
-soundboard_height = 3;
+soundboard_height = wall_th / 3;
 // Width of liners for the soundboard to rest on
 soundboard_liner_th = wall_th;
+
+/* [String and pins] */
+
+string_radius = wall_th * (1/14);
+
+// Tuning pin radius (?)
+tuning_pin_radius = wall_th * (2/14);
+tuning_pin_x = wrestplank_pos.x + (wrestplank_width / 2);
+tuning_pin_height = height - wrestplank_pos.z - wrestplank_height + 5;
+
+// Balance pin height (?)
+balance_pin_height = nat_height + wall_th;
+// Balance pin radius (?)
+balance_pin_radius = wall_th * (2/14);
+
+string_pos = [
+    wall_th + (hitchpin_block_th / 2),
+    // "Furthermore, the string runs at the location designated by Arnaut for the
+    // "first pair of strings" ( = 3/5 of the width = 82.8 mm, and 13.8 mm from the
+    // center). Thus, Conrad's requirement that it be placed "beyond the center of
+    // the total internal width of the monochord, toward the side away from us" was
+    // also fulfilled. (All further details can be seen in Fig. II.)""
+    wall_th + inner_width * (3/5),
+    soundboard_pos.z + soundboard_height + bridge_height + string_radius,
+];
 
 /* [Bridge] */
 
 // Bridge position
 bridge_pos = [
     bridge_x,
-    string_y - string_radius - bridge_width / 2,
+    string_pos.y - string_radius - bridge_width / 2,
     soundboard_pos.z + soundboard_height
 ];
 
 // Mousehole radius (?)
-mousehole_radius = 15;
+mousehole_radius = height * (3/14);
 
 // "In contrast, the center of the sound hole (foramen
 // rotundum pro resonantia) is at 506 mm (11/14 of the length)."
@@ -453,7 +454,7 @@ module wrestplank() {
 module tangent(key_idx) {
     translate([
         tangent_x(key_idx),
-        string_y,
+        string_pos.y,
         kb_pos.z + nat_height
     ])
         color(col_brass)
@@ -551,8 +552,8 @@ module tangents() {
 module key_labels() {
     for (key_idx=[0:num_keys - 1])
         translate([
-            key_x(key_idx) + 2,
-            (is_accidental(key_idx) ? -accidental_depth : -key_depth) + 5,
+            key_x(key_idx) + (is_accidental(key_idx) ? accidental_width : key_width) / 7,
+            (is_accidental(key_idx) ? -accidental_depth : -key_depth) * (6/7),
             kb_pos.z + nat_height + (is_accidental(key_idx) ? accidental_height  : 0)
         ])
             color("black")
@@ -574,24 +575,20 @@ module keyboard() {
 }
 
 module string() {
-    translate([
-        string_x,
-        string_y,
-        soundboard_pos.z + soundboard_height + bridge_height + string_radius,
-    ])
+    translate(string_pos)
         rotate([0, 90, 0])
         color(col_brass)
         cylinder(
-            h=tuning_pin_x - string_x,
+            h=tuning_pin_x - string_pos.x,
             r=string_radius
         );
 }
 
 module hitchpin() {
     translate([
-        string_x,
-        string_y,
-        wrestplank_pos.z + wrestplank_height - 5
+        string_pos.x,
+        string_pos.y,
+        wrestplank_pos.z + wrestplank_height * (2/3)
     ])
         color(col_iron)
         cylinder(h=hitchpin_height, r=hitchpin_radius);
@@ -600,8 +597,8 @@ module hitchpin() {
 module tuning_pin() {
     translate([
         tuning_pin_x,
-        string_y,
-        wrestplank_pos.z + wrestplank_height - 5
+        string_pos.y,
+        wrestplank_pos.z + wrestplank_height * (2/3)
     ])
         color(col_iron)
         cylinder(h=tuning_pin_height, r=tuning_pin_radius);
@@ -633,7 +630,7 @@ module soundboard() {
                     [soundboard_pos.x, soundboard_pos.y],
                     [soundboard_pos.x + soundboard_width, soundboard_pos.y],
                     [soundboard_pos.x + soundboard_width, wall_th],
-                    [kb_end + soundboard_clearance, wall_th],
+                    [kb_end, wall_th],
                     [soundboard_pos.x, second_bend_y],
                     [soundboard_pos.x, soundboard_pos.y],
                 ]);
@@ -658,8 +655,8 @@ module belly_rail() {
                 polygon([
                     [soundboard_pos.x, soundboard_pos.y],
                     [soundboard_pos.x, second_bend_y],
-                    [kb_end + soundboard_clearance, wall_th],
-                    [kb_end + soundboard_clearance + belly_rail_th, wall_th],
+                    [kb_end, wall_th],
+                    [kb_end + belly_rail_th, wall_th],
                     [soundboard_pos.x + belly_rail_th, second_bend_y],
                     [soundboard_pos.x + belly_rail_th, soundboard_pos.y],
                 ]);
@@ -696,7 +693,6 @@ module soundboard_liner() {
                     soundboard_liner_th,
                     soundboard_pos.z - inner_bottom_z
                 ]);
-
         }
 }
 
