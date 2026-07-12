@@ -5,7 +5,7 @@
  *
  * All quotes taken from "Das Tastenmonochord Conrads von Zabern", translated
  * from German using DeepL.
- */ 
+ */
 
 /* [Visibility Toggles] */
 show_all = true;
@@ -55,6 +55,13 @@ wall_th = 10;
 
 vibrating_string_length_g2 = inner_length * (11/14);
 bridge_x = inner_length * (6/7);
+
+// "Furthermore, we learn from Arnaut that the distance between the upper and
+// lower bottoms (“distantia inter duos fundos”) is 1/6 of the width (= 1/28 of
+// the length = 23 mm)."
+
+upper_bottom_board_th = inner_width / 6;
+inner_bottom_z = wall_th + upper_bottom_board_th;
 
 /* [Keyboard] */
 
@@ -130,8 +137,6 @@ tangent_top_width = 4;
 tangent_height = 10;
 tangent_depth = 1;
 
-// TODO: bottom board
-
 /* [Hitchpin Block] */
 
 // Hitchpin block thickness (?)
@@ -147,8 +152,8 @@ hitchpin_radius = 1;
 
 // Backrail thickness (?)
 backrail_th = 15;
-// Backrail height (?)
-backrail_height = 20;
+// Backrail height
+backrail_height = kb_pos.z - inner_bottom_z;
 
 /* [Balance Rail] */
 balance_rail_height = 30;
@@ -161,13 +166,14 @@ balance_rail_depth = 10;
 slot_width = 3;
 // Rack thickness (?)
 rack_th = 13;
+rack_top_clearance = 5;
 // Rack height (?)
-rack_height = 40;
+rack_height = height - inner_bottom_z - rack_top_clearance;
 // Rack starting position (XYZ) (?)
 rack_pos = [
     wall_th + hitchpin_block_th,
     wall_th + inner_width - rack_th,
-    height - rack_height - wall_th
+    inner_bottom_z
 ];
 // Rack width (?)
 rack_width = (slot_x(num_keys - 1) - rack_pos.x) + slot_width + 5;
@@ -193,7 +199,7 @@ wrestplank_height = 20;
 wrestplank_pos = [
     wall_th + inner_length - wrestplank_width,
     wall_th,
-    37
+    inner_bottom_z
 ];
 
 // Belly rail thickness (supports front edge of soundboard)
@@ -254,10 +260,9 @@ bridge_pos = [
 
 // Mousehole radius (?)
 mousehole_radius = 15;
+
 // "In contrast, the center of the sound hole (foramen
-// rotundum pro resonantia) is at 506 mm (11/14 of the length). According to
-// Arnaut, the distance between the upper and lower boards ("distantia inter
-// duos fundos") is 1/6 of the width (1/28 of the length = 23 mm)."
+// rotundum pro resonantia) is at 506 mm (11/14 of the length)."
 mousehole_pos = [
     (inner_length * (11/14)) + mousehole_radius,
     bridge_pos.y + mousehole_radius,
@@ -295,15 +300,15 @@ function key_lever_x(key_idx) =
 function transpose(octave, pitch_class) =
     let (transposed = 12*(octave - 1) + 3 + pitch_class)
     [floor(transposed / 12) - 4, transposed % 12];
-    
-function key_label(key_idx) = 
+
+function key_label(key_idx) =
     let (
         key = key_octave_and_pitch_class[key_idx],
         pitch_class_to_note = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "Bb", "B"],
     )
     str(pitch_class_to_note[key[1]], key[0]);
 
-function key_frequency(key_idx, reference_frequency_a4=1) = 
+function key_frequency(key_idx, reference_frequency_a4=1) =
     let (
         transposed = transpose(key_octave_and_pitch_class[key_idx][0], key_octave_and_pitch_class[key_idx][1]),
         n = (transposed[1]*7) % 12,
@@ -346,19 +351,41 @@ if (debug_mode) {
     }
 }
 
+module bottom(thickness) {
+    cube([inner_length, inner_width, thickness]);
+}
+
+module side_wall() {
+    cube([wall_th, inner_width + 2*wall_th, height]);
+}
+
+module back_wall() {
+    cube([inner_length, wall_th, height]);
+}
+
 module case() {
-    color(col_wood_med)
-    difference() {
-        // Main outer block
-        cube([inner_length + 2*wall_th, inner_width + 2*wall_th, height]);
+    color(col_wood_med) {
+        // Lower bottom
+        translate([wall_th, wall_th, 0]) bottom(wall_th);
 
-        // Hollow interior
-        translate([wall_th, wall_th, wall_th])
-            cube([inner_length, inner_width, height]);
+        // Upper bottom
+        translate([wall_th, wall_th, wall_th]) bottom(upper_bottom_board_th);
 
-        // Keyboard cutout in the front wall
-        translate([kb_pos.x, -1, kb_pos.z])
-            cube([kb_length, wall_th + 2, 112]);
+        // Left wall
+        side_wall();
+
+        // Right wall
+        translate([inner_length + wall_th, 0, 0]) side_wall();
+
+        translate([wall_th, inner_width + wall_th, 0]) back_wall();
+
+        // Front wall
+        difference() {
+            translate([wall_th, 0, 0])
+                back_wall();
+            translate([kb_pos.x, -1, kb_pos.z])
+                cube([kb_length, wall_th + 2, 112]);
+        }
     }
 }
 
@@ -403,7 +430,7 @@ module backrail() {
     translate([
         rack_pos.x,
         inner_width - backrail_th,
-        kb_pos.z  - backrail_height
+        wrestplank_pos.z
     ])
         color(col_wood_dark)
         cube([rack_width, backrail_th, backrail_height]);
@@ -629,10 +656,10 @@ module soundboard_mousehole() {
 // Belly rail: supports the front edge of the soundboard, following its
 // angled outline, plus a ledge along the wrestplank for the rear edge.
 module belly_rail() {
-    color(col_wood_dark) {
+    color(col_wood_med) {
         // Rail under the soundboard's front edge
-        translate([0, 0, wall_th])
-            linear_extrude(soundboard_pos.z - wall_th)
+        translate([0, 0, inner_bottom_z])
+            linear_extrude(soundboard_pos.z - inner_bottom_z)
                 polygon([
                     [soundboard_pos.x, soundboard_pos.y],
                     [soundboard_pos.x, second_bend_y],
@@ -645,14 +672,14 @@ module belly_rail() {
 }
 
 module soundboard_liner() {
-    color(col_wood_light)
-        translate([0, wall_th, wall_th]) {
+    color(col_wood_med)
+        translate([0, wall_th, inner_bottom_z]) {
             // Liner along the front wall supporting the soundboard's front edge
             translate([kb_end + belly_rail_th, 0, 0])
                 cube([
                     wrestplank_pos.x - soundboard_liner_th - kb_end - belly_rail_th,
                     soundboard_liner_th,
-                    soundboard_pos.z - wall_th
+                    soundboard_pos.z - inner_bottom_z
                 ]);
 
             // Liner along the wrestplank face supporting the soundboard's right edge
@@ -660,7 +687,7 @@ module soundboard_liner() {
                 cube([
                     soundboard_liner_th,
                     inner_width,
-                    soundboard_pos.z - wall_th
+                    soundboard_pos.z - inner_bottom_z
                 ]);
 
             // Liner along the back wall for supporting the soundboard's rear edge
@@ -672,7 +699,7 @@ module soundboard_liner() {
                 cube([
                     wrestplank_pos.x - soundboard_pos.x - soundboard_liner_th - belly_rail_th,
                     soundboard_liner_th,
-                    soundboard_pos.z - wall_th
+                    soundboard_pos.z - inner_bottom_z
                 ]);
 
         }
