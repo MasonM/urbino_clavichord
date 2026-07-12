@@ -139,6 +139,7 @@ accidental_depth = key_depth / 2;
 tangent_height = wall_th;
 tangent_top_width = tangent_height / 2;
 tangent_depth = wall_th / 10;
+tangent_top_string_clearance = wall_th / 10;
 
 /* [Hitchpin Block] */
 
@@ -147,7 +148,7 @@ hitchpin_block_th = wall_th;
 // Hitchpin block height (?)
 hitchpin_block_height = (height - inner_bottom_z) * (2/3);
 // Hitchpin height (?)
-hitchpin_height = wall_th * 2;
+hitchpin_height = hitchpin_block_height * (2/3);
 // Hitchpin radius (?)
 hitchpin_radius = wall_th * (1/14);
 
@@ -211,20 +212,20 @@ bridge_bottom_depth = wall_th;
 
 /* [Soundboard] */
 
-soundboard_pos = [
-    rack_pos.x + rack_width,
-    inner_width + wall_th,
-    // Keep the string (soundboard + bridge + string) just above the tangent
-    kb_pos.z + nat_height + tangent_height - bridge_height
-];
-// Soundboard width (?)
-soundboard_width = wrestplank_pos.x - soundboard_pos.x;
 // Soundboard depth (?)
 soundboard_depth = inner_width;
 // Soundboard height (?)
 soundboard_height = wall_th / 3;
 // Width of liners for the soundboard to rest on
 soundboard_liner_th = wall_th;
+soundboard_pos = [
+    rack_pos.x + rack_width,
+    inner_width + wall_th,
+    // Keep the string (soundboard + bridge + string) just above the tangent
+    kb_pos.z + nat_height + tangent_height + tangent_top_string_clearance - (bridge_height + soundboard_height)
+];
+// Soundboard width (?)
+soundboard_width = wrestplank_pos.x - soundboard_pos.x;
 
 /* [String and pins] */
 
@@ -233,7 +234,7 @@ string_radius = wall_th * (1/14);
 // Tuning pin radius (?)
 tuning_pin_radius = wall_th * (2/14);
 tuning_pin_x = wrestplank_pos.x + (wrestplank_width / 2);
-tuning_pin_height = height - wrestplank_pos.z - wrestplank_height + 5;
+tuning_pin_height = height - wrestplank_pos.z - wrestplank_height * (3/4);
 
 // Balance pin height (?)
 balance_pin_height = nat_height + wall_th;
