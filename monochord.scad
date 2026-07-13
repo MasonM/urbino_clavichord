@@ -236,7 +236,8 @@ belly_rail_th = wall_th;
 /* [Bridge] */
 
 bridge_width = wall_th * 4;
-bridge_height = wall_th * 2;
+// Cut from 3/4" stock in US mode; historically ~20 mm on a 69 mm-tall case
+bridge_height = use_us_lumber_dimensions ? stock_3_4 : height * (2/7);
 bridge_top_depth = wall_th * (2/14);
 bridge_bottom_depth = wall_th;
 
@@ -245,7 +246,7 @@ bridge_bottom_depth = wall_th;
 // Soundboard depth (?)
 soundboard_depth = inner_width;
 // Soundboard height (?)
-soundboard_height = wall_th / 3;
+soundboard_height = use_us_lumber_dimensions ? stock_1_8 : wall_th / 3;
 // Width of liners for the soundboard to rest on
 soundboard_liner_th = wall_th;
 soundboard_pos = [
@@ -379,7 +380,16 @@ function key_lever_top_width(key_idx) =
 // "CUT:" line for each part when generate_cutlist is enabled. Dimensions
 // are sorted largest-first (L x W x T) and shown in inches (nearest 1/16")
 // and mm. Parts instantiated multiple times echo once per instance, so the
-// echoed lines double as a quantity count.
+// echoed lines double as a quantity count. The stock a part is cut from is
+// derived from the blank's smallest dimension (its thickness) unless
+// overridden with the `stock` parameter.
+
+// Model units are inches when use_us_lumber_dimensions is set, else mm.
+function to_inches(v) = use_us_lumber_dimensions ? v : v / 25.4;
+function to_mm(v) = use_us_lumber_dimensions ? v * 25.4 : v;
+
+// Format a length as inches rounded to the nearest 1/16"
+function fmt_inches(v) = str(round(to_inches(v) * 16) / 16, "\"");
 
 // Sort a [x, y, z] size vector largest-first
 function sorted_size(s) =
@@ -387,15 +397,31 @@ function sorted_size(s) =
     [hi, s[0] + s[1] + s[2] - hi - lo, lo];
 
 function fmt_size(size) = let (s = sorted_size(size)) str(
-    s[0], "\" x ", s[1], "\" x ", s[2], "\"",
-    "  (", round(s[0]), " x ", round(s[1]), " x ", round(s[2]), " mm)"
+    fmt_inches(s[0]), " x ", fmt_inches(s[1]), " x ", fmt_inches(s[2]),
+    "  (", round(to_mm(s[0])), " x ", round(to_mm(s[1])), " x ", round(to_mm(s[2])), " mm)"
 );
+
+// Name the lumber/plywood stock a blank of the given thickness is cut from.
+// Non-standard thicknesses are labeled as rips from the next size up.
+function stock_label(th) =
+    let (eps = 0.01)
+    !use_us_lumber_dimensions ? str(round(to_mm(th)), " mm stock") :
+    abs(th - stock_3_4) < eps ? "3/4\" stock (1x lumber)" :
+    abs(th - stock_1_2) < eps ? "1/2\" stock (plywood or resawn 1x)" :
+    abs(th - stock_1_4) < eps ? "1/4\" stock (plywood)" :
+    abs(th - stock_1_8) < eps ? "1/8\" stock (plywood or resawn tonewood)" :
+    abs(th - (stock_1_4 + stock_1_8)) < eps ? "1/4\" + 1/8\" stock, laminated" :
+    th < stock_3_4 ? str(fmt_inches(th), ", ripped from 3/4\" stock") :
+    str(fmt_inches(th), " stock");
 
 // Echo a cutlist entry for the rectangular blank a part is cut from, and
 // render the part's geometry (children).
-module cut_blank(name, size, stock) {
-    if (generate_cutlist)
-        echo(str("CUT: ", name, ": ", fmt_size(size), " -- ", stock));
+module cut_blank(name, size, stock, do_echo=true) {
+    if (generate_cutlist && do_echo)
+        echo(str(
+            "CUT: ", name, ": ", fmt_size(size),
+            " -- ", is_undef(stock) ? stock_label(min(size)) : stock
+        ));
     children();
 }
 
@@ -419,38 +445,40 @@ if (debug_mode) {
     }
 }
 
-module bottom(thickness) {
-    cube([inner_length, inner_width, thickness]);
+module bottom(name, thickness) {
+    board(name, [inner_length, inner_width, thickness]);
 }
 
-module side_wall() {
-    cube([wall_th, inner_width + 2*wall_th, height]);
+module side_wall(name) {
+    board(name, [wall_th, inner_width + 2*wall_th, height]);
 }
 
-module back_wall() {
-    cube([inner_length, wall_th, height]);
-}
+front_back_wall_size = [inner_length, wall_th, height];
 
 module case() {
     color(col_wood_med) {
         // Lower bottom
-        translate([wall_th, wall_th, 0]) bottom(lower_bottom_board_th);
+        translate([wall_th, wall_th, 0]) bottom("lower bottom", lower_bottom_board_th);
 
         // Upper bottom
-        translate([wall_th, wall_th, wall_th]) bottom(upper_bottom_board_th);
+        translate([wall_th, wall_th, lower_bottom_board_th])
+            bottom("upper bottom", upper_bottom_board_th);
 
         // Left wall
-        side_wall();
+        side_wall("left wall");
 
         // Right wall
-        translate([inner_length + wall_th, 0, 0]) side_wall();
+        translate([inner_length + wall_th, 0, 0]) side_wall("right wall");
 
-        translate([wall_th, inner_width + wall_th, 0]) back_wall();
+        // Back wall
+        translate([wall_th, inner_width + wall_th, 0])
+            board("back wall", front_back_wall_size);
 
         // Front wall
+        cut_blank("front wall", front_back_wall_size)
         difference() {
             translate([wall_th, 0, 0])
-                back_wall();
+                cube(front_back_wall_size);
             translate([kb_pos.x, -wall_th, kb_pos.z])
                 cube([kb_length, 999, 999]);
             balance_pins();
@@ -470,11 +498,12 @@ module rack_slot_cutouts() {
 
 module rack_block() {
     translate(rack_pos)
-        cube([rack_width, rack_th, rack_height]);
+        board("rack", [rack_width, rack_th, rack_height]);
 }
 
 module hitchpin_block() {
     color(col_wood_dark)
+    cut_blank("hitchpin block", [hitchpin_block_th, inner_width, hitchpin_block_height])
     difference() {
         translate([
             wall_th,
@@ -505,11 +534,12 @@ module backrail() {
         wrestplank_pos.z
     ])
         color(col_wood_dark)
-        cube([rack_width, backrail_th, backrail_height]);
+        board("backrail", [rack_width, backrail_th, backrail_height]);
 }
 
 module wrestplank() {
     color(col_wood_dark)
+    cut_blank("wrestplank", [wrestplank_width, inner_width, wrestplank_height])
     difference() {
         translate(wrestplank_pos)
             cube([wrestplank_width, inner_width, wrestplank_height]);
@@ -572,7 +602,15 @@ module key_lever_2d(key_idx) {
 }
 
 module key_lever_3d(key_idx) {
-    color(col_key_lever) {
+    color(col_key_lever)
+    cut_blank(
+        str("key lever ", key_label(key_idx)),
+        [
+            max(key_lever_top_width(key_idx), key_width),
+            key_lever_top_y + rack_tongue_depth - kb_pos.y,
+            nat_height
+        ]
+    ) {
         rack_tongue(key_idx);
         translate([0, 0, kb_pos.z])
             linear_extrude(nat_height)
@@ -581,18 +619,22 @@ module key_lever_3d(key_idx) {
 }
 
 module key(key_idx, offset_delta=0) {
+    key_size = [
+        (is_accidental(key_idx) ? accidental_width : key_width - key_clearance),
+        (is_accidental(key_idx) ? accidental_depth : key_depth),
+        nat_height + (is_accidental(key_idx) ? accidental_height : 0)
+    ];
     translate([
         key_x(key_idx),
         kb_pos.y + (is_accidental(key_idx) ? accidental_depth : 0),
         kb_pos.z
     ])
         color(col_natural)
-        linear_extrude(nat_height + (is_accidental(key_idx) ? accidental_height : 0))
+        // Only register the real key, not offset copies used as cutters
+        cut_blank(str("key ", key_label(key_idx)), key_size, do_echo=offset_delta==0)
+        linear_extrude(key_size.z)
             offset(delta=offset_delta)
-            square([
-                (is_accidental(key_idx) ? accidental_width : key_width - key_clearance),
-                (is_accidental(key_idx) ? accidental_depth : key_depth),
-            ]);
+            square([key_size.x, key_size.y]);
 }
 
 module balance_pin(key_idx, radius) {
@@ -678,6 +720,7 @@ module bridge() {
     ])
         rotate([90, 180, 0])
         color(col_wood_dark)
+        cut_blank("bridge", [bridge_width, bridge_bottom_depth, bridge_height])
         linear_extrude(bridge_width)
             polygon([
                 [-bridge_top_depth/2, 0],
@@ -689,6 +732,7 @@ module bridge() {
 
 module soundboard() {
     color(col_wood_light)
+    cut_blank("soundboard", [soundboard_width, soundboard_depth, soundboard_height])
     difference() {
         translate([0, 0, soundboard_pos.z]) {
             linear_extrude(soundboard_height)
@@ -714,7 +758,15 @@ module soundboard_mousehole() {
 // Belly rail: supports the front edge of the soundboard, following its
 // angled outline, plus a ledge along the wrestplank for the rear edge.
 module belly_rail() {
-    color(col_wood_med) {
+    color(col_wood_med)
+    cut_blank(
+        "belly rail",
+        [
+            norm([kb_end - soundboard_pos.x, soundboard_pos.y - wall_th]) + belly_rail_th,
+            belly_rail_th,
+            soundboard_pos.z - inner_bottom_z
+        ]
+    ) {
         // Rail under the soundboard's front edge
         translate([0, 0, inner_bottom_z])
             linear_extrude(soundboard_pos.z - inner_bottom_z)
@@ -734,7 +786,7 @@ module soundboard_liner() {
         translate([0, wall_th, inner_bottom_z]) {
             // Liner along the front wall supporting the soundboard's front edge
             translate([kb_end + belly_rail_th, 0, 0])
-                cube([
+                board("soundboard liner (front)", [
                     wrestplank_pos.x - soundboard_liner_th - kb_end - belly_rail_th,
                     soundboard_liner_th,
                     soundboard_pos.z - inner_bottom_z
@@ -742,7 +794,7 @@ module soundboard_liner() {
 
             // Liner along the wrestplank face supporting the soundboard's right edge
             translate([wrestplank_pos.x - soundboard_liner_th, 0, 0])
-                cube([
+                board("soundboard liner (right)", [
                     soundboard_liner_th,
                     inner_width,
                     soundboard_pos.z - inner_bottom_z
@@ -754,7 +806,7 @@ module soundboard_liner() {
                 inner_width - soundboard_liner_th,
                 0
             ])
-                cube([
+                board("soundboard liner (back)", [
                     wrestplank_pos.x - soundboard_pos.x - soundboard_liner_th - belly_rail_th,
                     soundboard_liner_th,
                     soundboard_pos.z - inner_bottom_z
