@@ -28,8 +28,25 @@ show_soundboard = true;
 show_soundboard_liner = true;
 show_belly_rail = true;
 
+/* [US Lumber Stock] */
+// All structural parts are sized to be cut from common US dimensional
+// lumber and plywood. Actual (not nominal) sizes are used below.
+
+// 3/4" stock: 1x lumber (1x3, 1x6, etc.) is 3/4" thick
+stock_3_4 = 0.75;
+// 1/2" stock: plywood or resawn 1x lumber
+stock_1_2 = 0.5;
+// 1/4" stock: plywood, key levers
+stock_1_4 = 0.25;
+// 1/8" stock: soundboard (thin plywood or resawn tonewood)
+stock_1_8 = 0.125;
+// Actual width of a 1x3 board (2.5")
+width_1x3 = 2.5;
+// Actual width of a 1x6 board (5.5")
+width_1x6 = 5.5;
+
 /* [Main Dimensions] */
-wall_th = 10;
+use_us_lumber_dimensions = true;
 
 // "The internal length used for our reconstruction is 644 mm (the external
 // length is 664 mm), which was determined by adopting a multiple of the number
@@ -37,7 +54,10 @@ wall_th = 10;
 // consistent with the master's diagram (Plate IX). Of course, this choice of
 // size is only one of many possible options."
 
-inner_length = 644;
+// For US lumber, 25.5" (647.7 mm) is used instead of 644 mm, which keeps
+// the historical proportions to within 1%.
+
+inner_length = use_us_lumber_dimensions ? 25.5 : 644;
 
 // "The length-width-height ratio (width = 3/14 of the length = 138 mm; height
 // or "altitudo tota" = 1/2 of the width = 69 mm) was also adopted from Arnaut.
@@ -47,8 +67,14 @@ inner_length = 644;
 // unrestricted soundboard, has a positive effect on the instrument's fullness
 // of sound."
 
-inner_width = inner_length * (3/14);
-height = inner_width / 2;
+// The historical width (3/14 of length = 138 mm) is almost exactly the
+// actual width of a 1x6 board (5.5" = 139.7 mm), and the height (69 mm)
+// is close to the actual width of a 1x3 board (2.5" = 63.5 mm). So the
+// bottom can be cut from a 1x6 and the walls from 1x3 stock.
+
+inner_width = use_us_lumber_dimensions ? width_1x6 : inner_length * (3/14);
+height = use_us_lumber_dimensions ? width_1x3 : inner_width / 2;
+wall_th = use_us_lumber_dimensions ? stock_3_4 : 10;
 
 // "Likewise, the starting and ending points for measurement, the bridge, and
 // the sound hole were placed as follows: the starting point of measurement and
@@ -63,8 +89,11 @@ bridge_x = inner_length * (6/7);
 // lower bottoms (“distantia inter duos fundos”) is 1/6 of the width (= 1/28 of
 // the length = 23 mm)."
 
-upper_bottom_board_th = inner_width / 6;
-inner_bottom_z = wall_th + upper_bottom_board_th;
+// Historically 1/6 of the width (23 mm); 3/4" stock (19 mm) is close.
+
+upper_bottom_board_th = use_us_lumber_dimensions ? stock_3_4 : inner_width / 6;
+lower_bottom_board_th = use_us_lumber_dimensions ? stock_1_2 : wall_th;
+inner_bottom_z = lower_bottom_board_th + upper_bottom_board_th;
 
 /* [Keyboard] */
 
@@ -122,8 +151,8 @@ key_width = kb_length / num_naturals;
 // "The length of these keys was again calculated according to Arnaut ( = about
 // 40 mm)."
 
-key_depth = inner_width * (2/7);
-nat_height = wall_th;
+key_depth = use_us_lumber_dimensions ? 1.5 : inner_width * (2/7);
+nat_height = use_us_lumber_dimensions ? stock_1_4 : wall_th;
 kb_pos = [
     wall_th + inner_length * (1/6),
     -key_depth,
@@ -283,6 +312,8 @@ col_natural = [0.9, 0.9, 0.9];
 col_iron = [0.37, 0.4, 0.41];
 
 /* [Advanced] */
+// Echo a cutlist of all wooden parts to the console
+generate_cutlist = true;
 debug_mode = false;
 $fn = 16;
 
@@ -341,6 +372,39 @@ function key_lever_top_width(key_idx) =
     )
     min(distance_from_left, distance_from_right, key_width) - key_lever_side_clearance;
 
+// ---------------------------------------------------------------------------
+// Cutlist helpers
+// ---------------------------------------------------------------------------
+// Wooden parts are built with board()/cut_blank() below, which echo a
+// "CUT:" line for each part when generate_cutlist is enabled. Dimensions
+// are sorted largest-first (L x W x T) and shown in inches (nearest 1/16")
+// and mm. Parts instantiated multiple times echo once per instance, so the
+// echoed lines double as a quantity count.
+
+// Sort a [x, y, z] size vector largest-first
+function sorted_size(s) =
+    let (lo = min(s), hi = max(s))
+    [hi, s[0] + s[1] + s[2] - hi - lo, lo];
+
+function fmt_size(size) = let (s = sorted_size(size)) str(
+    s[0], "\" x ", s[1], "\" x ", s[2], "\"",
+    "  (", round(s[0]), " x ", round(s[1]), " x ", round(s[2]), " mm)"
+);
+
+// Echo a cutlist entry for the rectangular blank a part is cut from, and
+// render the part's geometry (children).
+module cut_blank(name, size, stock) {
+    if (generate_cutlist)
+        echo(str("CUT: ", name, ": ", fmt_size(size), " -- ", stock));
+    children();
+}
+
+// A simple rectangular board: registers itself on the cutlist and renders
+// as a cube of the given size.
+module board(name, size, stock) {
+    cut_blank(name, size, stock) cube(size);
+}
+
 if (debug_mode) {
     for (key_idx=[0:num_keys-1]) {
         echo(key_idx=key_idx,
@@ -370,7 +434,7 @@ module back_wall() {
 module case() {
     color(col_wood_med) {
         // Lower bottom
-        translate([wall_th, wall_th, 0]) bottom(wall_th);
+        translate([wall_th, wall_th, 0]) bottom(lower_bottom_board_th);
 
         // Upper bottom
         translate([wall_th, wall_th, wall_th]) bottom(upper_bottom_board_th);
@@ -387,8 +451,8 @@ module case() {
         difference() {
             translate([wall_th, 0, 0])
                 back_wall();
-            translate([kb_pos.x, -1, kb_pos.z])
-                cube([kb_length, wall_th * 2, 999]);
+            translate([kb_pos.x, -wall_th, kb_pos.z])
+                cube([kb_length, 999, 999]);
             balance_pins();
         }
     }
