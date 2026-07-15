@@ -92,7 +92,7 @@ bridge_x = inner_length * (6/7);
 // Historically 1/6 of the width (23 mm); 3/4" stock (19 mm) is close.
 
 upper_bottom_board_th = use_us_lumber_dimensions ? stock_3_4 : inner_width / 6;
-lower_bottom_board_th = use_us_lumber_dimensions ? stock_1_2 : wall_th;
+lower_bottom_board_th = wall_th;
 inner_bottom_z = lower_bottom_board_th + upper_bottom_board_th;
 
 /* [Keyboard] */
