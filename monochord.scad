@@ -166,7 +166,7 @@ key_clearance = key_width / num_keys;
 
 /* [Tangents] */
 
-tangent_height = wall_th;
+tangent_height = from_mm(10);
 tangent_top_width = tangent_height / 2;
 tangent_depth = wall_th / 10;
 tangent_top_string_clearance = wall_th / 10;
@@ -222,7 +222,7 @@ rack_tongue_depth = rack_th * (2/3);
 // Wrestplank width (?)
 wrestplank_width = wall_th;
 // Wrestplank height (?)
-wrestplank_height = height / 3;
+wrestplank_height = hitchpin_block_height;
 // Wrestplank position (?)
 wrestplank_pos = [
     wall_th + inner_length - wrestplank_width,
@@ -260,17 +260,17 @@ soundboard_width = wrestplank_pos.x - soundboard_pos.x;
 
 /* [String and pins] */
 
-string_radius = wall_th * (1/14);
+string_radius = from_mm(0.4);
 
 // Tuning pin radius (?)
-tuning_pin_radius = wall_th * (2/14);
+tuning_pin_radius = from_mm(1);
 tuning_pin_x = wrestplank_pos.x + (wrestplank_width / 2);
 tuning_pin_height = height - wrestplank_pos.z - wrestplank_height * (3/4);
 
 // Balance pin height (?)
-balance_pin_height = nat_height + wall_th;
+balance_pin_height = from_mm(20);
 // Balance pin radius (?)
-balance_pin_radius = wall_th * (2/14);
+balance_pin_radius = tuning_pin_radius;
 
 string_pos = [
     wall_th + (hitchpin_block_th / 2),
@@ -385,6 +385,7 @@ function key_lever_top_width(key_idx) =
 // overridden with the `stock` parameter.
 
 // Model units are inches when use_us_lumber_dimensions is set, else mm.
+function from_mm(v) = use_us_lumber_dimensions ? v / 25.4 : v;
 function to_inches(v) = use_us_lumber_dimensions ? v : v / 25.4;
 function to_mm(v) = use_us_lumber_dimensions ? v * 25.4 : v;
 
