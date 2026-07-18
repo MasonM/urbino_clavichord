@@ -93,7 +93,7 @@ bridge_x = inner_length * (6/7);
 
 upper_bottom_board_th = use_us_lumber_dimensions ? stock_3_4 : inner_width / 6;
 lower_bottom_board_th = wall_th;
-inner_bottom_z = lower_bottom_board_th + upper_bottom_board_th;
+inner_bottom_z = lower_bottom_board_th + (use_us_lumber_dimensions ? 0 : upper_bottom_board_th);
 
 /* [Keyboard] */
 
@@ -231,7 +231,7 @@ wrestplank_pos = [
 ];
 
 // Belly rail thickness (supports front edge of soundboard)
-belly_rail_th = wall_th;
+belly_rail_th = wall_th / 2;
 
 /* [Bridge] */
 
@@ -248,7 +248,7 @@ soundboard_depth = inner_width;
 // Soundboard height (?)
 soundboard_height = use_us_lumber_dimensions ? stock_1_8 : wall_th / 3;
 // Width of liners for the soundboard to rest on
-soundboard_liner_th = wall_th;
+soundboard_liner_th = belly_rail_th;
 soundboard_pos = [
     rack_pos.x + rack_width,
     inner_width + wall_th,
@@ -462,8 +462,9 @@ module case() {
         translate([wall_th, wall_th, 0]) bottom("lower bottom", lower_bottom_board_th);
 
         // Upper bottom
-        translate([wall_th, wall_th, lower_bottom_board_th])
-            bottom("upper bottom", upper_bottom_board_th);
+        if (!use_us_lumber_dimensions)
+            translate([wall_th, wall_th, lower_bottom_board_th])
+                bottom("upper bottom", upper_bottom_board_th);
 
         // Left wall
         side_wall("left wall");
