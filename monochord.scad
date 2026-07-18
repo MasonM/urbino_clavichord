@@ -566,6 +566,15 @@ module tangent(key_idx) {
             ]);
 }
 
+module tangent_mortise(key_idx) {
+    translate([
+        tangent_x(key_idx) - tangent_depth,
+        string_pos.y,
+        kb_pos.z
+    ])
+        cube([tangent_depth, tangent_depth, nat_height]);
+}
+
 module rack_tongue(key_idx) {
     translate([
         slot_x(key_idx) - (rack_tongue_width) / 2,
@@ -680,6 +689,7 @@ module keyboard() {
         difference() {
             key_lever_3d(key_idx);
             balance_pin(key_idx, balance_pin_radius * (3/2));
+            tangent_mortise(key_idx);
         }
     }
 }
