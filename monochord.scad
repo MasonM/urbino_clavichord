@@ -333,6 +333,12 @@ function key_x(key_idx) =
 function key_lever_x(key_idx) =
     key_x(key_idx) + (is_accidental(key_idx-1) ? accidental_width + key_clearance: 0);
 
+function key_size(key_idx) = [
+    (is_accidental(key_idx) ? accidental_width : key_width - key_clearance),
+    (is_accidental(key_idx) ? accidental_depth : key_depth),
+    nat_height + (is_accidental(key_idx) ? accidental_height : 0)
+];
+
 // Transpose from C4 to A4
 function transpose(octave, pitch_class) =
     let (transposed = 12*(octave - 1) + 3 + pitch_class)
@@ -625,23 +631,29 @@ module key_lever_3d(key_idx) {
     }
 }
 
-module key(key_idx, offset_delta=0) {
-    key_size = [
-        (is_accidental(key_idx) ? accidental_width : key_width - key_clearance),
-        (is_accidental(key_idx) ? accidental_depth : key_depth),
-        nat_height + (is_accidental(key_idx) ? accidental_height : 0)
-    ];
-    translate([
-        key_x(key_idx),
-        kb_pos.y + (is_accidental(key_idx) ? accidental_depth : 0),
-        kb_pos.z
-    ])
+module key_3d(key_idx, offset_delta=0) {
+    size = key_size(key_idx);
+    translate([0, 0, kb_pos.z])
         color(col_natural)
         // Only register the real key, not offset copies used as cutters
-        cut_blank(str("key ", key_label(key_idx)), key_size, do_echo=offset_delta==0)
-        linear_extrude(key_size.z)
+        cut_blank(str("key ", key_label(key_idx)), size, do_echo=offset_delta==0)
+        linear_extrude(size.z)
+            key_2d(key_idx, offset_delta);
+}
+
+module key_2d(key_idx, offset_delta=0) {
+    size = key_size(key_idx);
+    difference() {
+        translate([
+            key_x(key_idx),
+            kb_pos.y + (is_accidental(key_idx) ? accidental_depth : 0),
+            0
+        ])
             offset(delta=offset_delta)
-            square([key_size.x, key_size.y]);
+            square([size.x, size.y]);
+        if (offset_delta == 0)
+            key_2d(key_idx - 1, key_clearance);
+    }
 }
 
 module balance_pin_2d(key_idx, radius) {
@@ -684,10 +696,7 @@ module key_labels() {
 
 module keyboard() {
     for (key_idx=[0:num_keys - 1]) {
-        difference() {
-            key(key_idx);
-            key(key_idx - 1, key_clearance);
-        }
+        key_3d(key_idx);
         key_lever_3d(key_idx);
     }
 }
