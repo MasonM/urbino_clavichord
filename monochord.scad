@@ -511,19 +511,15 @@ module rack_block() {
 }
 
 module hitchpin_block() {
+    hitchpin_block_size = [hitchpin_block_th, inner_width, hitchpin_block_height];
     color(col_wood_dark)
-    cut_blank("hitchpin block", [hitchpin_block_th, inner_width, hitchpin_block_height])
+    cut_blank("hitchpin block", hitchpin_block_size)
     difference() {
         translate([
             wall_th,
             wall_th,
             wrestplank_pos.z,
-        ])
-            cube([
-                hitchpin_block_th,
-                inner_width,
-                hitchpin_block_height
-            ]);
+        ]) cube(hitchpin_block_size);
         hitchpin();
     }
 }
@@ -547,11 +543,12 @@ module backrail() {
 }
 
 module wrestplank() {
+    wrestplank_size = [wrestplank_width, inner_width, wrestplank_height];
     color(col_wood_dark)
-    cut_blank("wrestplank", [wrestplank_width, inner_width, wrestplank_height])
+    cut_blank("wrestplank", wrestplank_size)
     difference() {
         translate(wrestplank_pos)
-            cube([wrestplank_width, inner_width, wrestplank_height]);
+            cube(wrestplank_size);
         tuning_pin();
     }
 }
