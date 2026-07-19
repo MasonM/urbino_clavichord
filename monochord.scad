@@ -28,6 +28,8 @@ show_soundboard = true;
 show_soundboard_liner = true;
 show_belly_rail = true;
 
+show_2d_key_levers_only = false;
+
 /* [US Lumber Stock] */
 // All structural parts are sized to be cut from common US dimensional
 // lumber and plywood. Actual (not nominal) sizes are used below.
@@ -183,17 +185,10 @@ hitchpin_height = hitchpin_block_height * (2/3);
 // Hitchpin radius (?)
 hitchpin_radius = wall_th * (1/14);
 
-/* [Backrail] */
-
-// Backrail thickness (?)
-backrail_th = wall_th;
-// Backrail height
-backrail_height = kb_pos.z - inner_bottom_z;
-
 /* [Rack] */
 
 // Slot width (?)
-slot_width = key_width * (1/7);
+slot_width = from_mm(3);
 // Rack thickness (?)
 rack_th = wall_th;
 // Rack height (?)
@@ -206,6 +201,8 @@ rack_pos = [
 ];
 // Rack width (?)
 rack_width = (slot_x(num_keys - 1) - rack_pos.x) + slot_width * 2;
+guide_pin_height = 2*nat_height;
+guide_pin_radius = from_mm(1);
 
 /* [Key Levers] */
 
@@ -214,9 +211,10 @@ rack_width = (slot_x(num_keys - 1) - rack_pos.x) + slot_width * 2;
 
 second_bend_y = inner_width * (2/5);
 key_lever_side_clearance = slot_width / 6;
-key_lever_top_y = inner_width + wall_th - rack_th - key_lever_side_clearance;
 rack_tongue_width = slot_width * (2/3);
-rack_tongue_depth = rack_th * (2/3);
+rack_tongue_depth = rack_th * (1/3);
+use_rack_tongue = false;
+key_lever_top_y = inner_width + wall_th - (use_rack_tongue ? rack_th : wall_th * (1/3)) - key_lever_side_clearance;
 
 /* [Wrestplank] */
 
@@ -233,6 +231,18 @@ wrestplank_pos = [
 
 // Belly rail thickness (supports front edge of soundboard)
 belly_rail_th = wall_th / 2;
+
+/* [Backrail] */
+
+// Backrail thickness (?)
+backrail_th = wall_th;
+// Backrail height
+backrail_height = kb_pos.z - inner_bottom_z;
+backrail_pos = [
+    rack_pos.x,
+    wall_th + inner_width - (use_rack_tongue ? rack_th : 0) - backrail_th,
+    wrestplank_pos.z
+];
 
 /* [Bridge] */
 
@@ -266,7 +276,7 @@ string_radius = from_mm(0.4);
 // Tuning pin radius (?)
 tuning_pin_radius = from_mm(1);
 tuning_pin_x = wrestplank_pos.x + (wrestplank_width / 2);
-tuning_pin_height = height - wrestplank_pos.z - wrestplank_height * (3/4);
+tuning_pin_height = height - wrestplank_pos.z - wrestplank_height;
 
 // Balance pin height (?)
 balance_pin_height = from_mm(20);
@@ -380,6 +390,11 @@ function key_lever_top_width(key_idx) =
     )
     min(distance_from_left, distance_from_right, key_width) - key_lever_side_clearance;
 
+function key_lever_bottom_width(key_idx) =
+    is_accidental(key_idx)
+        ? accidental_width
+        : (is_accidental(key_idx - 1) ? accidental_width - key_clearance : key_width) - key_clearance;
+
 // ---------------------------------------------------------------------------
 // Cutlist helpers
 // ---------------------------------------------------------------------------
@@ -461,9 +476,9 @@ module side_wall(name) {
     board(name, [wall_th, inner_width + 2*wall_th, height]);
 }
 
-front_back_wall_size = [inner_length, wall_th, height];
-
 module case() {
+    front_back_wall_size = [inner_length, wall_th, height];
+
     color(col_wood_med) {
         // Lower bottom
         translate([wall_th, wall_th, 0]) bottom("lower bottom", lower_bottom_board_th);
@@ -484,10 +499,9 @@ module case() {
             board("back wall", front_back_wall_size);
 
         // Front wall
-        cut_blank("front wall", front_back_wall_size)
         difference() {
             translate([wall_th, 0, 0])
-                cube(front_back_wall_size);
+                board("front wall", front_back_wall_size);
             translate([kb_pos.x, -wall_th, kb_pos.z])
                 cube([kb_length, 999, 999]);
             balance_pins();
@@ -505,6 +519,17 @@ module rack_slot_cutouts() {
             cube([slot_width, rack_tongue_depth, rack_height+1]);
 }
 
+module guide_pins() {
+    for (key_idx=[0:num_keys - 1])
+        translate([
+            slot_x(key_idx),
+            key_lever_top_y - (rack_tongue_depth) / 2,
+            backrail_pos.z + backrail_height
+        ])
+            color(col_iron)
+            cylinder(h=guide_pin_height, r=guide_pin_radius);
+}
+
 module rack_block() {
     translate(rack_pos)
         board("rack", [rack_width, rack_th, rack_height]);
@@ -513,13 +538,12 @@ module rack_block() {
 module hitchpin_block() {
     hitchpin_block_size = [hitchpin_block_th, inner_width, hitchpin_block_height];
     color(col_wood_dark)
-    cut_blank("hitchpin block", hitchpin_block_size)
     difference() {
         translate([
             wall_th,
             wall_th,
             wrestplank_pos.z,
-        ]) cube(hitchpin_block_size);
+        ]) board("hitchpin block", hitchpin_block_size);
         hitchpin();
     }
 }
@@ -533,11 +557,8 @@ module rack() {
 }
 
 module backrail() {
-    translate([
-        rack_pos.x,
-        wall_th + inner_width - rack_th - backrail_th,
-        wrestplank_pos.z
-    ])
+    if (!use_rack_tongue) guide_pins();
+    translate(backrail_pos)
         color(col_wood_dark)
         board("backrail", [rack_width, backrail_th, backrail_height]);
 }
@@ -545,10 +566,9 @@ module backrail() {
 module wrestplank() {
     wrestplank_size = [wrestplank_width, inner_width, wrestplank_height];
     color(col_wood_dark)
-    cut_blank("wrestplank", wrestplank_size)
     difference() {
         translate(wrestplank_pos)
-            cube(wrestplank_size);
+            board("wrestplank", wrestplank_size);
         tuning_pin();
     }
 }
@@ -575,16 +595,9 @@ module tangent_mortise_2d(key_idx) {
         circle(r=tangent_bottom_width);
 }
 
-module rack_tongue_2d(key_idx) {
-    translate([slot_x(key_idx) - (rack_tongue_width) / 2, key_lever_top_y, 0])
-        square([rack_tongue_width, rack_tongue_depth]);
-}
-
 module key_lever_2d(key_idx) {
     top_width = key_lever_top_width(key_idx);
-    bottom_width = is_accidental(key_idx)
-        ? accidental_width
-        : (is_accidental(key_idx - 1) ? accidental_width - key_clearance : key_width) - key_clearance;
+    bottom_width = key_lever_bottom_width(key_idx);
     first_bend_y = wall_th;
     top = [
         slot_x(key_idx) - top_width/2,
@@ -594,14 +607,22 @@ module key_lever_2d(key_idx) {
         key_lever_x(key_idx),
         kb_pos.y + key_depth
     ];
+    top_rack_tongue_x = slot_x(key_idx) - (rack_tongue_width) / 2;
+    bottom_rack_tongue_y = top.y + (rack_tongue_depth * (use_rack_tongue ? 1 : -1));
 
-    rack_tongue_2d(key_idx);
     difference() {
         polygon([
             bottom,
             [bottom.x, first_bend_y],
             [top.x, second_bend_y],
             top,
+
+            // Rack tongue or slot cutout, depending on use_rack_tongue
+            [top_rack_tongue_x, top.y],
+            [top_rack_tongue_x, bottom_rack_tongue_y],
+            [top_rack_tongue_x + rack_tongue_width, bottom_rack_tongue_y],
+            [top_rack_tongue_x + rack_tongue_width, top.y],
+
             [top.x + top_width, top.y],
             [top.x + top_width, second_bend_y],
             [bottom.x + bottom_width, first_bend_y],
@@ -614,26 +635,15 @@ module key_lever_2d(key_idx) {
 
 module key_lever_3d(key_idx) {
     color(col_key_lever)
-    cut_blank(
-        str("key lever ", key_label(key_idx)),
-        [
-            max(key_lever_top_width(key_idx), key_width),
-            key_lever_top_y + rack_tongue_depth - kb_pos.y,
-            nat_height
-        ]
-    ) {
-        translate([0, 0, kb_pos.z])
-            linear_extrude(nat_height)
-                key_lever_2d(key_idx);
-    }
+    translate([0, 0, kb_pos.z])
+        linear_extrude(nat_height)
+            key_lever_2d(key_idx);
 }
 
 module key_front_3d(key_idx, offset_delta=0) {
     size = key_size(key_idx);
     translate([0, 0, kb_pos.z])
         color(col_natural)
-        // Only register the real key, not offset copies used as cutters
-        cut_blank(str("key ", key_label(key_idx)), size, do_echo=offset_delta==0)
         linear_extrude(size.z)
             key_front_2d(key_idx, offset_delta);
 }
@@ -725,7 +735,7 @@ module tuning_pin() {
     translate([
         tuning_pin_x,
         string_pos.y,
-        wrestplank_pos.z + wrestplank_height * (2/3)
+        wrestplank_pos.z + wrestplank_height - from_mm(5)
     ])
         color(col_iron)
         cylinder(h=tuning_pin_height, r=tuning_pin_radius);
@@ -835,7 +845,7 @@ module soundboard_liner() {
 
 module assembly() {
     if (show_case) case();
-    if (show_rack) rack();
+    if (show_rack && use_rack_tongue) rack();
     if (show_backrail) backrail();
     if (show_bridge) bridge();
     if (show_keyboard) keyboard();
@@ -852,4 +862,13 @@ module assembly() {
     if (show_soundboard_liner) soundboard_liner();
 }
 
-assembly();
+if (show_2d_key_levers_only) {
+    for (key_idx=[0:num_keys - 1]) {
+        key_front_2d(key_idx);
+        key_lever_2d(key_idx);
+    }
+} else {
+    assembly();
+}
+
+
