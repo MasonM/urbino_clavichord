@@ -212,7 +212,7 @@ guide_pin_radius = from_mm(1);
 second_bend_y = inner_width * (2/5);
 key_lever_side_clearance = slot_width / 6;
 rack_tongue_width = slot_width * (2/3);
-rack_tongue_depth = rack_th * (1/3);
+rack_tongue_depth = rack_th * (2/3);
 use_rack_tongue = false;
 key_lever_top_y = inner_width + wall_th - (use_rack_tongue ? rack_th : wall_th * (1/3)) - key_lever_side_clearance;
 
@@ -591,8 +591,8 @@ module tangent(key_idx) {
 }
 
 module tangent_mortise_2d(key_idx) {
-    translate([tangent_x(key_idx) - tangent_bottom_width, string_pos.y, 0])
-        circle(r=tangent_bottom_width);
+    translate([tangent_x(key_idx) - tangent_bottom_width / 4, string_pos.y, 0])
+        circle(r=tangent_bottom_width / 2);
 }
 
 module key_lever_2d(key_idx) {
