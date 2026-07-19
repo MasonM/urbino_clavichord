@@ -168,6 +168,7 @@ key_clearance = key_width / num_keys;
 
 tangent_height = from_mm(10);
 tangent_top_width = tangent_height / 2;
+tangent_bottom_width = tangent_top_width / 4;
 tangent_depth = wall_th / 10;
 tangent_top_string_clearance = wall_th / 10;
 
@@ -559,29 +560,21 @@ module tangent(key_idx) {
         rotate([90, 0, -90])
         linear_extrude(tangent_depth)
             polygon([
-                [-tangent_top_width/4, 0],
+                [-tangent_bottom_width, 0],
                 [-tangent_top_width/2, tangent_height],
                 [tangent_top_width/2, tangent_height],
-                [tangent_top_width/4, 0],
+                [tangent_bottom_width, 0],
             ]);
 }
 
-module tangent_mortise(key_idx) {
-    translate([
-        tangent_x(key_idx) - tangent_depth,
-        string_pos.y,
-        kb_pos.z
-    ])
-        cube([tangent_depth, tangent_depth, nat_height]);
+module tangent_mortise_2d(key_idx) {
+    translate([tangent_x(key_idx) - tangent_bottom_width, string_pos.y, 0])
+        circle(r=tangent_bottom_width);
 }
 
-module rack_tongue(key_idx) {
-    translate([
-        slot_x(key_idx) - (rack_tongue_width) / 2,
-        key_lever_top_y,
-        kb_pos.z
-    ])
-        cube([rack_tongue_width, rack_tongue_depth, nat_height]);
+module rack_tongue_2d(key_idx) {
+    translate([slot_x(key_idx) - (rack_tongue_width) / 2, key_lever_top_y, 0])
+        square([rack_tongue_width, rack_tongue_depth]);
 }
 
 module key_lever_2d(key_idx) {
@@ -599,17 +592,21 @@ module key_lever_2d(key_idx) {
         kb_pos.y + key_depth
     ];
 
-    polygon([
-       bottom,
-       [bottom.x, first_bend_y],
-       [top.x, second_bend_y],
-       top,
-       // Top to second bend
-       [top.x + top_width, top.y],
-       [top.x + top_width, second_bend_y],
-       [bottom.x + bottom_width, first_bend_y],
-       [bottom.x + bottom_width, bottom.y],
-    ]);
+    rack_tongue_2d(key_idx);
+    difference() {
+        polygon([
+            bottom,
+            [bottom.x, first_bend_y],
+            [top.x, second_bend_y],
+            top,
+            [top.x + top_width, top.y],
+            [top.x + top_width, second_bend_y],
+            [bottom.x + bottom_width, first_bend_y],
+            [bottom.x + bottom_width, bottom.y],
+        ]);
+        balance_pin_2d(key_idx, balance_pin_radius * (3/2));
+        tangent_mortise_2d(key_idx);
+    }
 }
 
 module key_lever_3d(key_idx) {
@@ -622,7 +619,6 @@ module key_lever_3d(key_idx) {
             nat_height
         ]
     ) {
-        rack_tongue(key_idx);
         translate([0, 0, kb_pos.z])
             linear_extrude(nat_height)
                 key_lever_2d(key_idx);
@@ -648,19 +644,25 @@ module key(key_idx, offset_delta=0) {
             square([key_size.x, key_size.y]);
 }
 
-module balance_pin(key_idx, radius) {
+module balance_pin_2d(key_idx, radius) {
     translate([
         (key_lever_x(key_idx) + key_lever_x(key_idx+1)) / 2 - key_clearance,
         wall_th / 2,
-        kb_pos.z - (balance_pin_height / 3)
+        0
     ])
-        color(col_iron)
-        cylinder(h=balance_pin_height, r=radius);
+        circle(r=radius);
+}
+
+module balance_pin_3d(key_idx, radius) {
+    color(col_iron)
+        translate([0, 0, kb_pos.z - (balance_pin_height / 3)])
+            linear_extrude(balance_pin_height)
+                balance_pin_2d(key_idx, radius);
 }
 
 module balance_pins() {
     for (key_idx=[0:num_keys - 1])
-        balance_pin(key_idx, balance_pin_radius);
+        balance_pin_3d(key_idx, balance_pin_radius);
 }
 
 module tangents() {
@@ -686,11 +688,7 @@ module keyboard() {
             key(key_idx);
             key(key_idx - 1, key_clearance);
         }
-        difference() {
-            key_lever_3d(key_idx);
-            balance_pin(key_idx, balance_pin_radius * (3/2));
-            tangent_mortise(key_idx);
-        }
+        key_lever_3d(key_idx);
     }
 }
 
