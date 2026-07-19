@@ -631,17 +631,17 @@ module key_lever_3d(key_idx) {
     }
 }
 
-module key_3d(key_idx, offset_delta=0) {
+module key_front_3d(key_idx, offset_delta=0) {
     size = key_size(key_idx);
     translate([0, 0, kb_pos.z])
         color(col_natural)
         // Only register the real key, not offset copies used as cutters
         cut_blank(str("key ", key_label(key_idx)), size, do_echo=offset_delta==0)
         linear_extrude(size.z)
-            key_2d(key_idx, offset_delta);
+            key_front_2d(key_idx, offset_delta);
 }
 
-module key_2d(key_idx, offset_delta=0) {
+module key_front_2d(key_idx, offset_delta=0) {
     size = key_size(key_idx);
     difference() {
         translate([
@@ -652,7 +652,7 @@ module key_2d(key_idx, offset_delta=0) {
             offset(delta=offset_delta)
             square([size.x, size.y]);
         if (offset_delta == 0)
-            key_2d(key_idx - 1, key_clearance);
+            key_front_2d(key_idx - 1, key_clearance);
     }
 }
 
@@ -694,11 +694,14 @@ module key_labels() {
                 text(text=key_label(key_idx), size=(is_accidental(key_idx) ? accidental_width : key_width) / 3);
 }
 
+module key(key_idx) {
+    key_front_3d(key_idx);
+    key_lever_3d(key_idx);
+}
+
 module keyboard() {
-    for (key_idx=[0:num_keys - 1]) {
-        key_3d(key_idx);
-        key_lever_3d(key_idx);
-    }
+    for (key_idx=[0:num_keys - 1])
+        key(key_idx);
 }
 
 module string() {
