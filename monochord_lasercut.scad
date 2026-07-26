@@ -374,6 +374,10 @@ module side_wall() {
             thickness=wall_th,
             x=height,
             y=inner_width,
+            simple_tabs=[
+                [LEFT, 0, -wall_th/2],
+                [RIGHT, -wall_th, inner_width + wall_th / 2],
+            ],
             finger_joints=[
                 [LEFT, 0, 4],
                 [UP, 0, 4],
@@ -385,7 +389,7 @@ module side_wall() {
 module case() {
     color(col_wood_med) {
         // Lower bottom
-        #lasercutoutSquare(
+        lasercutoutSquare(
             thickness=wall_th,
             x=inner_length,
             y=inner_width,
@@ -398,10 +402,10 @@ module case() {
         );
 
         // Left wall
-        translate([0, 0, wall_th]) rotate([0, 270, 0]) #side_wall();
+        translate([0, 0, wall_th]) rotate([0, -90, 0]) side_wall();
 
         // Right wall
-        translate([inner_length + wall_th, 0, wall_th]) rotate([0, -90, 0]) #side_wall();
+        translate([inner_length + wall_th, 0, wall_th]) rotate([0, -90, 0]) side_wall();
 
         // Back wall
         translate([0, inner_width + wall_th, wall_th]) rotate([90, 0, 0]) lasercutoutSquare(
@@ -438,36 +442,21 @@ module case() {
         );
 
     }
-
-/*
-    color(col_wood_med) {
-        // Lower bottom
-        translate([wall_th, wall_th, 0]) lasercutoutSquare(thickness = thickness);
-
-        // Upper bottom
-        if (!use_us_lumber_dimensions)
-            translate([wall_th, wall_th, lower_bottom_board_th])
-                *bottom("upper bottom", upper_bottom_board_th);
-
-        // Left wall
-        side_wall("left wall");
-
-        // Right wall
-        translate([inner_length + wall_th, 0, 0]) side_wall("right wall");
-
-        // Back wall
-        translate([wall_th, inner_width + wall_th, 0])
-            board("back wall", front_back_wall_size);
-
-        // Front wall
-        difference() {
-            translate([wall_th, 0, 0])
-                board("front wall", front_back_wall_size);
-            translate([kb_pos.x, -wall_th, kb_pos.z])
-                cube([kb_length, 999, 999]);
-            balance_pins();
-        }
-    }
-    */
 }
-case();
+
+module key(key_idx) {
+    key_front_3d(key_idx);
+    key_lever_3d(key_idx);
+}
+
+module keyboard() {
+    for (key_idx=[0:num_keys - 1])
+        key(key_idx);
+}
+
+module assembly() {
+    if (show_case) case();
+    //if (show_keyboard) keyboard();
+}
+
+assembly();
