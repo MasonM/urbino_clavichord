@@ -185,10 +185,12 @@ key_lever_top_y = inner_width - (use_rack_tongue ? rack_th : wall_th * (1/3)) - 
 wrestplank_width = wall_th * 2;
 // Wrestplank height (?)
 wrestplank_height = hitchpin_block_height;
-// Wrestplank position (?)
+// Wrestplank position (?) In this file the case interior spans
+// [0, inner_length] x [0, inner_width] (walls sit outside), so no wall_th
+// offsets here.
 wrestplank_pos = [
-    wall_th + inner_length - wrestplank_width,
-    wall_th,
+    inner_length - wrestplank_width,
+    0,
     inner_bottom_z
 ];
 
@@ -225,7 +227,8 @@ soundboard_height = wall_th / 3;
 soundboard_liner_th = belly_rail_th;
 soundboard_pos = [
     rack_pos.x + rack_width,
-    inner_width + wall_th,
+    // Rear edge sits against the back wall's inner face
+    inner_width,
     // Keep the string (soundboard + bridge + string) just above the tangent
     kb_pos.z + nat_height + tangent_height + tangent_top_string_clearance - (bridge_height + soundboard_height)
 ];
@@ -417,6 +420,101 @@ function key_points(key_idx) =
         key_front_points(key_idx)
     );
 
+/* [Soundboard Supports] */
+
+// The soundboard rests on five vertical support strips: the belly rail
+// under its angled front edge plus a leg under its left edge (one bent
+// piece in monochord.scad, split into two straight strips so each can be
+// laser-cut flat), and liners along its straight front, right, and back
+// edges. Each support has simple tabs on its bottom edge (locking into
+// cutouts in the case bottom) and on its top edge (registering into
+// cutouts in the soundboard), so the whole stack assembles without
+// adhesives: the supports tab into the bottom board, and the soundboard
+// drops onto the top tabs, held down by gravity and string downbearing.
+// The strips also abut the case walls and each other for lateral bracing.
+
+// Height of the belly rail and liners: from the case floor to the
+// underside of the soundboard
+support_height = soundboard_pos.z - inner_bottom_z;
+
+// Positions of the alignment tabs along each support, as fractions of its
+// length
+support_tab_fractions = [1/4, 3/4];
+
+// The belly rail runs diagonally under the soundboard's angled front
+// edge, from the end of the keyboard at the front wall to the rear start
+// of the key taper
+belly_rail_angle = atan2(second_bend_y, soundboard_pos.x - kb_end);
+belly_rail_length = norm([soundboard_pos.x - kb_end, second_bend_y]);
+
+// Support descriptors: [origin, z_rotation, length, thickness]. Each is a
+// vertical strip standing on the case bottom: `origin` is the start of
+// its length axis in plan, rotated counterclockwise by `z_rotation`, with
+// its thickness extending to the right of the length direction.
+supports = [
+    // Belly rail, under the soundboard's angled front edge
+    [[kb_end, 0], belly_rail_angle, belly_rail_length, belly_rail_th],
+    // Belly rail leg, under the soundboard's left edge back to the wall
+    [
+        [soundboard_pos.x, second_bend_y],
+        90,
+        inner_width - second_bend_y,
+        belly_rail_th
+    ],
+    // Front liner, under the soundboard's straight front edge
+    [
+        [kb_end + belly_rail_th, soundboard_liner_th],
+        0,
+        wrestplank_pos.x - soundboard_liner_th - kb_end - belly_rail_th,
+        soundboard_liner_th
+    ],
+    // Right liner, along the wrestplank face
+    [
+        [wrestplank_pos.x - soundboard_liner_th, 0],
+        90,
+        inner_width,
+        soundboard_liner_th
+    ],
+    // Back liner, along the back wall
+    [
+        [soundboard_pos.x + belly_rail_th, inner_width],
+        0,
+        wrestplank_pos.x - soundboard_liner_th - (soundboard_pos.x + belly_rail_th),
+        soundboard_liner_th
+    ],
+];
+
+// Tab hole rectangles ([x, y, w, h]) matching a support's tabs, for
+// cutting into both the case bottom and the soundboard (a support's top
+// and bottom tabs share the same XY footprint). lasercutout cutouts are
+// axis-aligned, so holes for the diagonal belly rail are the bounding box
+// of its rotated tabs (slightly oversized).
+function support_tab_holes(s) =
+    let (
+        origin = s[0], angle = s[1], length = s[2], th = s[3],
+        dir = [cos(angle), sin(angle)],
+        nrm = [sin(angle), -cos(angle)],
+        b = th * (abs(cos(angle)) + abs(sin(angle)))
+    )
+    [
+        for (f = support_tab_fractions)
+        let (c = origin + f*length*dir + (th/2)*nrm)
+        [c.x - b/2, c.y - b/2, b, b]
+    ];
+
+// Tab holes of all supports, cut into the case bottom
+function all_support_tab_holes() = [for (s = supports) each support_tab_holes(s)];
+
+// Only axis-aligned supports carry top tabs into the soundboard: an
+// oversized bounding-box hole for the diagonal belly rail would notch the
+// soundboard's angled edge. The axis-aligned supports register the
+// soundboard in both directions on their own.
+function support_has_top_tabs(s) = s[1] % 90 == 0;
+
+// Holes cut into the soundboard, matching the supports' top tabs
+function soundboard_tab_holes() =
+    [for (s = supports) if (support_has_top_tabs(s)) each support_tab_holes(s)];
+
 if (debug_mode) {
     for (key_idx=[0:num_keys-1]) {
         echo(key_idx=key_idx,
@@ -461,6 +559,8 @@ module case() {
                 [RIGHT, 0, 4],
                 [DOWN, 1, 15]
             ],
+            // Holes for the bottom tabs of the belly rail and liners
+            cutouts=all_support_tab_holes(),
         );
 
         // Left wall
@@ -553,10 +653,65 @@ module keyboard() {
         key(key_idx);
 }
 
+// A vertical support strip (belly rail or soundboard liner), with tabs on
+// its bottom edge into the case bottom and (if axis-aligned) on its top
+// edge into the soundboard. See the [Soundboard Supports] section.
+module support(s) {
+    length = s[2];
+    color(col_wood_med)
+    translate([s[0].x, s[0].y, inner_bottom_z])
+        rotate([0, 0, s[1]])
+        rotate([90, 0, 0])
+        lasercutoutSquare(
+            thickness=s[3],
+            x=length,
+            y=support_height,
+            simple_tabs=[
+                for (f = support_tab_fractions) each concat(
+                    [[DOWN, f*length, 0]],
+                    support_has_top_tabs(s) ? [[UP, f*length, support_height]] : []
+                )
+            ],
+        );
+}
+
+module belly_rail() {
+    support(supports[0]);
+    support(supports[1]);
+}
+
+module soundboard_liner() {
+    for (i = [2:len(supports) - 1])
+        support(supports[i]);
+}
+
+module soundboard() {
+    color(col_wood_light)
+    translate([0, 0, soundboard_pos.z])
+        lasercutout(
+            thickness=soundboard_height,
+            points=[
+                [soundboard_pos.x, soundboard_pos.y],
+                [soundboard_pos.x + soundboard_width, soundboard_pos.y],
+                [soundboard_pos.x + soundboard_width, 0],
+                [kb_end, 0],
+                [soundboard_pos.x, second_bend_y],
+            ],
+            circles_remove=[
+                [mousehole_radius, mousehole_pos.x, mousehole_pos.y]
+            ],
+            // Registers onto the top tabs of the liners
+            cutouts=soundboard_tab_holes(),
+        );
+}
+
 module assembly() {
     if (show_case) case();
     if (show_rack && use_rack_tongue) rack();
     if (show_keyboard) keyboard();
+    if (show_belly_rail) belly_rail();
+    if (show_soundboard_liner) soundboard_liner();
+    if (show_soundboard) soundboard();
 }
 
 assembly();
