@@ -135,6 +135,7 @@ tangent_top_width = tangent_height / 2;
 tangent_bottom_width = tangent_top_width / 4;
 tangent_depth = wall_th / 10;
 tangent_top_string_clearance = wall_th / 10;
+tangent_mortise_radius = 3 / 2;
 
 /* [Hitchpin Block] */
 
@@ -175,7 +176,7 @@ second_bend_y = inner_width * (2/5);
 key_lever_side_clearance = slot_width / 6;
 rack_tongue_width = slot_width * (2/3);
 rack_tongue_depth = rack_th * (2/3);
-use_rack_tongue = false;
+use_rack_tongue = true;
 key_lever_top_y = inner_width + wall_th - (use_rack_tongue ? rack_th : wall_th * (1/3)) - key_lever_side_clearance;
 
 /* [Wrestplank] */
@@ -355,6 +356,67 @@ function key_lever_bottom_width(key_idx) =
         ? accidental_width
         : (is_accidental(key_idx - 1) ? accidental_width - key_clearance : key_width) - key_clearance;
 
+// Center of the balance pin hole in a key lever
+function balance_pin_pos(key_idx) = [
+    (key_lever_x(key_idx) + key_lever_x(key_idx+1)) / 2 - key_clearance,
+    wall_th / 2
+];
+
+// Outline of the key front (the touch surface outside the case), traced
+// right-to-left along the bottom so it closes the key lever outline.
+// A natural following an accidental is notched at its front-left corner to
+// admit the accidental's front (with key_clearance all around).
+function key_front_points(key_idx) =
+    let (
+        x0 = key_lever_x(key_idx),
+        x1 = x0 + key_lever_bottom_width(key_idx),
+        front_y = kb_pos.y + (is_accidental(key_idx) ? accidental_depth : 0),
+        notch_y = kb_pos.y + accidental_depth - key_clearance
+    )
+    !is_accidental(key_idx) && is_accidental(key_idx - 1)
+        ? [
+            [x1, front_y],
+            [key_x(key_idx), front_y],
+            [key_x(key_idx), notch_y],
+            [x0, notch_y],
+        ]
+        : [
+            [x1, front_y],
+            [x0, front_y],
+        ];
+
+// Combined outline of a key: the lever (inside the case) unioned with the
+// key front, as a single polygon. Ported from key_lever_2d()/key_front_2d()
+// in monochord.scad.
+function key_points(key_idx) =
+    let (
+        top_width = key_lever_top_width(key_idx),
+        bottom_width = key_lever_bottom_width(key_idx),
+        first_bend_y = wall_th,
+        top = [slot_x(key_idx) - top_width/2, key_lever_top_y],
+        bottom_x = key_lever_x(key_idx),
+        top_rack_tongue_x = slot_x(key_idx) - rack_tongue_width / 2,
+        bottom_rack_tongue_y = top.y + (rack_tongue_depth * (use_rack_tongue ? 1 : -1))
+    )
+    concat(
+        [
+            [bottom_x, first_bend_y],
+            [top.x, second_bend_y],
+            top,
+
+            // Rack tongue or slot cutout, depending on use_rack_tongue
+            [top_rack_tongue_x, top.y],
+            [top_rack_tongue_x, bottom_rack_tongue_y],
+            [top_rack_tongue_x + rack_tongue_width, bottom_rack_tongue_y],
+            [top_rack_tongue_x + rack_tongue_width, top.y],
+
+            [top.x + top_width, top.y],
+            [top.x + top_width, second_bend_y],
+            [bottom_x + bottom_width, first_bend_y],
+        ],
+        key_front_points(key_idx)
+    );
+
 if (debug_mode) {
     for (key_idx=[0:num_keys-1]) {
         echo(key_idx=key_idx,
@@ -445,8 +507,24 @@ module case() {
 }
 
 module key(key_idx) {
-    key_front_3d(key_idx);
-    key_lever_3d(key_idx);
+    color(col_natural)
+    translate([0, 0, kb_pos.z])
+        lasercutout(
+            thickness=nat_height,
+            points=key_points(key_idx),
+            circles_remove=[
+                [
+                    balance_pin_radius * (3/2),
+                    balance_pin_pos(key_idx).x,
+                    balance_pin_pos(key_idx).y
+                ],
+                [
+                    tangent_mortise_radius,
+                    tangent_x(key_idx) - tangent_depth / 2,
+                    string_pos.y
+                ],
+            ]
+        );
 }
 
 module keyboard() {
@@ -456,7 +534,7 @@ module keyboard() {
 
 module assembly() {
     if (show_case) case();
-    //if (show_keyboard) keyboard();
+    if (show_keyboard) keyboard();
 }
 
 assembly();
