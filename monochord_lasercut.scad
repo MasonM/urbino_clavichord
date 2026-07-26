@@ -57,7 +57,7 @@ bridge_x = inner_length * (6/7);
 
 upper_bottom_board_th = inner_width / 6;
 lower_bottom_board_th = wall_th;
-inner_bottom_z = lower_bottom_board_th + upper_bottom_board_th;
+inner_bottom_z = lower_bottom_board_th/*+ upper_bottom_board_th*/;
 
 /* [Keyboard] */
 
@@ -159,8 +159,8 @@ rack_height = hitchpin_block_height;
 // Rack starting position (XYZ) (?)
 rack_pos = [
     wall_th + hitchpin_block_th,
-    wall_th + inner_width - rack_th,
-    inner_bottom_z
+    inner_width - rack_th,
+    kb_pos.z
 ];
 // Rack width (?)
 rack_width = (slot_x(num_keys - 1) - rack_pos.x) + slot_width * 2;
@@ -177,7 +177,7 @@ key_lever_side_clearance = slot_width / 6;
 rack_tongue_width = slot_width * (2/3);
 rack_tongue_depth = rack_th * (2/3);
 use_rack_tongue = true;
-key_lever_top_y = inner_width + wall_th - (use_rack_tongue ? rack_th : wall_th * (1/3)) - key_lever_side_clearance;
+key_lever_top_y = inner_width - (use_rack_tongue ? rack_th : wall_th * (1/3)) - key_lever_side_clearance;
 
 /* [Wrestplank] */
 
@@ -506,6 +506,27 @@ module case() {
     }
 }
 
+module rack() {
+    color(col_wood_dark)
+    translate(rack_pos)
+        lasercutoutSquare(
+            thickness=wall_th,
+            x=rack_width,
+            y=rack_th,
+            cutouts=[
+                for (key_idx=[0:num_keys - 1]) [
+                    slot_x(key_idx) - slot_width / 2 - rack_pos.x,
+                    0,
+                    slot_width,
+                    rack_tongue_depth,
+                ]
+            ],
+            finger_joints=[
+                [UP, 1, 20],
+            ],
+        );
+}
+
 module key(key_idx) {
     color(col_natural)
     translate([0, 0, kb_pos.z])
@@ -534,6 +555,7 @@ module keyboard() {
 
 module assembly() {
     if (show_case) case();
+    if (show_rack && use_rack_tongue) rack();
     if (show_keyboard) keyboard();
 }
 
