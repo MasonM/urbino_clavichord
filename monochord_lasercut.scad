@@ -362,7 +362,7 @@ function key_lever_bottom_width(key_idx) =
 // Center of the balance pin hole in a key lever
 function balance_pin_pos(key_idx) = [
     (key_lever_x(key_idx) + key_lever_x(key_idx+1)) / 2 - key_clearance,
-    wall_th / 2
+    wall_th
 ];
 
 // Outline of the key front (the touch surface outside the case), traced
@@ -395,7 +395,7 @@ function key_points(key_idx) =
     let (
         top_width = key_lever_top_width(key_idx),
         bottom_width = key_lever_bottom_width(key_idx),
-        first_bend_y = wall_th,
+        first_bend_y = wall_th*2,
         top = [slot_x(key_idx) - top_width/2, key_lever_top_y],
         bottom_x = key_lever_x(key_idx),
         top_rack_tongue_x = slot_x(key_idx) - rack_tongue_width / 2,
@@ -638,7 +638,7 @@ module key(key_idx) {
             points=key_points(key_idx),
             flat_adjust=[
                 key_lever_x(key_idx) - slot_x(key_idx),
-                key_idx == numKeys - 1 ? 0 : -(key_lever_top_y + rack_tongue_depth + wall_th * 3)
+                key_idx == num_keys - 1 ? 0 : -(key_lever_top_y + rack_tongue_depth + wall_th * 3)
             ],
             circles_remove=[
                 [
