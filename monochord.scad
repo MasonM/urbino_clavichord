@@ -591,8 +591,8 @@ module tangent(key_idx) {
 }
 
 module tangent_mortise_2d(key_idx) {
-    translate([tangent_x(key_idx) - tangent_bottom_width / 4, string_pos.y, 0])
-        circle(r=tangent_bottom_width / 2);
+    translate([tangent_x(key_idx) - tangent_depth / 2, string_pos.y, 0])
+        circle(r=from_mm(3)/2);
 }
 
 module key_lever_2d(key_idx) {
