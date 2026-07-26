@@ -13,3 +13,6 @@ render/clavichord_action_diagram.glb: clavichord_action_diagram.scad
 	npx scad-convert clavichord_action_diagram.scad render/clavichord_action_diagram.glb
 	npx gltf-optimizer -i render/clavichord_action_diagram.glb -o . --simplify.enabled=false
 	mv clavichord_action_diagram_optimized.glb render/clavichord_action_diagram.glb
+render/monochord_lasercut_flat.svg: monochord_lasercut.scad
+	python lasercut/convert-2d.py -k -l ../lasercut/lasercut.scad monochord_lasercut.scad render/monochord_lasercut_flat.svg
+
