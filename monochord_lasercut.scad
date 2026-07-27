@@ -11,6 +11,7 @@ show_keyboard = true;
 show_key_labels = true;
 show_balance_pins = true;
 show_tangents = true;
+show_balance_rail = true;
 
 show_tuning_pin = true;
 show_hitchpin = true;
@@ -158,7 +159,7 @@ rack_th = wall_th * 2;
 rack_height = hitchpin_block_height;
 // Rack starting position (XYZ) (?)
 rack_pos = [
-    wall_th + hitchpin_block_th,
+    wall_th,
     inner_width - rack_th,
     kb_pos.z
 ];
@@ -178,6 +179,7 @@ rack_tongue_width = slot_width * (2/3);
 rack_tongue_depth = rack_th * (2/3);
 use_rack_tongue = true;
 key_lever_top_y = inner_width - (use_rack_tongue ? rack_th : wall_th * (1/3)) - key_lever_side_clearance;
+balance_rail_fingerjoints = 10;
 
 /* [Wrestplank] */
 
@@ -362,7 +364,7 @@ function key_lever_bottom_width(key_idx) =
 // Center of the balance pin hole in a key lever
 function balance_pin_pos(key_idx) = [
     (key_lever_x(key_idx) + key_lever_x(key_idx+1)) / 2 - key_clearance,
-    wall_th
+    wall_th / 2
 ];
 
 // Outline of the key front (the touch surface outside the case), traced
@@ -395,7 +397,7 @@ function key_points(key_idx) =
     let (
         top_width = key_lever_top_width(key_idx),
         bottom_width = key_lever_bottom_width(key_idx),
-        first_bend_y = wall_th*2,
+        first_bend_y = wall_th,
         top = [slot_x(key_idx) - top_width/2, key_lever_top_y],
         bottom_x = key_lever_x(key_idx),
         top_rack_tongue_x = slot_x(key_idx) - rack_tongue_width / 2,
@@ -577,24 +579,34 @@ module case() {
         );
 
         // Front wall
-        points = [
-            [0,0],
-            [inner_length, 0],
-            [inner_length, height],
-            [kb_pos.x + kb_length, height],
-            [kb_pos.x + kb_length, kb_pos.z],
-            [kb_pos.x, kb_pos.z],
-            [kb_pos.x, height],
-            [0, height],
-            [0, 0],
-        ];
+        keywell_y = kb_pos.z - nat_height;
+        balance_rail_cutout_w = kb_length / balance_rail_fingerjoints / 2;
+
         translate([0, 0, wall_th]) rotate([90, 0, 0]) lasercutout(
             thickness=wall_th,
-            points = points,
+            points = [
+                [0,0],
+                [inner_length, 0],
+                [inner_length, height],
+                [kb_pos.x + kb_length, height],
+                [kb_pos.x + kb_length, keywell_y],
+                [kb_pos.x, kb_pos.z - nat_height],
+                [kb_pos.x, height],
+                [0, height],
+                [0, 0],
+            ],
+            cutouts = [
+                for (i=[0:balance_rail_fingerjoints - 1]) [
+                    kb_pos.x + (balance_rail_cutout_w * i * 2),
+                    keywell_y - wall_th,
+                    balance_rail_cutout_w,
+                    wall_th
+                ],
+            ],
             finger_joints=[
                 [LEFT, 0, 4],
                 [RIGHT, 1, 4],
-                [DOWN, 0, 15]
+                [DOWN, 0, 15],
             ],
         );
 
@@ -607,6 +619,38 @@ module case() {
             side_wall([-wall_th*3, wall_th*3]);
 
     }
+}
+
+module hitchpin_block() {
+    color(col_wood_dark)
+    rotate([0, -90, 0]) translate([
+        wrestplank_pos.z,
+        0,
+        -wall_th,
+    ])
+        lasercutoutSquare(
+            thickness=wall_th,
+            y=inner_width,
+            x=hitchpin_block_height,
+            finger_joints=[
+                [LEFT, 1, 4],
+                [UP, 0, 2],
+                [DOWN, 1, 2],
+            ],
+        );
+}
+
+module balance_rail() {
+    color(col_wood_dark)
+    translate([kb_pos.x, 0, kb_pos.z - nat_height])
+        #lasercutoutSquare(
+            thickness=wall_th,
+            x=kb_length,
+            y=20,
+            finger_joints=[
+                [DOWN, 0, balance_rail_fingerjoints],
+            ],
+        );
 }
 
 module rack() {
@@ -715,6 +759,8 @@ module soundboard() {
 module assembly() {
     if (show_case) case();
     if (show_rack && use_rack_tongue) rack();
+    if (show_balance_rail) balance_rail();
+    if (show_hitchpin_block) hitchpin_block();
     if (show_belly_rail) belly_rail();
     if (show_soundboard_liner) soundboard_liner();
     if (show_soundboard) soundboard();
