@@ -788,7 +788,7 @@ module rack() {
             ],
             finger_joints=[
                 [LEFT, 1, 1],
-                [UP, 0, 20],
+                [UP, 0, 10],
             ],
         );
 }
@@ -877,10 +877,10 @@ module soundboard() {
 
 module assembly() {
     if (show_case) case();
-    if (show_rack && use_rack_tongue) rack();
-    if (show_balance_rail) balance_rail();
     if (show_hitchpin_block) hitchpin_block();
     if (show_wrestplank) wrestplank();
+    if (show_rack && use_rack_tongue) rack();
+    if (show_balance_rail) balance_rail();
     if (show_belly_rail) belly_rail();
     if (show_soundboard_liner) soundboard_liner();
     if (show_soundboard) soundboard();
