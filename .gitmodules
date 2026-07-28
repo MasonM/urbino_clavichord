@@ -3,4 +3,4 @@
 	url = https://github.com/BelfrySCAD/BOSL2
 [submodule "lasercut"]
 	path = lasercut
-	url = git@github.com:mmuman/lasercut.git
+	url = git@github.com:MasonM/lasercut.git

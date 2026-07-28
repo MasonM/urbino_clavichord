@@ -505,7 +505,10 @@ function support_tab_holes(s) =
     ];
 
 // Tab holes of all supports, cut into the case bottom
-function all_support_tab_holes() = [for (s = supports) each support_tab_holes(s)];
+function all_support_tab_holes() = [
+    for (s = supports) each support_tab_holes(s),
+    [0, inner_width-wall_th, wall_th, wall_th*2],
+];
 
 // Only axis-aligned supports carry top tabs into the soundboard: an
 // oversized bounding-box hole for the diagonal belly rail would notch the
@@ -567,16 +570,17 @@ module case() {
         );
 
         // Back wall
-        translate([0, inner_width + wall_th, wall_th]) rotate([90, 0, 0]) lasercutoutSquare(
-            thickness=wall_th,
-            x=inner_length,
-            y=height,
-            finger_joints=[
-                [LEFT, 1, 4],
-                [RIGHT, 0, 4],
-                [DOWN, 1, 15]
-            ],
-        );
+        translate([0, inner_width + wall_th, wall_th]) rotate([90, 0, 0])
+            lasercutoutSquare(
+                thickness=wall_th,
+                x=inner_length,
+                y=height,
+                finger_joints=[
+                    [LEFT, 1, 4],
+                    [RIGHT, 0, 4],
+                    [DOWN, 1, 15]
+                ],
+            );
 
         // Front wall
         keywell_y = kb_pos.z - nat_height;
@@ -602,6 +606,18 @@ module case() {
                     balance_rail_cutout_w,
                     wall_th
                 ],
+                [
+                    0,
+                    0,
+                    wall_th,
+                    height / 8,
+                ],
+                [
+                    0,
+                    height / 4,
+                    wall_th,
+                    height / 8,
+                ]
             ],
             finger_joints=[
                 [LEFT, 0, 4],
@@ -623,7 +639,8 @@ module case() {
 
 module hitchpin_block() {
     color(col_wood_dark)
-    rotate([0, -90, 0]) translate([
+    rotate([0, -90, 0])
+    translate([
         wrestplank_pos.z,
         0,
         -wall_th,
@@ -632,21 +649,72 @@ module hitchpin_block() {
             thickness=wall_th,
             y=inner_width,
             x=hitchpin_block_height,
+            cutouts = [
+                // Rack finger joint cutout
+                [
+                    height - rack_th*2,
+                    inner_width - rack_th,
+                    rack_th,
+                    wall_th,
+                ],
+                // Balance rail joint cutout
+                [
+                    height - rack_th*2,
+                    wall_th,
+                    wall_th*2,
+                    wall_th,
+                ],
+            ],
+            simple_tabs = [
+                // Right tabs connecting to front panel
+                [
+                    RIGHT,
+                    0,
+                    -wall_th/2,
+                    [wall_th, height / 8, wall_th],
+                ],
+                [
+                    RIGHT,
+                    height / 4,
+                    -wall_th/2,
+                    [wall_th, height / 8, wall_th],
+                ],
+                // Left tabs connecting to back panel
+                [
+                    RIGHT,
+                    -wall_th,
+                    inner_width + wall_th / 2,
+                ],
+                [
+                    RIGHT,
+                    height / 8,
+                    inner_width + wall_th / 2,
+                    [wall_th, height / 8, wall_th],
+                ],
+            ],
             finger_joints=[
-                [LEFT, 1, 4],
-                [UP, 0, 2],
-                [DOWN, 1, 2],
+                [LEFT, 0, 4],
             ],
         );
 }
 
 module balance_rail() {
-    color(col_wood_dark)
+    color(col_wood_light)
     translate([kb_pos.x, 0, kb_pos.z - nat_height])
-        #lasercutoutSquare(
+        lasercutoutSquare(
             thickness=wall_th,
             x=kb_length,
-            y=20,
+            y=wall_th*2,
+            // Hacky workaround so we have a single finger joint on the left side
+            no_joint_points = [
+                [0,0],
+                [-kb_pos.x + wall_th,0],
+                [-kb_pos.x + wall_th, wall_th],
+                [-kb_pos.x, wall_th],
+                [-kb_pos.x, wall_th*2],
+                [0,wall_th*2],
+                [0,0],
+            ],
             finger_joints=[
                 [DOWN, 0, balance_rail_fingerjoints],
             ],
@@ -669,7 +737,8 @@ module rack() {
                 ]
             ],
             finger_joints=[
-                [UP, 1, 20],
+                [LEFT, 1, 1],
+                [UP, 0, 20],
             ],
         );
 }
