@@ -215,8 +215,7 @@ backrail_pos = [
 
 /* [Bridge] */
 
-bridge_width = wall_th * 4;
-// Cut from 3/4" stock in US mode; historically ~20 mm on a 69 mm-tall case
+bridge_width = 98;
 bridge_height = height * (2/7);
 bridge_top_depth = wall_th * (2/14);
 bridge_bottom_depth = wall_th;
@@ -582,7 +581,7 @@ module case() {
                     [ 0, -wall_th, wall_th, height / 8 ],
                     [ 0, height / 8, wall_th, height / 8 ],
                     // Deepen finger joints on right side for wrestplank
-                    [ inner_length - wall_th, -wall_th, wall_th, height / 7 ],
+                    [ inner_length - wall_th, -wall_th, wall_th, height / 8 ],
                     [ inner_length - wall_th, height / 8, wall_th, height / 8 ],
                 ],
                 finger_joints=[
@@ -689,6 +688,7 @@ module hitchpin_block() {
                     RIGHT,
                     -wall_th,
                     inner_width + wall_th / 2,
+                    [wall_th, height / 8, wall_th],
                 ],
                 [
                     RIGHT,
@@ -704,7 +704,7 @@ module hitchpin_block() {
 }
 
 module wrestplank() {
-    color(col_wood_dark)
+    color(col_wood_light)
     translate([
         wrestplank_pos.x + wrestplank_width,
         0,
@@ -734,6 +734,7 @@ module wrestplank() {
                     RIGHT,
                     -wall_th,
                     inner_width + wall_th / 2,
+                    [wall_th, height / 8, wall_th],
                 ],
                 [
                     RIGHT,
@@ -896,6 +897,28 @@ module soundboard() {
         );
 }
 
+module bridge() {
+    color(col_wood_dark)
+    translate([
+        bridge_pos.x,
+        bridge_pos.y,
+        bridge_pos.z
+    ])
+        rotate([90, 0, 90])
+        lasercutoutSquare(
+            thickness=wall_th,
+            x=bridge_width,
+            y=bridge_height,
+            circles_remove=[
+                [bridge_height, -12, 5],
+                [9, 30, 0],
+                [10, 45, 7],
+                [9, 60, 0],
+                [bridge_height, bridge_width+5, 5]
+            ]
+        );
+}
+
 module assembly() {
     if (show_case) case();
     if (show_hitchpin_block) hitchpin_block();
@@ -906,6 +929,7 @@ module assembly() {
     if (show_belly_rail) belly_rail();
     if (show_soundboard_liner) soundboard_liner();
     if (show_soundboard) soundboard();
+    if (show_bridge) bridge();
     if (show_keyboard) keyboard();
 }
 
