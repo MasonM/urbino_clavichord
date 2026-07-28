@@ -8,19 +8,21 @@ show_rack = true;
 show_backrail = true;
 
 show_keyboard = true;
-show_key_labels = true;
-show_balance_pins = true;
-show_tangents = true;
 show_balance_rail = true;
-
-show_tuning_pin = true;
-show_hitchpin = true;
-show_string = true;
 
 show_bridge = true;
 show_soundboard = true;
 show_soundboard_liner = true;
 show_belly_rail = true;
+
+/* [Visibility Toggles (nonfunctional)] */
+
+show_balance_pins = true;
+show_key_labels = true;
+show_tangents = true;
+show_tuning_pin = true;
+show_hitchpin = true;
+show_string = true;
 
 /* [Main Dimensions] */
 // "The internal length used for our reconstruction is 644 mm (the external
@@ -575,6 +577,14 @@ module case() {
                 thickness=wall_th,
                 x=inner_length,
                 y=height,
+                cutouts = [
+                    // Deepen finger joints on left side for hitchpin block
+                    [ 0, -wall_th, wall_th, height / 8 ],
+                    [ 0, height / 8, wall_th, height / 8 ],
+                    // Deepen finger joints on right side for wrestplank
+                    [ inner_length - wall_th, -wall_th, wall_th, height / 7 ],
+                    [ inner_length - wall_th, height / 8, wall_th, height / 8 ],
+                ],
                 finger_joints=[
                     [LEFT, 1, 4],
                     [RIGHT, 0, 4],
@@ -600,24 +610,19 @@ module case() {
                 [0, 0],
             ],
             cutouts = [
+                // Cutouts for the balance rail finger joints
                 for (i=[0:balance_rail_fingerjoints - 1]) [
                     kb_pos.x + (balance_rail_cutout_w * i * 2),
                     keywell_y - wall_th,
                     balance_rail_cutout_w,
                     wall_th
                 ],
-                [
-                    0,
-                    0,
-                    wall_th,
-                    height / 8,
-                ],
-                [
-                    0,
-                    height / 4,
-                    wall_th,
-                    height / 8,
-                ]
+                // Deepen finger joints on left side for hitchpin block
+                [ 0, 0, wall_th, height / 8 ],
+                [ 0, height / 4, wall_th, height / 8 ],
+                // Deepen finger joints on right side for wrestplank
+                [ inner_length - wall_th, 0, wall_th, height / 8 ],
+                [ inner_length - wall_th, height / 4, wall_th, height / 8 ],
             ],
             finger_joints=[
                 [LEFT, 0, 4],
