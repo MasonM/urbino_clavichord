@@ -141,7 +141,7 @@ tangent_mortise_radius = 3 / 2;
 /* [Hitchpin Block] */
 
 // Hitchpin block thickness (?)
-hitchpin_block_th = wall_th * 2;
+hitchpin_block_th = wall_th;
 // Hitchpin block height (?)
 hitchpin_block_height = (height - inner_bottom_z) * (2/3);
 // Hitchpin height (?)
@@ -184,7 +184,7 @@ balance_rail_fingerjoints = 10;
 /* [Wrestplank] */
 
 // Wrestplank width (?)
-wrestplank_width = wall_th * 2;
+wrestplank_width = wall_th;
 // Wrestplank height (?)
 wrestplank_height = hitchpin_block_height;
 // Wrestplank position (?) In this file the case interior spans
@@ -643,10 +643,10 @@ module hitchpin_block() {
     translate([
         wrestplank_pos.z,
         0,
-        -wall_th,
+        -hitchpin_block_th,
     ])
         lasercutoutSquare(
-            thickness=wall_th,
+            thickness=hitchpin_block_th,
             y=inner_width,
             x=hitchpin_block_height,
             cutouts = [
@@ -659,12 +659,57 @@ module hitchpin_block() {
                 ],
                 // Balance rail joint cutout
                 [
-                    height - rack_th*2,
+                    height - wall_th*5,
                     wall_th,
-                    wall_th*2,
+                    wall_th*4,
                     wall_th,
                 ],
             ],
+            simple_tabs = [
+                // Right tabs connecting to front panel
+                [
+                    RIGHT,
+                    0,
+                    -wall_th/2,
+                    [wall_th, height / 8, wall_th],
+                ],
+                [
+                    RIGHT,
+                    height / 4,
+                    -wall_th/2,
+                    [wall_th, height / 8, wall_th],
+                ],
+                // Left tabs connecting to back panel
+                [
+                    RIGHT,
+                    -wall_th,
+                    inner_width + wall_th / 2,
+                ],
+                [
+                    RIGHT,
+                    height / 8,
+                    inner_width + wall_th / 2,
+                    [wall_th, height / 8, wall_th],
+                ],
+            ],
+            finger_joints=[
+                [LEFT, 0, 4],
+            ],
+        );
+}
+
+module wrestplank() {
+    color(col_wood_dark)
+    translate([
+        wrestplank_pos.x + wrestplank_width,
+        0,
+        wrestplank_pos.z,
+    ])
+        rotate([0, -90, 0])
+        lasercutoutSquare(
+            thickness=wrestplank_width,
+            y=inner_width,
+            x=hitchpin_block_height,
             simple_tabs = [
                 // Right tabs connecting to front panel
                 [
@@ -830,6 +875,7 @@ module assembly() {
     if (show_rack && use_rack_tongue) rack();
     if (show_balance_rail) balance_rail();
     if (show_hitchpin_block) hitchpin_block();
+    if (show_wrestplank) wrestplank();
     if (show_belly_rail) belly_rail();
     if (show_soundboard_liner) soundboard_liner();
     if (show_soundboard) soundboard();
