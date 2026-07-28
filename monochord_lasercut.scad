@@ -43,7 +43,7 @@ inner_length = 644;
 
 inner_width = inner_length * (3/14);
 height = inner_width / 2;
-wall_th = 10;
+wall_th = 6;
 
 // "Likewise, the starting and ending points for measurement, the bridge, and
 // the sound hole were placed as follows: the starting point of measurement and
@@ -203,14 +203,14 @@ belly_rail_th = wall_th / 2;
 
 /* [Backrail] */
 
-// Backrail thickness (?)
-backrail_th = wall_th * 2;
+// Backrail width (?)
+backrail_width = wall_th * 4;
 // Backrail height
 backrail_height = kb_pos.z - inner_bottom_z;
 backrail_pos = [
     rack_pos.x,
-    wall_th + inner_width - (use_rack_tongue ? rack_th : 0) - backrail_th,
-    wrestplank_pos.z
+    inner_width - backrail_width,
+    rack_pos.z - wall_th
 ];
 
 /* [Bridge] */
@@ -226,7 +226,7 @@ bridge_bottom_depth = wall_th;
 // Soundboard depth (?)
 soundboard_depth = inner_width;
 // Soundboard height (?)
-soundboard_height = wall_th / 3;
+soundboard_height = 3;
 // Width of liners for the soundboard to rest on
 soundboard_liner_th = belly_rail_th;
 soundboard_pos = [
@@ -643,7 +643,7 @@ module case() {
 }
 
 module hitchpin_block() {
-    color(col_wood_dark)
+    color(col_wood_light)
     rotate([0, -90, 0])
     translate([
         wrestplank_pos.z,
@@ -657,9 +657,9 @@ module hitchpin_block() {
             cutouts = [
                 // Rack finger joint cutout
                 [
-                    height - rack_th*2,
+                    height - key_depth - wall_th,
                     inner_width - rack_th,
-                    rack_th,
+                    key_depth + wall_th,
                     wall_th,
                 ],
                 // Balance rail joint cutout
@@ -749,7 +749,7 @@ module wrestplank() {
 }
 
 module balance_rail() {
-    color(col_wood_light)
+    color(col_wood_med)
     translate([kb_pos.x, 0, kb_pos.z - nat_height])
         lasercutoutSquare(
             thickness=wall_th,
@@ -788,6 +788,27 @@ module rack() {
             ],
             finger_joints=[
                 [LEFT, 1, 1],
+                [UP, 0, 10],
+            ],
+        );
+}
+
+module backrail() {
+    color(col_wood_dark)
+    translate(backrail_pos)
+        lasercutoutSquare(
+            thickness=wall_th,
+            x=rack_width,
+            y=backrail_width,
+            simple_tabs = [
+                // Right tabs connecting to front panel
+                [
+                    LEFT,
+                    0,
+                    backrail_width - (rack_th/2) - wall_th/2,
+                ],
+            ],
+            finger_joints=[
                 [UP, 0, 10],
             ],
         );
@@ -880,6 +901,7 @@ module assembly() {
     if (show_hitchpin_block) hitchpin_block();
     if (show_wrestplank) wrestplank();
     if (show_rack && use_rack_tongue) rack();
+    if (show_backrail) backrail();
     if (show_balance_rail) balance_rail();
     if (show_belly_rail) belly_rail();
     if (show_soundboard_liner) soundboard_liner();
