@@ -657,14 +657,14 @@ module hitchpin_block() {
             cutouts = [
                 // Rack finger joint cutout
                 [
-                    height - key_depth - wall_th,
+                    backrail_pos.z - wall_th,
                     inner_width - rack_th,
                     key_depth + wall_th,
                     wall_th,
                 ],
                 // Balance rail joint cutout
                 [
-                    height - wall_th*5,
+                    kb_pos.z - nat_height - wall_th,
                     wall_th,
                     wall_th*4,
                     wall_th,
