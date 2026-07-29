@@ -366,7 +366,7 @@ function key_lever_bottom_width(key_idx) =
 // Center of the balance pin hole in a key lever
 function balance_pin_pos(key_idx) = [
     (key_lever_x(key_idx) + key_lever_x(key_idx+1)) / 2 - key_clearance,
-    wall_th / 2
+    wall_th
 ];
 
 // Outline of the key front (the touch surface outside the case), traced
@@ -766,6 +766,13 @@ module balance_rail() {
                 [-kb_pos.x, wall_th*2],
                 [0,wall_th*2],
                 [0,0],
+            ],
+            circles_remove=[
+                for (key_idx=[0:num_keys - 1]) [
+                    balance_pin_radius * (3/2),
+                    balance_pin_pos(key_idx).x - kb_pos.x,
+                    balance_pin_pos(key_idx).y
+                ],
             ],
             finger_joints=[
                 [DOWN, 0, balance_rail_fingerjoints],
