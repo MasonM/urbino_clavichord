@@ -235,6 +235,7 @@ soundboard_pos = [
     // Keep the string (soundboard + bridge + string) just above the tangent
     kb_pos.z + nat_height + tangent_height + tangent_top_string_clearance - (bridge_height + soundboard_height)
 ];
+soundboard_bottom_left_x = kb_end + 8;
 // Soundboard width (?)
 soundboard_width = wrestplank_pos.x - soundboard_pos.x;
 
@@ -279,7 +280,7 @@ mousehole_radius = height * (3/14);
 // rotundum pro resonantia) is at 506 mm (11/14 of the length)."
 mousehole_pos = [
     (inner_length * (11/14)) + mousehole_radius,
-    bridge_pos.y + mousehole_radius,
+    bridge_pos.y + (bridge_width) / 2,
     0
 ];
 
@@ -447,8 +448,8 @@ support_tab_fractions = [1/4, 3/4];
 // The belly rail runs diagonally under the soundboard's angled front
 // edge, from the end of the keyboard at the front wall to the rear start
 // of the key taper
-belly_rail_angle = atan2(second_bend_y, soundboard_pos.x - kb_end);
-belly_rail_length = norm([soundboard_pos.x - kb_end, second_bend_y]);
+belly_rail_angle = atan2(second_bend_y, soundboard_pos.x - soundboard_bottom_left_x);
+belly_rail_length = norm([soundboard_pos.x - soundboard_bottom_left_x, second_bend_y]);
 
 // Support descriptors: [origin, z_rotation, length, thickness]. Each is a
 // vertical strip standing on the case bottom: `origin` is the start of
@@ -456,7 +457,7 @@ belly_rail_length = norm([soundboard_pos.x - kb_end, second_bend_y]);
 // its thickness extending to the right of the length direction.
 supports = [
     // Belly rail, under the soundboard's angled front edge
-    [[kb_end, 0], belly_rail_angle, belly_rail_length, belly_rail_th],
+    [[soundboard_bottom_left_x, 0], belly_rail_angle, belly_rail_length, belly_rail_th],
     // Belly rail leg, under the soundboard's left edge back to the wall
     [
         [soundboard_pos.x, second_bend_y],
@@ -466,9 +467,9 @@ supports = [
     ],
     // Front liner, under the soundboard's straight front edge
     [
-        [kb_end + belly_rail_th, soundboard_liner_th],
+        [soundboard_bottom_left_x + belly_rail_th, soundboard_liner_th],
         0,
-        wrestplank_pos.x - soundboard_liner_th - kb_end - belly_rail_th,
+        wrestplank_pos.x - soundboard_liner_th - soundboard_bottom_left_x - belly_rail_th,
         soundboard_liner_th
     ],
     // Right liner, along the wrestplank face
@@ -886,7 +887,7 @@ module soundboard() {
                 [soundboard_pos.x, soundboard_pos.y],
                 [soundboard_pos.x + soundboard_width, soundboard_pos.y],
                 [soundboard_pos.x + soundboard_width, 0],
-                [kb_end, 0],
+                [soundboard_bottom_left_x, 0],
                 [soundboard_pos.x, second_bend_y],
             ],
             circles_remove=[
@@ -912,7 +913,7 @@ module bridge() {
             circles_remove=[
                 [bridge_height, -12, 5],
                 [9, 30, 0],
-                [10, 45, 7],
+                [9.5, 45, 7],
                 [9, 60, 0],
                 [bridge_height, bridge_width+5, 5]
             ]
@@ -927,7 +928,7 @@ module assembly() {
     if (show_backrail) backrail();
     if (show_balance_rail) balance_rail();
     if (show_belly_rail) belly_rail();
-    if (show_soundboard_liner) soundboard_liner();
+    //if (show_soundboard_liner) soundboard_liner();
     if (show_soundboard) soundboard();
     if (show_bridge) bridge();
     if (show_keyboard) keyboard();
