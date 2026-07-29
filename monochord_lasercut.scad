@@ -767,6 +767,9 @@ module balance_rail() {
                 [0,wall_th*2],
                 [0,0],
             ],
+            slits = [
+                [51, kb_length, 10, 100],
+            ],
             circles_remove=[
                 for (key_idx=[0:num_keys - 1]) [
                     balance_pin_radius * (3/2),
