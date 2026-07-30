@@ -457,34 +457,20 @@ belly_rail_length = norm([soundboard_pos.x - soundboard_bottom_left_x, second_be
 // its thickness extending to the right of the length direction.
 supports = [
     // Belly rail, under the soundboard's angled front edge
-    [[soundboard_bottom_left_x, 0], belly_rail_angle, belly_rail_length, belly_rail_th],
+    [
+        [soundboard_bottom_left_x, 0],
+        belly_rail_angle,
+        belly_rail_length,
+        belly_rail_th,
+        [RIGHT, 1, 1],
+    ],
     // Belly rail leg, under the soundboard's left edge back to the wall
     [
         [soundboard_pos.x, second_bend_y],
         90,
         inner_width - second_bend_y,
-        belly_rail_th
-    ],
-    // Front liner, under the soundboard's straight front edge
-    [
-        [soundboard_bottom_left_x + belly_rail_th, soundboard_liner_th],
-        0,
-        wrestplank_pos.x - soundboard_liner_th - soundboard_bottom_left_x - belly_rail_th,
-        soundboard_liner_th
-    ],
-    // Right liner, along the wrestplank face
-    [
-        [wrestplank_pos.x - soundboard_liner_th, 0],
-        90,
-        inner_width,
-        soundboard_liner_th
-    ],
-    // Back liner, along the back wall
-    [
-        [soundboard_pos.x + belly_rail_th, inner_width],
-        0,
-        wrestplank_pos.x - soundboard_liner_th - (soundboard_pos.x + belly_rail_th),
-        soundboard_liner_th
+        belly_rail_th,
+        [LEFT, 1, 1],
     ],
 ];
 
@@ -751,7 +737,7 @@ module wrestplank() {
 }
 
 module balance_rail() {
-    color(col_wood_med)
+    color(col_wood_dark)
     translate([kb_pos.x, 0, kb_pos.z - nat_height])
         lasercutoutSquare(
             thickness=wall_th,
@@ -869,6 +855,7 @@ module support(s) {
             thickness=s[3],
             x=length,
             y=support_height,
+            finger_joints=[s[4]],
             simple_tabs=[
                 for (f = support_tab_fractions) each concat(
                     [[DOWN, f*length, 0]],
@@ -903,8 +890,12 @@ module soundboard() {
             circles_remove=[
                 [mousehole_radius, mousehole_pos.x, mousehole_pos.y]
             ],
-            // Registers onto the top tabs of the liners
-            cutouts=soundboard_tab_holes(),
+            cutouts=[
+                for (s = supports) if (support_has_top_tabs(s)) each support_tab_holes(s),
+                // Bridge tab cutouts
+                [bridge_pos.x, bridge_pos.y+11, wall_th, wall_th],
+                [bridge_pos.x, bridge_pos.y+bridge_width-24, wall_th, wall_th],
+            ],
         );
 }
 
@@ -920,6 +911,10 @@ module bridge() {
             thickness=wall_th,
             x=bridge_width,
             y=bridge_height,
+            simple_tabs=[
+                [DOWN, 14, 0, [wall_th, 3, wall_th]],
+                [DOWN, bridge_width-21, 0, [wall_th, 3, wall_th]],
+            ],
             circles_remove=[
                 [bridge_height, -12, 5],
                 [9, 30, 0],
