@@ -544,8 +544,19 @@ module case() {
                 [RIGHT, 0, 4],
                 [DOWN, 1, 15]
             ],
-            // Holes for the bottom tabs of the belly rail and liners
-            cutouts=all_support_tab_holes(),
+            cutouts=concat(
+                // Holes for the bottom tabs of the belly rail and liners
+                all_support_tab_holes(),
+                // Holes for the finger joints of the hitchpin block (left)
+                // and wrestplank (right), which both use [LEFT, 0, 4]
+                // fingers along the case's inner width
+                [for (i = [0:3]) each [
+                    [0, inner_width * (2*i + 1) / 8,
+                        hitchpin_block_th, inner_width / 8],
+                    [inner_length - wrestplank_width, inner_width * (2*i + 1) / 8,
+                        wrestplank_width, inner_width / 8],
+                ]]
+            ),
         );
 
         // Back wall
@@ -838,10 +849,7 @@ module keyboard() {
         key(key_idx);
 }
 
-// A vertical support strip (belly rail or soundboard liner), with tabs on
-// its bottom edge into the case bottom and (if axis-aligned) on its top
-// edge into the soundboard. See the [Soundboard Supports] section.
-module support(s) {
+module belly_rail_section(s) {
     length = s[2];
     color(col_wood_med)
     translate([s[0].x, s[0].y, inner_bottom_z])
@@ -862,8 +870,8 @@ module support(s) {
 }
 
 module belly_rail() {
-    support(supports[0]);
-    support(supports[1]);
+    belly_rail_section(supports[0]);
+    belly_rail_section(supports[1]);
 }
 
 module soundboard() {
