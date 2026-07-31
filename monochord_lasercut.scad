@@ -199,7 +199,7 @@ wrestplank_pos = [
 ];
 
 // Belly rail thickness (supports front edge of soundboard)
-belly_rail_th = wall_th / 2;
+belly_rail_th = wall_th;
 
 /* [Backrail] */
 
@@ -227,7 +227,6 @@ soundboard_depth = inner_width;
 // Soundboard height (?)
 soundboard_height = 3;
 // Width of liners for the soundboard to rest on
-soundboard_liner_th = belly_rail_th;
 soundboard_pos = [
     rack_pos.x + rack_width,
     // Rear edge sits against the back wall's inner face
@@ -462,7 +461,7 @@ supports = [
         belly_rail_angle,
         belly_rail_length,
         belly_rail_th,
-        [RIGHT, 1, 1],
+        [],
     ],
     // Belly rail leg, under the soundboard's left edge back to the wall
     [
@@ -470,7 +469,7 @@ supports = [
         90,
         inner_width - second_bend_y,
         belly_rail_th,
-        [LEFT, 1, 1],
+        [[[0, 48, 0], -4, support_height, support_height*2]],
     ],
 ];
 
@@ -691,7 +690,7 @@ module hitchpin_block() {
 }
 
 module wrestplank() {
-    color(col_wood_light)
+    color(col_wood_dark)
     translate([
         wrestplank_pos.x + wrestplank_width,
         0,
@@ -700,8 +699,13 @@ module wrestplank() {
         rotate([0, -90, 0])
         lasercutoutSquare(
             thickness=wrestplank_width,
-            y=inner_width,
             x=hitchpin_block_height,
+            y=inner_width,
+            simple_tab_holes = [
+                // Soundboard finger joint cutouts
+                for (i = [1:3])
+                    [RIGHT, hitchpin_block_height - 14.7, soundboard_pos.y*(i/4), [wall_th, 3, wall_th]],
+            ],
             simple_tabs = [
                 // Right tabs connecting to front panel
                 [
@@ -855,7 +859,7 @@ module support(s) {
             thickness=s[3],
             x=length,
             y=support_height,
-            finger_joints=[s[4]],
+            slits = s[4],
             simple_tabs=[
                 for (f = support_tab_fractions) each concat(
                     [[DOWN, f*length, 0]],
@@ -886,6 +890,10 @@ module soundboard() {
                 [soundboard_pos.x + soundboard_width, 0],
                 [soundboard_bottom_left_x, 0],
                 [soundboard_pos.x, second_bend_y],
+            ],
+            simple_tabs=[
+                for (i = [1:3])
+                    [RIGHT, soundboard_pos.x + soundboard_width, soundboard_pos.y*(i/4), [wall_th, wall_th, 3]],
             ],
             circles_remove=[
                 [mousehole_radius, mousehole_pos.x, mousehole_pos.y]
