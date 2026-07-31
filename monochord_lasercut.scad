@@ -1,3 +1,12 @@
+/**
+ * Model of a 15th-century keyed monochord described by Conrad von Zabern in
+ * "Novellus musicae artis tractatus", and expounded on by Karl-Werner Gümpel in
+ * "Das Tastenmonochord Conrads von Zabern".
+ *
+ * All quotes taken from "Das Tastenmonochord Conrads von Zabern", translated
+ * from German using DeepL.
+ */
+
 include <./lasercut/lasercut.scad>;
 
 /* [Visibility Toggles] */
