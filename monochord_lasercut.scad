@@ -833,6 +833,10 @@ module key(key_idx) {
         lasercutout(
             thickness=nat_height,
             points=key_points(key_idx),
+            // Extra flat-layout spacing: key outlines extend key_depth below
+            // y=0 (the key fronts), so the default max_y-based stacking in
+            // the generated 2D file makes adjacent keys overlap and merge.
+            flat_adjust=[0, key_depth],
             circles_remove=[
                 [
                     balance_pin_radius * (3/2),
