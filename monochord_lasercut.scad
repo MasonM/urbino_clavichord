@@ -513,7 +513,7 @@ if (debug_mode) {
     }
 }
 
-module side_wall(flat_adjust=[0, 0]) {
+module side_wall() {
     lasercutoutSquare(
             thickness=wall_th,
             x=height,
@@ -522,7 +522,6 @@ module side_wall(flat_adjust=[0, 0]) {
                 [LEFT, 0, -wall_th/2],
                 [RIGHT, -wall_th, inner_width + wall_th / 2],
             ],
-            flat_adjust=flat_adjust,
             finger_joints=[
                 [LEFT, 0, 4],
                 [UP, 0, 4],
@@ -621,11 +620,11 @@ module case() {
 
         // Left wall
         translate([0, 0, wall_th]) rotate([0, -90, 0])
-            side_wall([height + wall_th * 3, -(inner_width + wall_th*3)]);
+            side_wall();
 
         // Right wall
         translate([inner_length + wall_th, 0, wall_th]) rotate([0, -90, 0])
-            side_wall([-wall_th*3, wall_th*3]);
+            side_wall();
 
     }
 }
@@ -825,10 +824,6 @@ module key(key_idx) {
         lasercutout(
             thickness=nat_height,
             points=key_points(key_idx),
-            flat_adjust=[
-                key_lever_x(key_idx) - slot_x(key_idx),
-                key_idx == num_keys - 1 ? 0 : -(key_lever_top_y + rack_tongue_depth + wall_th * 3)
-            ],
             circles_remove=[
                 [
                     balance_pin_radius * (3/2),
