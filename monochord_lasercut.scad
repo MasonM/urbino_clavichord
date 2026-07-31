@@ -497,15 +497,9 @@ function all_support_tab_holes() = [
     [0, inner_width-wall_th, wall_th, wall_th*2],
 ];
 
-// Only axis-aligned supports carry top tabs into the soundboard: an
-// oversized bounding-box hole for the diagonal belly rail would notch the
-// soundboard's angled edge. The axis-aligned supports register the
-// soundboard in both directions on their own.
-function support_has_top_tabs(s) = s[1] % 90 == 0;
-
 // Holes cut into the soundboard, matching the supports' top tabs
 function soundboard_tab_holes() =
-    [for (s = supports) if (support_has_top_tabs(s)) each support_tab_holes(s)];
+    [for (s = supports) each support_tab_holes(s)];
 
 if (debug_mode) {
     for (key_idx=[0:num_keys-1]) {
@@ -863,7 +857,7 @@ module support(s) {
             simple_tabs=[
                 for (f = support_tab_fractions) each concat(
                     [[DOWN, f*length, 0]],
-                    support_has_top_tabs(s) ? [[UP, f*length, support_height]] : []
+                    [[UP, f*length, support_height]]
                 )
             ],
         );
@@ -899,7 +893,8 @@ module soundboard() {
                 [mousehole_radius, mousehole_pos.x, mousehole_pos.y]
             ],
             cutouts=[
-                for (s = supports) if (support_has_top_tabs(s)) each support_tab_holes(s),
+                // Belly rail cutouts
+                for (s = supports) each support_tab_holes(s),
                 // Bridge tab cutouts
                 [bridge_pos.x, bridge_pos.y+11, wall_th, wall_th],
                 [bridge_pos.x, bridge_pos.y+bridge_width-24, wall_th, wall_th],
