@@ -473,22 +473,25 @@ supports = [
     ],
 ];
 
-// Tab hole rectangles ([x, y, w, h]) matching a support's tabs, for
-// cutting into both the case bottom and the soundboard (a support's top
-// and bottom tabs share the same XY footprint). lasercutout cutouts are
-// axis-aligned, so holes for the diagonal belly rail are the bounding box
-// of its rotated tabs (slightly oversized).
+// Cutout rectangles ([x, y, w, h, rotation]) matching a support's tabs
+// exactly, for cutting into both the case bottom and the soundboard (a
+// support's top and bottom tabs share the same XY footprint). Each hole
+// is a th x th square rotated with the support, so it lines up with the
+// tabs even on the diagonal belly rail. The corner passed to the cutout
+// is the tab's [u, v] = [f*length - th/2, -th] corner in the support's
+// frame, mapped into case coordinates.
 function support_tab_holes(s) =
-    let (
-        origin = s[0], angle = s[1], length = s[2], th = s[3],
-        dir = [cos(angle), sin(angle)],
-        nrm = [sin(angle), -cos(angle)],
-        b = th * (abs(cos(angle)) + abs(sin(angle)))
-    )
+    let (origin = s[0], angle = s[1], length = s[2], th = s[3])
     [
         for (f = support_tab_fractions)
-        let (c = origin + f*length*dir + (th/2)*nrm)
-        [c.x - b/2, c.y - b/2, b, b]
+        let (
+            u = f*length - th/2,
+            corner = origin + [
+                u * cos(angle) + th * sin(angle),
+                u * sin(angle) - th * cos(angle)
+            ]
+        )
+        [corner.x, corner.y, th, th, [0, 0, angle]]
     ];
 
 // Tab holes of all supports, cut into the case bottom
@@ -496,10 +499,6 @@ function all_support_tab_holes() = [
     for (s = supports) each support_tab_holes(s),
     [0, inner_width-wall_th, wall_th, wall_th*2],
 ];
-
-// Holes cut into the soundboard, matching the supports' top tabs
-function soundboard_tab_holes() =
-    [for (s = supports) each support_tab_holes(s)];
 
 if (debug_mode) {
     for (key_idx=[0:num_keys-1]) {
