@@ -12,7 +12,6 @@ show_balance_rail = true;
 
 show_bridge = true;
 show_soundboard = true;
-show_soundboard_liner = true;
 show_belly_rail = true;
 
 /* [Visibility Toggles (nonfunctional)] */
@@ -867,11 +866,6 @@ module belly_rail() {
     support(supports[1]);
 }
 
-module soundboard_liner() {
-    for (i = [2:len(supports) - 1])
-        support(supports[i]);
-}
-
 module soundboard() {
     color(col_wood_light)
     translate([0, 0, soundboard_pos.z])
@@ -935,7 +929,6 @@ module assembly() {
     if (show_backrail) backrail();
     if (show_balance_rail) balance_rail();
     if (show_belly_rail) belly_rail();
-    //if (show_soundboard_liner) soundboard_liner();
     if (show_soundboard) soundboard();
     if (show_bridge) bridge();
     if (show_keyboard) keyboard();
