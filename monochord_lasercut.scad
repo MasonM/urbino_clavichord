@@ -175,6 +175,21 @@ rack_pos = [
 ];
 // Rack width (?)
 rack_width = (slot_x(num_keys - 1) - rack_pos.x) + slot_width * 2;
+// Number of finger joints along the back (UP) edge of the rack and backrail
+rack_fingerjoints = 10;
+// Cutout rectangles matching the [UP, 0, rack_fingerjoints] fingers of the
+// rack/backrail, for use in mating panels. `y` and `h` give the cutout's
+// position and size along the panel's other axis; x positions/widths follow
+// the lasercut library's finger layout (start_up=0: second half-period of
+// each of the `rack_fingerjoints` divisions of rack_width).
+function rack_finger_cutouts(y, h) = [
+    for (p = [0:rack_fingerjoints - 1]) [
+        rack_pos.x + rack_width * (2*p + 1) / (2*rack_fingerjoints),
+        y,
+        rack_width / (2*rack_fingerjoints),
+        h
+    ]
+];
 guide_pin_height = 2*nat_height;
 guide_pin_radius = 1;
 
@@ -573,14 +588,23 @@ module case() {
                 thickness=wall_th,
                 x=inner_length,
                 y=height,
-                cutouts = [
-                    // Deepen finger joints on left side for hitchpin block
-                    [ 0, -wall_th, wall_th, height / 8 ],
-                    [ 0, height / 8, wall_th, height / 8 ],
-                    // Deepen finger joints on right side for wrestplank
-                    [ inner_length - wall_th, -wall_th, wall_th, height / 8 ],
-                    [ inner_length - wall_th, height / 8, wall_th, height / 8 ],
-                ],
+                cutouts = concat(
+                    [
+                        // Deepen finger joints on left side for hitchpin block
+                        [ 0, -wall_th, wall_th, height / 8 ],
+                        [ 0, height / 8, wall_th, height / 8 ],
+                        // Deepen finger joints on right side for wrestplank
+                        [ inner_length - wall_th, -wall_th, wall_th, height / 8 ],
+                        [ inner_length - wall_th, height / 8, wall_th, height / 8 ],
+                    ],
+                    // Cutouts for the backrail finger joints (local y is
+                    // world z minus the bottom board thickness)
+                    rack_finger_cutouts(backrail_pos.z - wall_th, wall_th),
+                    // Cutouts for the rack finger joints
+                    use_rack_tongue
+                        ? rack_finger_cutouts(rack_pos.z - wall_th, wall_th)
+                        : []
+                ),
                 finger_joints=[
                     [LEFT, 1, 4],
                     [RIGHT, 0, 4],
@@ -801,7 +825,7 @@ module rack() {
             ],
             finger_joints=[
                 [LEFT, 1, 1],
-                [UP, 0, 10],
+                [UP, 0, rack_fingerjoints],
             ],
         );
 }
@@ -822,7 +846,7 @@ module backrail() {
                 ],
             ],
             finger_joints=[
-                [UP, 0, 10],
+                [UP, 0, rack_fingerjoints],
             ],
         );
 }
