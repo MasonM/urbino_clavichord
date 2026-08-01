@@ -25,12 +25,12 @@ show_belly_rail = true;
 
 /* [Visibility Toggles (nonfunctional)] */
 
-show_balance_pins = true;
-show_key_labels = true;
-show_tangents = true;
-show_tuning_pin = true;
-show_hitchpin = true;
-show_string = true;
+show_balance_pins = false;
+show_key_labels = false;
+show_tangents = false;
+show_tuning_pin = false;
+show_hitchpin = false;
+show_string = false;
 
 /* [Main Dimensions] */
 // "The internal length used for our reconstruction is 644 mm (the external
@@ -261,7 +261,7 @@ balance_pin_height = 20;
 balance_pin_radius = tuning_pin_radius;
 
 string_pos = [
-    wall_th + (hitchpin_block_th / 2),
+    (hitchpin_block_th / 2),
     // "Furthermore, the string runs at the location designated by Arnaut for the
     // "first pair of strings" ( = 3/5 of the width = 82.8 mm, and 13.8 mm from the
     // center). Thus, Conrad's requirement that it be placed "beyond the center of
@@ -937,6 +937,93 @@ module bridge() {
         );
 }
 
+module string() {
+    translate(string_pos)
+        rotate([0, 90, 0])
+        color(col_brass)
+        cylinder(
+            h=tuning_pin_x - string_pos.x,
+            r=string_radius
+        );
+}
+
+module tuning_pin() {
+    translate([
+        tuning_pin_x,
+        string_pos.y,
+        wrestplank_pos.z + wrestplank_height - 5
+    ])
+        color(col_iron)
+        cylinder(h=tuning_pin_height, r=tuning_pin_radius);
+}
+
+module hitchpin() {
+    translate([
+        string_pos.x,
+        string_pos.y,
+        wrestplank_pos.z + wrestplank_height * (2/3)
+    ])
+        color(col_iron)
+        cylinder(h=hitchpin_height, r=hitchpin_radius);
+}
+
+module tangents() {
+    for (key_idx=[0:num_keys - 1])
+        tangent(key_idx);
+}
+
+module tangent(key_idx) {
+    translate([
+        tangent_x(key_idx),
+        string_pos.y,
+        kb_pos.z + nat_height
+    ])
+        color(col_brass)
+        rotate([90, 0, -90])
+        linear_extrude(tangent_depth)
+            polygon([
+                [-tangent_bottom_width, 0],
+                [-tangent_top_width/2, tangent_height],
+                [tangent_top_width/2, tangent_height],
+                [tangent_bottom_width, 0],
+            ]);
+}
+
+module balance_pin_2d(key_idx, radius) {
+    pos = balance_pin_pos(key_idx);
+    translate([
+        pos.x,
+        pos.y,
+        0
+    ])
+        circle(r=radius);
+}
+
+module balance_pin_3d(key_idx, radius) {
+    color(col_iron)
+        translate([0, 0, kb_pos.z - (balance_pin_height / 3)])
+            linear_extrude(balance_pin_height)
+                balance_pin_2d(key_idx, radius);
+}
+
+module balance_pins() {
+    for (key_idx=[0:num_keys - 1])
+        balance_pin_3d(key_idx, balance_pin_radius);
+}
+
+module key_labels() {
+    for (key_idx=[0:num_keys - 1])
+        translate([
+            key_x(key_idx) + (is_accidental(key_idx) ? accidental_width : key_width) / 7,
+            (is_accidental(key_idx) ? -accidental_depth : -key_depth) * (6/7),
+            kb_pos.z + nat_height + (is_accidental(key_idx) ? accidental_height  : 0)
+        ])
+            color("black")
+                linear_extrude(key_clearance)
+                text(text=key_label(key_idx), size=(is_accidental(key_idx) ? accidental_width : key_width) / 3);
+}
+
+
 module assembly() {
     if (show_case) case();
     if (show_hitchpin_block) hitchpin_block();
@@ -948,6 +1035,14 @@ module assembly() {
     if (show_soundboard) soundboard();
     if (show_bridge) bridge();
     if (show_keyboard) keyboard();
+
+    // Non-functional modules
+    if (show_string) string();
+    if (show_tuning_pin) tuning_pin();
+    if (show_hitchpin) hitchpin();
+    if (show_tangents) tangents();
+    if (show_balance_pins) balance_pins();
+    if (show_key_labels) key_labels();
 }
 
 assembly();
