@@ -157,7 +157,7 @@ hitchpin_block_height = (height - inner_bottom_z) * (2/3);
 // Hitchpin height (?)
 hitchpin_height = hitchpin_block_height * (2/3);
 // Hitchpin radius (?)
-hitchpin_radius = wall_th * (1/14);
+hitchpin_radius = 1.1;
 
 /* [Rack] */
 
@@ -266,7 +266,7 @@ soundboard_width = wrestplank_pos.x - soundboard_pos.x;
 string_radius = 0.4;
 
 // Tuning pin radius (?)
-tuning_pin_radius = 1;
+tuning_pin_radius = hitchpin_radius;
 tuning_pin_x = wrestplank_pos.x + (wrestplank_width / 2);
 tuning_pin_height = height - wrestplank_pos.z - wrestplank_height;
 
@@ -797,7 +797,7 @@ module balance_rail() {
             ],
             circles_remove=[
                 for (key_idx=[0:num_keys - 1]) [
-                    balance_pin_radius * (3/2),
+                    balance_pin_radius,
                     balance_pin_pos(key_idx).x - kb_pos.x,
                     balance_pin_pos(key_idx).y
                 ],
