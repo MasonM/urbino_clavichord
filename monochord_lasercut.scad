@@ -238,7 +238,7 @@ backrail_pos = [
 
 /* [Bridge] */
 
-bridge_width = 98;
+bridge_width = inner_length * (2/14);
 bridge_height = height * (2/7);
 bridge_top_depth = wall_th * (2/14);
 bridge_bottom_depth = wall_th;
@@ -949,14 +949,14 @@ module bridge() {
             y=bridge_height,
             simple_tabs=[
                 [DOWN, 14, 0, [wall_th, 3, wall_th]],
-                [DOWN, bridge_width-21, 0, [wall_th, 3, wall_th]],
+                [DOWN, bridge_width*0.77, 0, [wall_th, 3, wall_th]],
             ],
             circles_remove=[
-                [bridge_height, -12, 5],
-                [9, 30, 0],
-                [9.5, 45, 7],
-                [9, 60, 0],
-                [bridge_height, bridge_width+5, 5]
+                [bridge_height, -bridge_width*0.13, bridge_height*0.254],
+                [bridge_height*0.45, bridge_width/3, 0],
+                [bridge_height*0.48, bridge_width*0.489, bridge_height*0.355],
+                [bridge_height*0.45, bridge_width*0.65, 0],
+                [bridge_height, bridge_width+5, bridge_height*0.254]
             ]
         );
 }
