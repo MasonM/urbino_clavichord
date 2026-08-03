@@ -41,6 +41,9 @@ show_string = false;
 
 inner_length = 644;
 
+// Scale factor for constants calculated relative to original length (can't use scale() with lasercut.scad)
+s = inner_length / 644;
+
 // "The length-width-height ratio (width = 3/14 of the length = 138 mm; height
 // or "altitudo tota" = 1/2 of the width = 69 mm) was also adopted from Arnaut.
 // The width was not reduced, since—apart from Conrad's note that the monochord
@@ -51,7 +54,7 @@ inner_length = 644;
 
 inner_width = inner_length * (3/14);
 height = inner_width / 2;
-wall_th = 6;
+wall_th = 6*s;
 
 // "Likewise, the starting and ending points for measurement, the bridge, and
 // the sound hole were placed as follows: the starting point of measurement and
@@ -162,7 +165,7 @@ hitchpin_radius = 1.1;
 /* [Rack] */
 
 // Slot width (?)
-slot_width = 3;
+slot_width = 3*s;
 // Rack thickness (?)
 rack_th = wall_th * 2;
 // Rack height (?)
@@ -793,7 +796,7 @@ module balance_rail() {
                 [0,0],
             ],
             slits = [
-                [51, kb_length, 10, 100],
+                [51*s, kb_length, 10*s, 100],
             ],
             circles_remove=[
                 for (key_idx=[0:num_keys - 1]) [
@@ -929,8 +932,8 @@ module soundboard() {
                 // Belly rail cutouts
                 for (s = supports) each support_tab_holes(s),
                 // Bridge tab cutouts
-                [bridge_pos.x, bridge_pos.y+11, wall_th, wall_th],
-                [bridge_pos.x, bridge_pos.y+bridge_width-24, wall_th, wall_th],
+                [bridge_pos.x, bridge_pos.y+(14*s)-wall_th/2, wall_th, wall_th],
+                [bridge_pos.x, bridge_pos.y+bridge_width-(14*s)-wall_th/2, wall_th, wall_th],
             ],
         );
 }
@@ -948,15 +951,15 @@ module bridge() {
             x=bridge_width,
             y=bridge_height,
             simple_tabs=[
-                [DOWN, 14, 0, [wall_th, 3, wall_th]],
-                [DOWN, bridge_width*0.77, 0, [wall_th, 3, wall_th]],
+                [DOWN, 14*s, 0, [wall_th, soundboard_height, wall_th]],
+                [DOWN, bridge_width-14*s, 0, [wall_th, soundboard_height, wall_th]],
             ],
             circles_remove=[
-                [bridge_height, -bridge_width*0.13, bridge_height*0.254],
-                [bridge_height*0.45, bridge_width/3, 0],
-                [bridge_height*0.48, bridge_width*0.489, bridge_height*0.355],
-                [bridge_height*0.45, bridge_width*0.65, 0],
-                [bridge_height, bridge_width+5, bridge_height*0.254]
+                [bridge_height, -12*s, 5*s],
+                [9*s, bridge_width/3, 0],
+                [9.5*s, bridge_width/2, 7*s],
+                [9*s, bridge_width*(2/3), 0],
+                [bridge_height, bridge_width+12*s, 5*s]
             ]
         );
 }
